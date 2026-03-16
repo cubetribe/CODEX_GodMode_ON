@@ -17,8 +17,24 @@ __pycache__/
 
 # JavaScript
 node_modules/
+.next/
 
 # Build and coverage output
 dist/
 build/
 coverage/
+
+# Apple / Xcode
+DerivedData/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Agent runtime artifacts
+reports/generated/
+state/*.json
+state/*.lock

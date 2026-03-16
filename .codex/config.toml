@@ -3,6 +3,10 @@ approval_policy = "on-request"
 sandbox_mode = "workspace-write"
 web_search = "cached"
 
+[agents]
+max_threads = 6
+max_depth = 1
+
 [sandbox_workspace_write]
 writable_roots = []
 network_access = false

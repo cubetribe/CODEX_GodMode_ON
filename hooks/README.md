@@ -1,12 +1,18 @@
 # Hooks
 
-This directory is reserved for future hook examples and workflow helpers.
+Dieses Verzeichnis ist bewusst nur eine Nebenschiene des Zielsystems.
 
-Planned uses:
+Wichtig fuer diese Repo:
 
-- local validation hooks
-- formatting or lint helpers
-- repo bootstrap scripts
-- guardrails for repeatable Codex workflows
+- Die primaere Orchestrierung soll in Codex selbst liegen: `AGENTS.md`, `.codex/config.toml`, spaetere `.codex/agents/*.toml`, explizites Subagent-Routing und dokumentierte Gates.
+- Hooks duerfen die Architektur nicht "heimlich steuern".
+- Hooks sind nur fuer Guardrails und wiederholbare technische Checks gedacht.
 
-At this stage, the directory exists mainly to define intent and keep room for concrete examples.
+Geplante Beispiele:
+
+- Preflight-Checks vor einem Workflow-Start
+- API-Impact-Erkennung auf Basis von Diffs
+- Validierung von Agenten-Reports gegen ein Report-Schema
+- Pre-push-Schutz, damit nichts ohne explizite Freigabe hochgeschoben wird
+
+Das Verzeichnis bleibt also erhalten, aber mit klar begrenzter Aufgabe: absichern, nicht orchestrieren.

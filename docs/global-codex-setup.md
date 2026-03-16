@@ -2,7 +2,9 @@
 
 Stabilerer Workflow, weniger Prompt-Wiederholung, sauberere Teamarbeit.
 
-Diese Notiz fasst ein Codex-Setup zusammen, bei dem persoenliche Defaults global liegen und Team-Regeln direkt im Repository versioniert werden.
+Diese Notiz ist flankierendes Material zu dieser Repo. Das eigentliche Zielbild fuer den geplanten Codex-GodMode steht in [docs/blueprint.md](./blueprint.md).
+
+Hier geht es um die Grundstruktur, auf der die spaetere Architektur sauber aufsetzen kann: persoenliche Defaults global, Team-Regeln im Repository, Agents und Skills an klar getrennten Orten.
 
 ## Die Kurzversion
 
@@ -12,6 +14,7 @@ Die aktuelle offizielle Codex-Doku stuetzt im Kern dieses Modell:
 - persoenliche technische Defaults in `~/.codex/config.toml`
 - Repo-Regeln in `AGENTS.md`
 - Repo-Defaults in `.codex/config.toml`
+- projekt-spezifische Custom Agents in `.codex/agents/*.toml`
 - repo-spezifische Skills in `.agents/skills/`
 
 Wichtig fuer die Prioritaet:
@@ -116,7 +119,7 @@ repo-root/
   AGENTS.md
   .codex/
     config.toml
-    rules/
+    agents/
   .agents/
     skills/
 ```
@@ -141,7 +144,32 @@ Ein schlankes Repo-`AGENTS.md` kann so aussehen:
 - If the repo has release automation, prepare inputs; do not invent manual version bumps.
 ```
 
-## 6. Wiederkehrende Logik als Skill modellieren
+## 6. Custom Agents und Skills sauber trennen
+
+Fuer die aktuelle Codex-Architektur sind zwei Ebenen wichtig:
+
+- `.codex/agents/*.toml` fuer spawned agents mit eigener Rolle, Modellwahl und Developer Guidance
+- `.agents/skills/` fuer wiederverwendbare Prozeduren mit optionalen Scripts, Referenzen und Assets
+
+Das ist keine akademische Unterscheidung, sondern direkt relevant fuer einen agentischen Workflow:
+
+- Agents strukturieren Verantwortung und Routing
+- Skills kapseln wiederkehrende Prozeduren
+
+Beispiel fuer die spaetere Zielstruktur:
+
+```text
+.codex/agents/
+  researcher.toml
+  architect.toml
+  builder.toml
+
+.agents/skills/
+  release-manager/
+    SKILL.md
+```
+
+## 7. Wiederkehrende Logik als Skill modellieren
 
 Wenn immer wieder dieselbe Release-, Review- oder Setup-Logik auftaucht, ist ein Skill sauberer als immer laengeres `AGENTS.md`.
 
@@ -166,7 +194,7 @@ Aufgabe des Skills:
 - Commit-Message vorschlagen
 - PR-Summary erzeugen
 
-## 7. In der App bewusst `Local` oder `Worktree` waehlen
+## 8. In der App bewusst `Local` oder `Worktree` waehlen
 
 Wenn du direkt im aktuellen Checkout arbeiten willst, nutze `Local`.
 
@@ -182,7 +210,7 @@ Wichtige Einordnung:
 - Ich habe in den aktuell geprueften offiziellen Seiten keine dokumentierte globale Einstellung gefunden, die jede neue App-Session automatisch dauerhaft auf `Local` statt `Worktree` erzwingt.
 - Das ist eine Schlussfolgerung aus den geprueften Doku-Seiten, nicht eine explizit dokumentierte Negativ-Aussage.
 
-## 8. Setup verifizieren
+## 9. Setup verifizieren
 
 Nach Aenderungen an `AGENTS.md` oder `config.toml` am besten eine neue Session starten.
 
@@ -208,6 +236,7 @@ Die robustere Aufteilung ist:
 - `~/.codex/config.toml` fuer globale technische Defaults
 - `AGENTS.md` im Repo fuer Team-Regeln
 - `.codex/config.toml` fuer Repo-Defaults
+- `.codex/agents/*.toml` fuer projekt-spezifische Agentenrollen
 - `.agents/skills/` fuer wiederkehrende Workflows
 
 ## Quellen

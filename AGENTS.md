@@ -2,22 +2,26 @@
 
 ## Project rules
 
-- This repository documents practical Codex setup patterns for individuals and teams.
+- This repository documents the blueprint for a Codex-native port of `ClaudeCode_GodMode-On`.
 - Prefer current official OpenAI Codex documentation when changing setup guidance or product claims.
-- Keep repo guidance small, explicit, and easy to audit.
-- Use `AGENTS.md` for durable repo rules, `.codex/config.toml` for repo defaults, and `.agents/skills/` for reusable workflows.
+- Keep repo guidance explicit, auditable, and clearly separated from future implementation work.
+- Use `AGENTS.md` for durable repo rules, `.codex/config.toml` for repo defaults, `.codex/agents/` for future custom agent definitions, and `.agents/skills/` for reusable procedures.
 - Do not add speculative guidance about Codex features without a source or a clear note that it is an inference.
+- If the original Claude repository is referenced, distinguish between extracted facts from the source repo and new Codex design decisions.
+- Keep `.codex/agents/`, `.agents/skills/`, and docs aligned when role names or workflow gates change.
 
 ## Documentation rules
 
-- Favor short, working examples over long theory.
+- Favor concise explanations, but do not collapse away the core orchestration logic.
 - Call out when the official docs are explicit and when a conclusion is an inference from those docs.
+- Keep the "current repo state" separate from the "target architecture" so readers do not confuse the blueprint with an implemented system.
 - If OpenAI changes a path or feature name, update examples to match the current docs.
 
 ## Validation
 
-- For docs-only changes, verify paths, links, and structural consistency.
+- For docs-only changes, verify paths, links, structural consistency, and that role names stay consistent across files.
 - For new example skills, keep metadata concise and descriptions triggerable.
+- For runtime-scaffolding changes, run `./scripts/check-local-env.sh`.
 
 ## Release impact
 
