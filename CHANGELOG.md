@@ -14,3 +14,4 @@ The format is based on Keep a Changelog.
 - first example skill in `.agents/skills/`
 - community health files and friendlier contribution entry points
 - issue forms and discussion forms for GitHub collaboration
+- repository security policy
