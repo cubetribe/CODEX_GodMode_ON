@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Fragen und Hilfe
+    url: https://github.com/cubetribe/CODEX_GodMode_ON/discussions/categories/q-a
+    about: Nutze Discussions fuer Fragen, Unsicherheiten und Setup-Hilfe.
+  - name: Ideen und groessere Richtungsfragen
+    url: https://github.com/cubetribe/CODEX_GodMode_ON/discussions/categories/ideas
+    about: Nutze Discussions fuer neue Ideen, bevor daraus konkrete Arbeit wird.
+  - name: Community-Forum
+    url: https://vibecoding-germany.de
+    about: Nutze das Forum fuer laengere Community-Debatten und Austausch.

@@ -1,0 +1,37 @@
+title: "[Idea] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Teile eine Idee, die das Repo, die Workflows oder die Community besser machen koennte.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Bereich
+      options:
+        - Globales Codex-Setup
+        - Repo-Regeln oder Konfiguration
+        - Skill
+        - Hook oder Workflow-Helfer
+        - GitHub-Struktur
+        - Community und Zusammenarbeit
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem oder welche Gelegenheit siehst du?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Deine Idee
+      description: So konkret oder offen, wie es gerade sinnvoll ist.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Warum waere das wertvoll?
+      description: Fuer wen verbessert sich was?

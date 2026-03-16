@@ -1,0 +1,25 @@
+title: "[Announcement] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nutze diese Vorlage fuer strukturierte Projekt-Updates, Richtungswechsel oder wichtige Hinweise.
+  - type: textarea
+    id: summary
+    attributes:
+      label: Kurzfassung
+      description: Was ist die wichtigste Nachricht?
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: Was hat sich geaendert, warum und fuer wen ist das relevant?
+    validations:
+      required: true
+  - type: textarea
+    id: next_steps
+    attributes:
+      label: Naechste Schritte
+      description: Was sollte die Community jetzt wissen oder tun?

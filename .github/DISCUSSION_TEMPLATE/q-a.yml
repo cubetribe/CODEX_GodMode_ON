@@ -1,0 +1,32 @@
+title: "[Q&A] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Stelle Fragen so, dass andere dir schnell und praktisch helfen koennen.
+  - type: input
+    id: goal
+    attributes:
+      label: Was versuchst du zu erreichen?
+      placeholder: Ich moechte globale Defaults sauber von Repo-Regeln trennen.
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Kontext
+      description: Was fuer ein Repo oder Workflow ist betroffen?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: Was hast du schon probiert?
+      description: Befehle, Dateien, Annahmen oder Links.
+  - type: textarea
+    id: blocker
+    attributes:
+      label: Wo haengst du fest?
+      description: Woran scheitert es gerade konkret?
+    validations:
+      required: true

@@ -1,0 +1,36 @@
+name: Doku verbessern
+description: Melde unklare, veraltete oder fehlende Dokumentation.
+title: "[Docs] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Kleine Doku-Verbesserungen helfen oft sofort. Danke, dass du sie sichtbar machst.
+  - type: input
+    id: location
+    attributes:
+      label: Wo ist die Stelle?
+      description: Link, Dateipfad oder Abschnitt.
+      placeholder: README.md oder docs/global-codex-setup.md#...
+    validations:
+      required: true
+  - type: textarea
+    id: unclear
+    attributes:
+      label: Was ist unklar, veraltet oder fehlt?
+      description: Beschreibe knapp, was dich stoert oder bremst.
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Was waere hilfreicher?
+      description: Wenn du schon eine bessere Formulierung oder Strukturidee hast, gerne hier rein.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Ich habe geprueft, ob dieses Doku-Thema schon offen ist.
+          required: true

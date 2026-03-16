@@ -1,0 +1,60 @@
+name: Bug report
+description: Melde ein konkretes Problem in Doku, Beispielen, Skills oder Repo-Verhalten.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Danke fuer den Report. Je konkreter der Kontext, desto schneller kann jemand helfen.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Bereich
+      description: Wo tritt das Problem auf?
+      options:
+        - README oder andere Doku
+        - Globales Codex-Setup
+        - Repo-Konfiguration
+        - Skill
+        - Hook oder Workflow-Helfer
+        - GitHub-Template oder Community-Flow
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Was ist passiert?
+      description: Beschreibe das aktuelle Verhalten oder den Fehler.
+      placeholder: Ein Link ist kaputt, ein Beispiel ist veraltet oder ein Skill fuehrt in die falsche Richtung.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Was haettest du erwartet?
+      description: Beschreibe kurz das erwartete Verhalten.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Wie kann man das nachvollziehen?
+      description: Schritte, Link, Dateipfad oder Befehl.
+      placeholder: 1. Datei oeffnen ... 2. Abschnitt lesen ... 3. Problem sehen ...
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Zusatzinfos
+      description: Alles, was beim Verstehen hilft.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Ich habe geprueft, dass das Thema nicht schon offen gemeldet ist.
+          required: true
+        - label: Ich habe genug Kontext gegeben, damit jemand das Problem nachvollziehen kann.
+          required: true

@@ -1,0 +1,26 @@
+title: "[General] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Fuer Themen, die weder klar Bug noch klare Idee sind, aber fuer die Community relevant sein koennen.
+  - type: input
+    id: topic
+    attributes:
+      label: Thema
+      description: Worum geht es in einem Satz?
+      placeholder: Wie koennen wir Codex-Defaults ueber mehrere Projekte konsistent halten?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Kontext
+      description: Was ist der Hintergrund?
+    validations:
+      required: true
+  - type: textarea
+    id: goal
+    attributes:
+      label: Was waere fuer dich ein gutes Ergebnis?
+      description: Welche Art Rueckmeldung oder Austausch suchst du?

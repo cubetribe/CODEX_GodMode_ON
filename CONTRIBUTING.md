@@ -1,45 +1,47 @@
 # Contributing
 
-Thanks for helping shape `CODEX_GodMode_ON`.
+Danke, dass du `CODEX_GodMode_ON` besser machen willst.
 
-This repository is still in early setup, so the current contribution model is intentionally simple:
+Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Bevor du Zeit in einen groesseren Beitrag steckst, nutze bitte den passenden Einstiegspunkt.
 
-1. Open an issue or start the discussion with the maintainers/community first.
-2. Keep changes focused and small.
-3. Prefer docs, structure, and reusable building blocks over one-off solutions.
-4. Explain the practical use case behind every new skill, hook, or configuration.
+## Der beste Startweg
 
-## Community first
+1. Frage oder Unsicherheit: nutze [GitHub Discussions](https://github.com/cubetribe/CODEX_GodMode_ON/discussions)
+2. Groessere Idee oder Richtungsfrage: starte erst eine [Ideas-Diskussion](https://github.com/cubetribe/CODEX_GodMode_ON/discussions/categories/ideas)
+3. Laengere Community-Debatte: nutze das Forum [Vibe Coding - Germany.de](https://vibecoding-germany.de)
+4. Konkreter Fehler oder klarer Verbesserungsvorschlag: nutze die passenden Issue-Formulare
+5. Danach gerne einen kleinen, fokussierten Pull Request oeffnen
 
-If the change affects workflow recommendations, team conventions, or the public positioning of the project, discuss it with the community first:
+## Wobei Hilfe gerade besonders wertvoll ist
 
-- [Vibe Coding - Germany.de](https://vibecoding-germany.de)
+- bessere Codex-Konfigurationsbeispiele
+- Skills fuer wiederkehrende Workflows
+- Hook-Beispiele mit klarer Wirkung
+- Doku, die komplizierte Dinge einfacher erklaert
+- Repo- und GitHub-Struktur, die fuer neue Leute sofort einladend wirkt
 
-## Initial contribution focus
+## Wie wir Beitraege moegen
 
-Good early contributions include:
+- klein und klar abgegrenzt
+- praktisch statt theoretisch
+- mit erkennbarem Use Case
+- ohne unnoetige Seiteneffekte
+- gut dokumentiert, wenn Verhalten oder Setup betroffen sind
 
-- repository structure improvements
-- Codex configuration examples
-- skill templates
-- hook examples
-- setup documentation
-- best-practice writeups
-
-## Working style
-
-This project aims to stay:
-
-- practical
-- community-friendly
-- easy to review
-- easy to extend
-
-## Path conventions used in this repo
+## Repo-Konventionen
 
 - repo instructions: `AGENTS.md`
 - repo config: `.codex/config.toml`
 - repo rules: `.codex/rules/`
 - repo skills: `.agents/skills/`
 
-More formal contribution and review rules can be added once the repository structure is finalized.
+## Vor dem PR kurz checken
+
+- passt die Aenderung wirklich zum Ziel dieses Repos?
+- gibt es schon eine laufende Diskussion dazu?
+- ist der Diff klein genug, um schnell reviewt zu werden?
+- wurden Doku oder Beispiele aktualisiert, falls sich Verhalten aendert?
+
+## Freundlicher Rahmen
+
+Bitte halte dich an [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) und nutze [SUPPORT.md](./SUPPORT.md), wenn du unsicher bist, welcher Kanal fuer dein Anliegen der richtige ist.

@@ -1,0 +1,30 @@
+title: "[Show and tell] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Zeig der Community, was du mit diesem Setup, einem Skill oder einem Hook gebaut oder verbessert hast.
+  - type: input
+    id: built
+    attributes:
+      label: Was moechtest du zeigen?
+      placeholder: Ein Setup, ein Skill, ein Hook oder ein Workflow-Muster
+    validations:
+      required: true
+  - type: textarea
+    id: story
+    attributes:
+      label: Was hat es verbessert?
+      description: Erklaere kurz Ausgangslage, Aenderung und Ergebnis.
+    validations:
+      required: true
+  - type: textarea
+    id: reuse
+    attributes:
+      label: Was koennen andere daraus direkt mitnehmen?
+      description: Konkrete Tipps, Dateien, Muster oder Stolperfallen.
+  - type: input
+    id: links
+    attributes:
+      label: Links oder Referenzen
+      description: Optionaler Link zu Dateien, Screenshots, Repo oder Diskussion.

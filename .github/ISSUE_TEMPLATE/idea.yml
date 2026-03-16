@@ -1,0 +1,51 @@
+name: Verbesserungsidee
+description: Schlage eine neue Richtung, einen Skill, einen Hook oder eine Repo-Verbesserung vor.
+title: "[Idea] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Gute Ideen sind hier ausdruecklich willkommen. Wenn die Idee groesser ist, passt oft auch zuerst eine Discussion.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Worum geht es?
+      options:
+        - Globales Codex-Setup
+        - Repo-Regeln oder Konfiguration
+        - Skill
+        - Hook oder Workflow-Helfer
+        - GitHub-Struktur
+        - Doku und Beispiele
+        - Community und Zusammenarbeit
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Welches Problem oder welche Luecke siehst du?
+      description: Was fehlt, was ist unbequem oder was koennte klarer werden?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Was schlaegst du vor?
+      description: Beschreibe die Idee so konkret wie sinnvoll.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Warum waere das wertvoll?
+      description: Fuer wen hilft es und was wird dadurch besser?
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Vor dem Absenden
+      options:
+        - label: Ich habe geprueft, ob es dazu schon eine passende Discussion oder ein passendes Issue gibt.
+          required: true
+        - label: Ich wuerde bei Bedarf auch an einer Ausarbeitung mithelfen.
+          required: false

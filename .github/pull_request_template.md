@@ -1,13 +1,16 @@
 ## Summary
 
-- what changed
-- why it changed
+What changed, in one clear paragraph.
+
+## Why
+
+Why this change helps the repository, the workflow, or the community.
 
 ## Validation
 
-- [ ] docs reviewed
-- [ ] local checks run
-- [ ] no unrelated changes included
+- [ ] relevant docs reviewed
+- [ ] relevant local checks run
+- [ ] no unrelated files changed
 
 ## Release Impact
 
@@ -15,3 +18,7 @@
 - [ ] patch
 - [ ] minor
 - [ ] major
+
+## Notes for reviewers
+
+Anything that is useful for quick review, follow-up, or rollout.
