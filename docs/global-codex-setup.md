@@ -1,101 +1,80 @@
-# Codex global sauber konfigurieren
+# Configure Codex Globally
 
-Stabilerer Workflow, weniger Prompt-Wiederholung, sauberere Teamarbeit.
+This note explains the user-level Codex setup that matches this repository.
 
-Diese Notiz ist flankierendes Material zu dieser Repo. Das eigentliche Zielbild fuer den geplanten Codex-GodMode steht in [docs/blueprint.md](./blueprint.md).
+The goal is simple:
 
-Hier geht es um die Grundstruktur, auf der die spaetere Architektur sauber aufsetzen kann: persoenliche Defaults global, Team-Regeln im Repository, Agents und Skills an klar getrennten Orten.
+- stable defaults across projects
+- less prompt repetition
+- a clean split between personal defaults and repo-specific rules
 
-## Die Kurzversion
+## Recommended layer model
 
-Die aktuelle offizielle Codex-Doku stuetzt im Kern dieses Modell:
+The current Codex documentation supports this structure:
 
-- persoenliche Guidance in `~/.codex/AGENTS.md`
-- persoenliche technische Defaults in `~/.codex/config.toml`
-- Repo-Regeln in `AGENTS.md`
-- Repo-Defaults in `.codex/config.toml`
-- projekt-spezifische Custom Agents in `.codex/agents/*.toml`
-- repo-spezifische Skills in `.agents/skills/`
+- personal guidance in `~/.codex/AGENTS.md`
+- personal technical defaults in `~/.codex/config.toml`
+- repo rules in `AGENTS.md`
+- repo defaults in `.codex/config.toml`
+- project-specific custom agents in `.codex/agents/*.toml`
+- repo-specific reusable procedures in `.agents/skills/`
 
-Wichtig fuer die Prioritaet:
+Priority rules that matter:
 
-- `AGENTS.md`-Dateien naeher am aktuellen Arbeitsverzeichnis haben Vorrang.
-- `.codex/config.toml` wird in trusted projects vom Repo-Root Richtung aktuelles Verzeichnis ausgewertet; die naechste Datei gewinnt.
+- the closest `AGENTS.md` to the current working directory wins
+- `.codex/config.toml` is loaded only for trusted projects
 
-## Ziel
+## Fast start on this Mac
 
-Dieses Setup loest drei typische Probleme gleichzeitig:
-
-1. derselbe Workflow in allen Projekten
-2. weniger Wiederholung in Startprompts
-3. klare Trennung zwischen persoenlichen Defaults und Team-Regeln
-
-## Schnellstart fuer diesen Mac
-
-Diese Repo enthaelt inzwischen ein reproduzierbares Global-Setup unter:
+This repository ships a reproducible global setup under:
 
 - `templates/global-codex/AGENTS.md`
 - `templates/global-codex/config.toml`
 - `scripts/apply-global-codex-setup.sh`
 
-Wenn du den dokumentierten Stand direkt auf diesem Mac anwenden willst:
+Apply it with:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
 ```
 
-Das Script macht bewusst nur drei Dinge:
+That script does three things:
 
-- legt `~/.codex/AGENTS.md` und `~/.codex/config.toml` aus den Repo-Templates ab
-- erstellt `~/.agents/skills/` und `~/.codex/playwright-output/isolated`
-- traegt den aktuellen Repo-Pfad als trusted project ein
+- installs `~/.codex/AGENTS.md` and `~/.codex/config.toml` from the repo templates
+- ensures `~/.agents/skills/` and `~/.codex/playwright-output/isolated` exist
+- adds the current repo path as a trusted project
 
-Dabei ersetzt es im Config-Template auch den Platzhalter `__CODEX_HOME__`, damit die Playwright-Ausgabe nicht an einen user-spezifischen Pfad im Git-Repo gebunden ist.
+It also replaces the `__CODEX_HOME__` placeholder inside the config template so the Playwright output path stays portable.
 
-Vorhandene globale Dateien werden jeweils mit Zeitstempel gesichert.
-
-Zum Pruefen:
+To verify the result:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh --check
 ```
 
-## 1. Globalen Codex-Ordner anlegen
+## Minimal global files
 
-Codex nutzt `~/.codex` als Home fuer persoenliche Konfiguration und globale Instruktionen.
+Create the Codex home directory if needed:
 
 ```bash
 mkdir -p ~/.codex
 ```
 
-## 2. Globales `AGENTS.md` anlegen
+Global guidance belongs in `~/.codex/AGENTS.md`.
 
-Globale Arbeitsregeln gehoeren in `~/.codex/AGENTS.md`.
-
-Beispiel:
+Example:
 
 ```md
 # ~/.codex/AGENTS.md
 
 ## Default working style
-- Work only inside the currently opened project / current checkout.
-- Never create sibling folders, cloned repos, copied repos, or git worktrees unless I explicitly ask.
-- Never create, switch, delete, or rename branches unless I explicitly ask.
+- Work only inside the currently opened project.
 - Keep diffs small, safe, and buildable.
 - Do not touch unrelated files.
-- Record assumptions briefly.
 
 ## Execution flow
-- For non-trivial tasks: Research Brief -> Plan -> Build -> Validate -> Release Summary.
-- Before editing, report: repo root, current branch, touched files, and expected impact.
-- After changes, run only the relevant checks for the changed scope.
-
-## Release / versioning
-- Classify every change as: major / minor / patch / none.
-- Never reuse a version number for behavior-changing code.
-- If versioning is manual, update CHANGELOG.md under [Unreleased].
-- If release automation exists, do not hand-bump versions unless repo convention explicitly requires it.
-- Suggest Conventional Commit style commit messages.
+- For non-trivial tasks: Research -> Plan -> Build -> Validate -> Release Summary.
+- Before editing, report repo root, current branch, touched files, and expected impact.
 
 ## Safety gates
 - Never commit unless I explicitly say yes.
@@ -103,21 +82,9 @@ Beispiel:
 - Never force-push.
 ```
 
-Warum das sinnvoll ist:
+Global technical defaults belong in `~/.codex/config.toml`.
 
-- `AGENTS.md` wird vor der Arbeit geladen.
-- globale Guidance ist fuer persoenliche Defaults gedacht.
-- repo-nahe Guidance ist besser fuer Team-Regeln und Codebase-spezifisches Verhalten.
-
-## 3. Optional: Custom Instructions in der App
-
-In der Codex App kannst du persoenliche Custom Instructions direkt in den Einstellungen pflegen. Laut offizieller Doku aktualisiert das dein persoenliches `AGENTS.md`.
-
-## 4. Globales `config.toml` anlegen
-
-Fuer laengerfristige technische Defaults eignet sich `~/.codex/config.toml`.
-
-Beispiel:
+Example:
 
 ```toml
 model = "gpt-5.4"
@@ -130,24 +97,23 @@ writable_roots = []
 network_access = false
 ```
 
-Warum diese Werte ein sinnvoller Startpunkt sind:
+Why this is a good baseline:
 
-- `gpt-5.4` wird in der offiziellen Sample-Config als empfohlene Beispielwahl fuer die Hauptmodell-Auswahl gezeigt.
-- `approval_policy = "on-request"` ist der dokumentierte interaktive Mittelweg.
-- `sandbox_mode = "workspace-write"` erlaubt Aenderungen im Projekt, aber nicht uneingeschraenkt alles.
-- `writable_roots = []` und `network_access = false` halten den Default bewusst eng.
-- `web_search = "cached"` nutzt laut Doku standardmaessig einen OpenAI-maintained Index statt Live-Fetching.
+- `gpt-5.4` is a strong default model choice
+- `approval_policy = "on-request"` keeps risky actions interactive
+- `sandbox_mode = "workspace-write"` allows project edits without full machine access
+- `web_search = "cached"` is conservative by default
 
-## 4a. Profile fuer haeufige Modi
+## Global profiles
 
-Die Repo-Templates legen vier globale Codex-Profile an:
+The repo templates install four user-level profiles:
 
-- `swiftui` fuer Apple-Plattformarbeit mit Schwerpunkt auf SwiftUI-State, `xcodebuild` und konservativer Recherche
-- `web` fuer React, Next.js und Node.js mit `web_search = "live"`, weil sich Web-Framework-Guidance schneller aendert
-- `flutter` fuer Flutter- und Dart-Arbeit mit Analyzer- und Test-Fokus
-- `review` fuer Review- oder Audit-Sessions mit knapperer Ausgabe und Findings-First-Haltung
+- `swiftui` for Apple platform work
+- `web` for React, Next.js, and Node.js work
+- `flutter` for Flutter and Dart work
+- `review` for review and audit sessions
 
-CLI-Beispiele:
+Examples:
 
 ```bash
 codex --profile swiftui
@@ -156,13 +122,15 @@ codex --profile flutter
 codex --profile review
 ```
 
-Das ist bewusst nur ein Konfigurations-Layer. Die eigentliche Stack-Guidance bleibt in `AGENTS.md`, Repo-`AGENTS.md` und den projektspezifischen Skills.
+These profiles are intentionally thin. The real workflow guidance still lives in:
 
-## 5. Repo-Regeln ins Projekt verschieben
+- `AGENTS.md`
+- repo `AGENTS.md`
+- project-specific skills
 
-Das Team-spezifische Verhalten gehoert nicht in den globalen Prompt, sondern ins Repo.
+## Repo layout
 
-Empfohlene Struktur:
+Recommended structure:
 
 ```text
 repo-root/
@@ -174,129 +142,40 @@ repo-root/
     skills/
 ```
 
-Ein schlankes Repo-`AGENTS.md` kann so aussehen:
+Why the split matters:
 
-```md
-# AGENTS.md
+- `AGENTS.md` defines durable guidance
+- `.codex/config.toml` defines technical defaults
+- `.codex/agents/*.toml` defines role-specific custom agents
+- `.agents/skills/` stores reusable procedures
 
-## Project rules
-- Run:
-  - pnpm lint
-  - pnpm test
-  - pnpm build
-- Do not modify infrastructure or CI without explicit request.
-- Use existing folder structure and naming conventions.
-- Update docs only if behavior or setup changed.
+## Why not a giant start prompt
 
-## Versioning
-- Classify each change as major / minor / patch / none.
-- Prepare a CHANGELOG entry under [Unreleased].
-- If the repo has release automation, prepare inputs; do not invent manual version bumps.
-```
+The more durable pattern is:
 
-## 6. Custom Agents und Skills sauber trennen
+- `~/.codex/AGENTS.md` for personal defaults
+- `~/.codex/config.toml` for personal technical defaults
+- repo `AGENTS.md` for team or project rules
+- repo `.codex/config.toml` for technical repo defaults
+- repo `.codex/agents/*.toml` for project roles
+- repo `.agents/skills/` for reusable procedures
 
-Fuer die aktuelle Codex-Architektur sind zwei Ebenen wichtig:
+This repository keeps prompts short on purpose because the real behavior belongs in those layers.
 
-- `.codex/agents/*.toml` fuer spawned agents mit eigener Rolle, Modellwahl und Developer Guidance
-- `.agents/skills/` fuer wiederverwendbare Prozeduren mit optionalen Scripts, Referenzen und Assets
+## Notes about Local vs Worktree
 
-Das ist keine akademische Unterscheidung, sondern direkt relevant fuer einen agentischen Workflow:
+If you want to work directly in the checked-out repository, use `Local`.
 
-- Agents strukturieren Verantwortung und Routing
-- Skills kapseln wiederkehrende Prozeduren
+Current Codex documentation makes these points explicit:
 
-Beispiel fuer die spaetere Zielstruktur:
+- new threads can be started in `Worktree`
+- threads can move between `Local` and `Worktree`
+- automations can run in either mode
+- Codex-managed worktrees live under `$CODEX_HOME/worktrees`
 
-```text
-.codex/agents/
-  researcher.toml
-  architect.toml
-  builder.toml
+I have not seen a documented global setting that forces every new session to use `Local` automatically. That is an inference from the currently reviewed docs, not an explicit negative statement from OpenAI.
 
-.agents/skills/
-  release-manager/
-    SKILL.md
-```
-
-## 7. Wiederkehrende Logik als Skill modellieren
-
-Wenn immer wieder dieselbe Release-, Review- oder Setup-Logik auftaucht, ist ein Skill sauberer als immer laengeres `AGENTS.md`.
-
-Die aktuelle offizielle Doku beschreibt repo-spezifische Skills unter:
-
-```text
-.agents/skills/
-```
-
-Das ist ein wichtiger Punkt, weil aeltere Beispiele oder Community-Posts teils noch `.codex/skills/` nennen. Fuer die aktuelle offizielle Doku ist `.agents/skills/` der relevante Repo-Pfad.
-
-Beispiel-Idee:
-
-```text
-.agents/skills/release-manager/SKILL.md
-```
-
-Aufgabe des Skills:
-
-- Release-Impact klassifizieren
-- Changelog-Text vorbereiten
-- Commit-Message vorschlagen
-- PR-Summary erzeugen
-
-## 8. In der App bewusst `Local` oder `Worktree` waehlen
-
-Wenn du direkt im aktuellen Checkout arbeiten willst, nutze `Local`.
-
-Was die aktuelle offizielle Doku klar sagt:
-
-- neue Threads koennen explizit auf `Worktree` gestartet werden
-- Threads lassen sich zwischen `Local` und `Worktree` per Handoff bewegen
-- Automations koennen pro Automation auf `Local` oder `Worktree` laufen
-- Codex-verwaltete Worktrees liegen unter `$CODEX_HOME/worktrees`
-
-Wichtige Einordnung:
-
-- Ich habe in den aktuell geprueften offiziellen Seiten keine dokumentierte globale Einstellung gefunden, die jede neue App-Session automatisch dauerhaft auf `Local` statt `Worktree` erzwingt.
-- Das ist eine Schlussfolgerung aus den geprueften Doku-Seiten, nicht eine explizit dokumentierte Negativ-Aussage.
-
-## 9. Setup verifizieren
-
-Nach Aenderungen an `AGENTS.md` oder `config.toml` am besten eine neue Session starten.
-
-Zum schnellen Test:
-
-```bash
-codex "Show which instruction files are active."
-```
-
-oder:
-
-```bash
-codex --ask-for-approval never "Summarize the current instructions."
-```
-
-Fuer diese Repo zusaetzlich:
-
-```bash
-./scripts/apply-global-codex-setup.sh --check
-./scripts/check-local-env.sh
-```
-
-## Was ich nicht mehr empfehlen wuerde
-
-Keinen riesigen Startprompt als Hauptmechanismus.
-
-Die robustere Aufteilung ist:
-
-- `~/.codex/AGENTS.md` fuer persoenliche Defaults
-- `~/.codex/config.toml` fuer globale technische Defaults
-- `AGENTS.md` im Repo fuer Team-Regeln
-- `.codex/config.toml` fuer Repo-Defaults
-- `.codex/agents/*.toml` fuer projekt-spezifische Agentenrollen
-- `.agents/skills/` fuer wiederkehrende Workflows
-
-## Quellen
+## Sources
 
 - OpenAI Codex docs: [Config basics](https://developers.openai.com/codex/config-basic)
 - OpenAI Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md)

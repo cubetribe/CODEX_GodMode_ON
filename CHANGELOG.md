@@ -6,16 +6,36 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-03-18
+
+### Changed
+
+- moved the repository back to a `main`-first delivery model
+- rewrote the public entry documents in English
+- moved the explanation and copy-paste starter prompts to the top of the README
+
+## [0.1.2] - 2026-03-17
+
+### Added
+
+- ultra-short start prompt for `GODMODE REVIEW`
+
+### Changed
+
+- surfaced all three starter prompts directly in the README for copy-paste use
+
 ## [0.1.1] - 2026-03-16
 
 ### Added
 
+- ultra-short start prompts for `GODMODE DEV` and `GODMODE DEBUG`
 - reproducible global Codex templates under `templates/global-codex/`
 - idempotent `scripts/apply-global-codex-setup.sh` for installing the documented Mac setup
 - stack-oriented Codex profiles for `swiftui`, `web`, `flutter`, and `review`
 
 ### Changed
 
+- surfaced both starter prompts directly in the README for copy-paste use
 - documented the global profile workflow and local apply/check flow in the setup guides
 - expanded local environment verification to cover the new template and apply-script assets
 

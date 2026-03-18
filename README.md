@@ -1,120 +1,137 @@
 <div align="center">
   <h1>CODEX_GodMode_ON</h1>
-  <p><strong>Blueprint fuer eine Codex-native Portierung von ClaudeCode_GodMode-On.</strong></p>
-  <p>Dieses Repo dokumentiert Zielbild, Orchestrierung, Agentenrollen und Umsetzungsfahrplan fuer einen modernen Codex-GodMode auf Basis aktueller Codex-Subagent-Logik.</p>
+  <p><strong>Copy-paste starter prompts first. Codex-native architecture blueprint second.</strong></p>
+  <p>This repository documents and packages a main-first Codex workflow inspired by <a href="https://github.com/cubetribe/ClaudeCode_GodMode-On">ClaudeCode_GodMode-On</a>.</p>
   <p>
     <a href="./docs/blueprint.md">Blueprint</a>
     &middot;
     <a href="./docs/roadmap.md">Roadmap</a>
     &middot;
-    <a href="./docs/global-codex-setup.md">Setup Guide</a>
+    <a href="./docs/local-development.md">Local Dev</a>
     &middot;
-    <a href="https://github.com/cubetribe/CODEX_GodMode_ON/discussions">Discussions</a>
+    <a href="./docs/global-codex-setup.md">Global Setup</a>
   </p>
 </div>
 
-## Warum dieses Repo existiert
+## Start Here
 
-Der Ausgangspunkt ist das bestehende Claude-Code-System [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On). Dort steckt bereits ein starkes agentisches Muster: ein zentraler Orchestrator, spezialisierte Rollen, file-basierte Report-Handoffs, harte Qualitaetsgates und ein kontrollierter Ruecksprung in den Builder.
+This system is already in active use. The repository therefore needs to tell the truth immediately, at the top, and in English.
 
-Dieses Repo beschreibt, wie genau dieses Muster nativ in Codex nachgebaut werden soll, ohne die zentrale Logik in unsichtbaren Hooks oder riesigen Startprompts zu verstecken.
+If you only need to start a new Codex thread, copy one of these prompts exactly as-is and replace `Goal`.
 
-Wir dokumentieren hier:
+This repository is intentionally `main`-first:
 
-- wie das originale Claude-System funktioniert
-- welche Orchestrierungslogik daraus extrahiert wurde
-- welche aktuellen Codex-Faehigkeiten dafuer relevant sind
-- wie die Zielarchitektur in Codex aufgebaut sein soll
-- in welchen Phasen die eigentliche Umsetzung spaeter erfolgen soll
+- `main` is the delivery branch
+- no standing side branches unless explicitly required
+- prompts live in the README because they are part of the product surface
 
-Aktueller Status: Dieses Repo enthaelt jetzt die Blueprint, das erste lokale Runtime-Scaffolding fuer Agents, Skills, Verifikation und Arbeitsartefakte sowie ein reproduzierbares Global-Setup fuer `~/.codex` inklusive Profilen fuer `swiftui`, `web`, `flutter` und `review`. Es ist bewusst noch keine Vollimplementierung.
+Files:
 
-## Lese-Reihenfolge
+- [docs/prompts/dev-start-prompt.md](./docs/prompts/dev-start-prompt.md)
+- [docs/prompts/debug-start-prompt.md](./docs/prompts/debug-start-prompt.md)
+- [docs/prompts/review-start-prompt.md](./docs/prompts/review-start-prompt.md)
 
-| Wenn du ... | Dann starte hier |
+Dev:
+
+```text
+GODMODE DEV
+
+Goal: <goal>
+
+Use repo workflow, available tools, agents, and skills.
+Loop: research -> plan -> build -> validate.
+Use subagents when useful.
+Keep changes minimal. Verify before push.
+```
+
+Debug:
+
+```text
+GODMODE DEBUG
+
+Goal: <bug / symptom / expected result>
+
+Use repo workflow, available tools, agents, and skills.
+Loop: reproduce -> isolate -> fix -> re-test.
+Use subagents when useful.
+Stay on the failing path until green.
+```
+
+Review:
+
+```text
+GODMODE REVIEW
+
+Goal: <system / change / problem to assess>
+
+Use repo workflow, available tools, agents, and skills.
+Loop: inspect -> analyze -> verify -> report.
+Use subagents when useful.
+Findings first. No code changes unless asked.
+```
+
+## What This Repo Is
+
+This repository is the documented reference for a Codex-native version of the GodMode workflow:
+
+- explicit orchestration instead of hidden automation
+- a clear main thread acting as orchestrator
+- focused specialist agents
+- persistent reports and state artifacts
+- hard quality gates before completion
+
+It is not just a prompt pack. It is the blueprint, starter kit, and local reference structure for the system.
+
+## What You Get
+
+| Area | Purpose |
 | --- | --- |
-| das komplette Zielbild verstehen willst | [docs/blueprint.md](./docs/blueprint.md) |
-| wissen willst, in welcher Reihenfolge wir umsetzen | [docs/roadmap.md](./docs/roadmap.md) |
-| den lokalen Arbeitsablauf auf diesem Mac nachbauen willst | [docs/local-development.md](./docs/local-development.md) |
-| das organisatorische Repo-Verhalten sehen willst | [AGENTS.md](./AGENTS.md) |
-| die unterstuetzende Codex-Grundkonfiguration sehen willst | [docs/global-codex-setup.md](./docs/global-codex-setup.md) |
-| verstehen willst, welche Rolle Hooks spaeter noch haben | [hooks/README.md](./hooks/README.md) |
+| `README.md` | the public entry point and copy-paste prompts |
+| `docs/blueprint.md` | the architecture and workflow design |
+| `docs/roadmap.md` | phased delivery plan |
+| `docs/local-development.md` | local operating guide for this repo |
+| `docs/global-codex-setup.md` | reproducible user-level Codex setup |
+| `docs/prompts/` | standalone prompt documents |
+| `.codex/agents/` | project-specific agent role definitions |
+| `.agents/skills/` | reusable workflow and stack skills |
+| `templates/global-codex/` | global Codex config templates |
+| `scripts/check-local-env.sh` | local repo validation |
+| `scripts/apply-global-codex-setup.sh` | install the documented global setup |
+| `reports/` | persistent report conventions |
+| `state/` | persistent workflow state conventions |
 
-## Kernentscheidungen
+## Core Decisions
 
-- Der Haupt-Thread bleibt der Orchestrator und implementiert selbst nicht.
-- Spezialrollen werden als explizit aufgerufene Codex-Subagents gedacht.
-- Schreibrechte bleiben bewusst eng: `builder` ist der einzige geplante Code-Schreiber.
-- `validator` und `tester` laufen parallel und bilden gemeinsam das Qualitaetsgate.
-- API- oder Contract-Aenderungen erzwingen einen `api_guardian`-Checkpoint.
-- Zustand und Handoffs duerfen nicht nur im Chat leben, sondern brauchen Repo-nahe Artefakte und einen klaren State-Contract.
-- Push und Deployment bleiben explizite menschliche Freigabepunkte.
+- The main thread stays the orchestrator.
+- The normal code writer is `builder`; validation and testing stay read-heavy.
+- `validator` and `tester` form a joint quality gate.
+- `api_guardian` is mandatory for API, schema, CLI, or config-surface changes.
+- Reports and state live in the repo, not only in chat history.
+- Push and deploy remain explicit human decisions.
+- This repository now operates on `main` by default.
 
-## Zielbild in Kurzform
+## Read Next
 
-Das Zielsystem besteht aus zwei Ebenen:
-
-- Dokumentations- und Governance-Ebene in diesem Repo
-- spaetere Runtime-Ebene im Zielsystem mit Orchestrator, Custom Agents, Skills, State und Report-Artefakten
-
-Die relevante technische Zuordnung in Codex ist:
-
-- `AGENTS.md` fuer dauerhafte Guidance und Arbeitsregeln
-- `.codex/config.toml` fuer repo-spezifische technische Defaults
-- `.codex/agents/*.toml` fuer projekt-spezifische Custom Agents
-- `.agents/skills/` fuer wiederverwendbare Prozeduren mit optionalen Scripts und Assets
-
-Das ist wichtig, weil das Ziel nicht einfach ein "Claude-Prompt fuer Codex" ist, sondern eine native Codex-Struktur.
-
-## Was du in dieser Repo findest
-
-| Bereich | Zweck |
+| If you want to... | Start here |
 | --- | --- |
-| `docs/blueprint.md` | die zentrale Architektur- und Workflow-Beschreibung |
-| `docs/roadmap.md` | die geplanten Umsetzungsphasen |
-| `docs/local-development.md` | lokaler Installations- und Entwicklungsablauf |
-| `docs/global-codex-setup.md` | flankierende Setup- und Strukturhinweise fuer Codex |
-| `templates/global-codex/` | reproduzierbare globale Codex-Defaults fuer diesen Mac |
-| `AGENTS.md` | Repo-Regeln fuer diese Blueprint-Repo |
-| `.codex/config.toml` | konservative Repo-Defaults fuer die Arbeit an dieser Repo |
-| `.codex/agents/` | erste Custom-Agent-Rollen fuer den GodMode-Workflow |
-| `.agents/skills/` | stack-spezifische und workflow-spezifische Skills |
-| `scripts/check-local-env.sh` | verifiziert Toolchains und Repo-Struktur lokal |
-| `scripts/apply-global-codex-setup.sh` | installiert das dokumentierte Global-Setup in `~/.codex` |
-| `reports/` | versionierte Report-Kontrakte und lokaler Report-Ausgabepfad |
-| `state/` | lokaler Workflow-State ausserhalb des Chat-Verlaufs |
-| `hooks/` | spaetere Guardrails und Workflow-Helfer, nicht die primaere Orchestrierung |
+| understand the full target architecture | [docs/blueprint.md](./docs/blueprint.md) |
+| see what gets delivered in what order | [docs/roadmap.md](./docs/roadmap.md) |
+| run and evolve the repo locally | [docs/local-development.md](./docs/local-development.md) |
+| install the matching global Codex setup | [docs/global-codex-setup.md](./docs/global-codex-setup.md) |
 
-## Scope dieser Phase
+## Sources
 
-In Scope:
+- Source repo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
+- Codex docs: [Subagents](https://developers.openai.com/codex/subagents/)
+- Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
+- Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)
+- Codex docs: [Agent Skills](https://developers.openai.com/codex/skills/)
 
-- saubere Architektur-Dokumentation
-- Rollenmodell, Gates, Routing und Ausfuehrungsfluss
-- Trennung zwischen dokumentierter Zielarchitektur und spaeterer Implementierung
-- erste lauffaehige lokale Runtime-Struktur fuer Agents, Skills und Verifikation
-- Repo-Struktur, die diese Geschichte fuer andere nachvollziehbar macht
+## Contributing
 
-Nicht in Scope:
+If you contribute here:
 
-- jetzt sofort die komplette Runtime implementieren
-- versteckte Automatik ohne dokumentierte Entscheidungslogik
-- automatisches Pushen oder Deployen ohne manuelle Freigabe
-- eine 1:1-Kopie der Claude-Hooks ohne Codex-native Uebersetzung
-
-## Quellenbasis
-
-- Ausgangsrepo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
-- Codex Docs: [Subagents](https://developers.openai.com/codex/subagents/)
-- Codex Docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
-- Codex Docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)
-- Codex Docs: [Agent Skills](https://developers.openai.com/codex/skills/)
-
-## Mitmachen
-
-Wenn du an dieser Blueprint mitarbeiten willst:
-
-1. Lies zuerst die [Blueprint](./docs/blueprint.md).
-2. Ergaenze offene Fragen oder Risiken in einer [Discussion](https://github.com/cubetribe/CODEX_GodMode_ON/discussions).
-3. Reiche fokussierte Doku- oder Strukturverbesserungen ueber einen kleinen PR ein.
-4. Nutze [CONTRIBUTING.md](./CONTRIBUTING.md), [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) und [SUPPORT.md](./SUPPORT.md) als Repo-Basis.
+1. Keep the README truthful and immediately usable.
+2. Keep prompts copy-paste friendly.
+3. Keep architecture docs explicit and auditable.
+4. Keep the repository aligned around `main` unless a branch is explicitly requested.

@@ -1,18 +1,18 @@
 # Hooks
 
-Dieses Verzeichnis ist bewusst nur eine Nebenschiene des Zielsystems.
+This directory is intentionally secondary.
 
-Wichtig fuer diese Repo:
+Important for this repository:
 
-- Die primaere Orchestrierung soll in Codex selbst liegen: `AGENTS.md`, `.codex/config.toml`, spaetere `.codex/agents/*.toml`, explizites Subagent-Routing und dokumentierte Gates.
-- Hooks duerfen die Architektur nicht "heimlich steuern".
-- Hooks sind nur fuer Guardrails und wiederholbare technische Checks gedacht.
+- the primary orchestration should live in Codex itself
+- hooks must not secretly drive the architecture
+- hooks are for guardrails and repeatable technical checks only
 
-Geplante Beispiele:
+Planned examples:
 
-- Preflight-Checks vor einem Workflow-Start
-- API-Impact-Erkennung auf Basis von Diffs
-- Validierung von Agenten-Reports gegen ein Report-Schema
-- Pre-push-Schutz, damit nichts ohne explizite Freigabe hochgeschoben wird
+- preflight checks before a workflow starts
+- diff-based API impact detection
+- report validation against a report schema
+- pre-push protection so nothing is pushed without explicit approval
 
-Das Verzeichnis bleibt also erhalten, aber mit klar begrenzter Aufgabe: absichern, nicht orchestrieren.
+In short: protect the system, do not orchestrate it.

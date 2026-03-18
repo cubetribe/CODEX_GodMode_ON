@@ -3,6 +3,7 @@
 ## Project rules
 
 - This repository documents the blueprint for a Codex-native port of `ClaudeCode_GodMode-On`.
+- This repository is `main`-first. Do not create or switch to feature branches unless the user explicitly asks for one.
 - Prefer current official OpenAI Codex documentation when changing setup guidance or product claims.
 - Keep repo guidance explicit, auditable, and clearly separated from future implementation work.
 - Use `AGENTS.md` for durable repo rules, `.codex/config.toml` for repo defaults, `.codex/agents/` for future custom agent definitions, and `.agents/skills/` for reusable procedures.

@@ -1,11 +1,11 @@
 # State
 
-Dieses Verzeichnis ist fuer lokalen Workflow-Zustand gedacht, der nicht nur im Chat-Verlauf leben soll.
+This directory is for local workflow state that should not live only in chat history.
 
-## Empfohlene Nutzung
+## Recommended use
 
-- lokale State-Dateien wie `workflow-state.local.json`
-- keine sensiblen Secrets
-- keine automatische Annahme, dass State-Dateien versioniert werden sollen
+- local state files such as `workflow-state.local.json`
+- no sensitive secrets
+- no automatic assumption that state files should be versioned
 
-Die eigentlichen JSON-State-Dateien sind standardmaessig in `.gitignore` ausgeschlossen.
+The actual JSON state files are ignored by default through `.gitignore`.

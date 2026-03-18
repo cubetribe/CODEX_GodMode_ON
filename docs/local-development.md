@@ -1,18 +1,21 @@
 # Local Development
 
-Diese Repo ist so aufgebaut, dass du sie lokal auf diesem Mac weiterentwickeln und spaeter sauber nach GitHub spiegeln kannst.
+This repository is meant to be developed locally on this Mac and mirrored back to GitHub without hidden setup steps.
 
-## Ziel
+## Operating mode
 
-Der lokale Ablauf soll drei Dinge gleichzeitig leisten:
+This repo is now `main`-first:
 
-1. die aktuelle Repo reproduzierbar starten
-2. die GodMode-Struktur lokal weiterentwickeln
-3. kleine, saubere GitHub-Iterationen ermoeglichen
+- keep `main` current
+- do the work locally
+- validate locally
+- push `main` when explicitly approved
 
-## Voraussetzung
+Use a different branch only if you explicitly decide to.
 
-Vorhandene Toolchains auf diesem Mac sollten mindestens diese Klassen abdecken:
+## Required tools
+
+Expected toolchain classes:
 
 - `git`
 - `node`, `npm`, `pnpm`
@@ -20,38 +23,38 @@ Vorhandene Toolchains auf diesem Mac sollten mindestens diese Klassen abdecken:
 - `flutter`, `dart`
 - `codex`
 
-## Erster Check
+## First checks
 
-Im Repo-Root:
+From the repository root:
 
 ```bash
 ./scripts/check-local-env.sh
 ```
 
-Wenn du diesen Mac auf den dokumentierten Global-Stand bringen willst:
+To apply the matching user-level Codex setup on this Mac:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
 ```
 
-Optional ausfuehrlicher:
+Optional full check:
 
 ```bash
 ./scripts/check-local-env.sh --full
 ```
 
-`--full` fuehrt zusaetzlich `flutter doctor -v` aus, was laenger dauern kann.
+`--full` also runs `flutter doctor -v`, so it takes longer.
 
-## Globale Profile fuer den Alltag
+## Global profiles
 
-Die globale Beispielkonfiguration installiert vier Profile:
+The example global config installs four profiles:
 
-- `swiftui` fuer macOS- und iOS-Arbeit
-- `web` fuer React, Next.js und Node.js
-- `flutter` fuer Flutter und Dart
-- `review` fuer Code- und Architektur-Reviews
+- `swiftui`
+- `web`
+- `flutter`
+- `review`
 
-CLI-Beispiele:
+Examples:
 
 ```bash
 codex --profile swiftui
@@ -60,53 +63,43 @@ codex --profile flutter
 codex --profile review
 ```
 
-Zum Pruefen des globalen Zustands:
+To verify the global setup:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh --check
 ```
 
-## Repo-Struktur fuer den Alltag
+## Repo structure
 
-- `.codex/agents/` enthaelt die workflowbezogenen Agentenrollen
-- `.agents/skills/` enthaelt wiederverwendbare Prozeduren und stack-spezifische Guidance
-- `reports/generated/` ist fuer lokale, generierte Reports gedacht
-- `state/` ist fuer lokalen Workflow-Zustand gedacht
+- `.codex/agents/` contains agent-role definitions
+- `.agents/skills/` contains reusable procedures and stack guidance
+- `reports/generated/` is for local generated reports
+- `state/` is for local workflow state
 
-## Empfohlener Arbeitsablauf
+## Recommended loop
 
-1. `git pull --ff-only`
-2. neue Arbeitsbranch mit `codex/`-Prefix anlegen
-3. `./scripts/check-local-env.sh`
-4. optional `./scripts/apply-global-codex-setup.sh`
-5. Codex aus dem Repo-Root starten
-6. fuer groessere Aufgaben den GodMode-Workflow und passende Stack-Skills nutzen
-7. nur die relevanten Validierungen laufen lassen
-8. kleine Commits vorbereiten
-9. erst nach expliziter Freigabe pushen
+1. `git pull --ff-only origin main`
+2. run `./scripts/check-local-env.sh`
+3. optionally run `./scripts/apply-global-codex-setup.sh`
+4. start Codex from the repo root
+5. use the starter prompt that matches the task
+6. make the smallest safe change
+7. run the relevant validations only
+8. commit on `main` when you really want to keep the change
+9. push `main` when explicitly approved
 
-## Welche Skills hier zuerst sinnvoll sind
+## Good first skills in this repo
 
-- `godmode-workflow` fuer groessere, mehrstufige Aufgaben
-- `apple-platforms` fuer SwiftUI/macOS/iOS
-- `web-platforms` fuer React, Next.js und Node.js
-- `flutter-dart` fuer Flutter und Dart
-- `release-manager` fuer Release-Impact und Changelog
+- `godmode-workflow`
+- `apple-platforms`
+- `web-platforms`
+- `flutter-dart`
+- `release-manager`
 
-## GitHub-Iteration
+## Not part of this step
 
-Fuer dieses Repo gilt bewusst ein einfacher, robuster Zyklus:
+- a dedicated GUI for the agent system
+- a fully automated runtime outside Codex
+- CI/CD or release automation
 
-1. lokal reproduzieren
-2. lokal fixen
-3. lokal verifizieren
-4. commit vorbereiten
-5. push nur mit explizitem Go
-
-## Noch nicht Teil dieses Schritts
-
-- eine eigene GUI oder Web-App fuer das Agentensystem
-- eine vollautomatische Runtime ausserhalb von Codex
-- CI/CD oder Release-Automation
-
-Diese Dinge koennen spaeter folgen, wenn die lokale Referenzstruktur stabil ist.
+Those can come later once the local reference structure is stable.

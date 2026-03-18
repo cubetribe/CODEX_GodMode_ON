@@ -1,213 +1,203 @@
 # Blueprint: Codex GodMode
 
-Stand: 2026-03-16
+Updated: 2026-03-18
 
-Diese Datei ist die zentrale Architektur-Blueprint fuer die Codex-native Portierung von [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On).
+This document is the core architecture blueprint for the Codex-native port of [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On).
 
-Ziel ist nicht, die Claude-Umsetzung blind zu kopieren. Ziel ist, das dort bewiesene Orchestrierungsmuster in eine moderne Codex-Struktur zu uebersetzen, die mit aktuellen Codex-Subagents, `AGENTS.md`, `.codex/config.toml`, projekt-spezifischen Custom Agents und klaren Repo-Artefakten arbeitet.
+The goal is not to copy the Claude implementation blindly. The goal is to preserve the proven orchestration pattern and translate it into a modern Codex structure built around:
 
-## Stage 1 - Research Codex Super-Agent orchestration capabilities
+- `AGENTS.md`
+- `.codex/config.toml`
+- `.codex/agents/*.toml`
+- `.agents/skills/`
+- persistent `reports/` and `state/`
 
-### Findings
-
-- Aktuelle Codex-Doku beschreibt das Thema unter `Subagents`, nicht als separates "Super-Agent"-Produkt.
-- Codex kann spezialisierte Agents parallel spawnen und deren Ergebnisse wieder im Haupt-Thread konsolidieren.
-- Subagent-Workflows sind laut aktueller Doku in aktuellen Releases standardmaessig verfuegbar, werden aber nur ausgefuehrt, wenn sie explizit angefordert werden.
-- Built-in Rollen sind derzeit `default`, `worker` und `explorer`.
-- Projekt-spezifische Custom Agents leben unter `.codex/agents/*.toml`.
-- Wiederverwendbare Prozeduren leben weiter unter `.agents/skills/`.
-- `AGENTS.md` bleibt die zentrale, gelayerte Guidance-Ebene fuer globale und repo-nahe Regeln.
-
-### Architecture Notes
-
-- Codex trennt sauber zwischen Guidance (`AGENTS.md`), technischer Konfiguration (`.codex/config.toml`), Custom Agents (`.codex/agents/*.toml`) und Skills (`.agents/skills/`).
-- Die aktuelle Doku empfiehlt parallele Agentenarbeit vor allem fuer read-heavy Aufgaben wie Recherche, Mapping oder Review.
-- Schreibende Arbeit sollte eng gefuehrt werden, damit es keine Edit-Konflikte, Kontextverschmutzung oder unklare Ownership gibt.
-
-### Key Decisions
-
-- Die Portierung wird um explizite Subagent-Aufrufe herum entworfen, nicht um verdeckte Hook-Automatik.
-- Rollen werden als schmale, fokussierte Agents modelliert.
-- Wiederverwendbare Prozeduren werden spaeter als Skills ausgelagert, wenn der Ablauf stabil genug ist.
-
-### Next Step
-
-- Das originale Claude-System als Architektur und nicht nur als Prompt-Sammlung zerlegen.
-
-## Stage 2 - Repository analysis of `ClaudeCode_GodMode-On`
+## Stage 1: Research Codex orchestration capabilities
 
 ### Findings
 
-- Das Ausgangsrepo ist ein gesteuertes Workflow-System, nicht nur eine Sammlung von Rollenprompts.
-- Das zentrale Muster ist: nicht-implementierender Orchestrator -> Spezialrollen -> file-basierte Report-Handoffs -> Qualitaetsgates -> Ruecksprung zum Builder.
-- Die wichtigsten Laufzeitrollen im Claude-System sind:
+- Current Codex documentation describes the feature as `Subagents`, not as a separate “super-agent” product.
+- Codex can spawn specialized agents in parallel and consolidate their output in the main thread.
+- The built-in role types are `default`, `worker`, and `explorer`.
+- Project-specific custom agents belong in `.codex/agents/*.toml`.
+- Reusable procedures belong in `.agents/skills/`.
+- `AGENTS.md` remains the main layered guidance mechanism.
+
+### Architecture notes
+
+- Codex cleanly separates guidance, technical configuration, custom agents, and reusable skills.
+- Parallel subagents are best for read-heavy tasks such as research, mapping, and review.
+- Write-heavy work should stay narrowly owned to avoid edit conflicts and unclear responsibility.
+
+### Key decisions
+
+- This port will be built around explicit subagent calls, not hidden hook automation.
+- Roles will stay narrow and focused.
+- Stable repeated procedures will later be moved into skills.
+
+## Stage 2: Analyze `ClaudeCode_GodMode-On`
+
+### Findings
+
+- The source repository is a managed workflow system, not just a set of prompts.
+- Its core pattern is:
+  - non-implementing orchestrator
+  - specialist roles
+  - file-based report handoffs
+  - quality gates
+  - return loop back to the builder
+- The main runtime roles are:
   - `researcher`
   - `architect`
-  - `api-guardian`
+  - `api_guardian`
   - `builder`
   - `validator`
   - `tester`
   - `scribe`
-  - `github-manager`
-- Kommunikation passiert dort stark ueber Report-Dateien unter `reports/v[VERSION]/...`, nicht nur ueber Chat-Kontext.
-- Der staerkste Kontrollmechanismus ist das kombinierte Qualitaetsgate: `validator` und `tester` muessen beide gruene Ergebnisse liefern, bevor dokumentiert oder abgeschlossen wird.
+  - `github_manager`
+- Communication relies heavily on report files rather than only on chat context.
+- The strongest control mechanism is the dual quality gate: `validator` and `tester` both need to pass.
 
-### Architecture Notes
+### Architecture notes
 
-- Das Claude-System gewinnt Stabilitaet nicht durch "ein sehr schlauer Agent", sondern durch enge Rollentrennung und klar definierte Handoffs.
-- Die Runtime rechnet mit langen Sitzungen und Kontextverlust; deshalb existieren dort eigene State- und Context-Restore-Mechanismen.
-- Einige Details der vorhandenen Implementierung sind inkonsistent und sollten nicht 1:1 uebernommen werden, insbesondere beim State-Schema.
+- Stability comes from strict role separation and clear handoffs, not from one oversized generalist agent.
+- The original system expects long sessions and context loss, which is why it keeps its own state and restore mechanics.
+- Some implementation details in the Claude repo are inconsistent and should not be copied as-is.
 
-### Key Decisions
+### Key decisions
 
-- Erhalten werden Rollenmodell, Gate-Logik, Report-Kontrakte und explizite Freigabegrenzen.
-- Nicht erhalten wird die Vermischung aus Hook-Magie, Prompt-Pack und uneinheitlichem State-Contract.
+- Preserve the role model, gate logic, report contracts, and explicit approval boundaries.
+- Do not preserve the mix of hook magic, prompt pack behavior, and inconsistent state schemas.
 
-### Next Step
-
-- Das extrahierte Muster auf Codex-native Bausteine abbilden.
-
-## Stage 3 - Codex-native architecture design
+## Stage 3: Codex-native target architecture
 
 ### Findings
 
-- Die Codex-native Uebersetzung braucht keinen "Alleskoenner-Agenten", sondern einen klar gefuehrten Haupt-Thread plus Custom Agents.
-- Die passende Repo-Struktur ist:
-  - `AGENTS.md` fuer die Orchestrator-Verfassung
-  - `.codex/config.toml` fuer technische Defaults und `[agents]`-Grenzen
-  - `.codex/agents/*.toml` fuer spezialisierte Rollen
-  - `.agents/skills/` fuer spaetere wiederverwendbare Prozeduren
-  - `reports/` und `state/` fuer persistente Artefakte
-- Harte Regeln wie "nicht pushen ohne Freigabe" duerfen technisch abgesichert werden, aber die zentrale Ablaufsteuerung soll im orchestrierten Codex-Workflow bleiben.
+- The Codex-native version does not need an all-purpose agent. It needs an explicit orchestrator plus focused custom agents.
+- The target repository structure is:
+  - `AGENTS.md` for the orchestrator constitution
+  - `.codex/config.toml` for technical defaults and `[agents]` limits
+  - `.codex/agents/*.toml` for role definitions
+  - `.agents/skills/` for reusable procedures
+  - `reports/` and `state/` for persistent artifacts
 
-### Architecture Notes
+### Architecture notes
 
-- Der Haupt-Thread bleibt Orchestrator und besitzt die Ablaufverantwortung.
-- `builder` bleibt der einzige Agent mit schreibender Verantwortung.
-- `validator` und `tester` duerfen parallel laufen, weil sie read-heavy und pruefend arbeiten.
-- `api_guardian` ist ein bedingter Gate-Agent und wird nur bei API-, Schema-, CLI- oder Config-Impact gezogen.
-- `scribe` und `github_manager` laufen erst, wenn die Qualitaetsgates gruen sind.
+- The main thread remains the orchestrator and owns routing, gates, and approvals.
+- `builder` stays the only normal code-writing role.
+- `validator` and `tester` may run in parallel because they are validation-oriented and mostly read-heavy.
+- `api_guardian` is conditional and activates only when API, schema, CLI, or config surfaces are affected.
+- `scribe` and `github_manager` run only after the quality gate is green.
 
-### Key Decisions
+### Key decisions
 
-- Ein konsistentes, neues State-Schema wird eingefuehrt statt die inkonsistenten Claude-Strukturen mitzuschleppen.
-- Report-Dateien bleiben Teil des Zielsystems, weil sie Resume, Audit und Review vereinfachen.
-- Hooks werden auf Guardrails reduziert; der eigentliche Orchestrierungsfluss bleibt explizit im Codex-Thread.
+- Introduce one clean state schema instead of carrying forward the inconsistent Claude state model.
+- Keep report files in the design because they improve resume, auditability, and review.
+- Reduce hooks to guardrails. Keep the real orchestration flow explicit in Codex.
 
-### Next Step
-
-- Den Laufzeitfluss und die Agentenkommunikation als konkreten Workflow ausformulieren.
-
-## Stage 4 - Workflow design for Codex
+## Stage 4: Runtime workflow design
 
 ### Findings
 
-- Der geplante Laufzeitfluss lautet:
-  1. Intake und Task-Klassifikation
-  2. Preflight und State-Initialisierung
-  3. optional `researcher`
-  4. `architect`
-  5. bedingt `api_guardian`
-  6. `builder`
-  7. parallel `validator` und `tester`
-  8. Gate-Entscheidung: fertig oder Ruecksprung zu `builder`
-  9. `scribe`
-  10. optional `github_manager`
-- Der Haupt-Thread muss explizit sagen, wann Subagents gestartet, abgewartet, wiederverwendet oder geschlossen werden.
-- Resume darf sich nicht auf Chat-Historie allein verlassen; der State muss ausserhalb des Threads nachvollziehbar bleiben.
+The target runtime loop is:
 
-### Architecture Notes
+1. intake and task classification
+2. preflight and state initialization
+3. optional `researcher`
+4. `architect`
+5. conditional `api_guardian`
+6. `builder`
+7. parallel `validator` and `tester`
+8. gate decision: done or back to `builder`
+9. `scribe`
+10. optional `github_manager`
 
-- Das System sollte so entworfen werden, dass Parallelarbeit moeglich ist, ohne dass mehrere Builder gleichzeitig dieselben Dateien schreiben.
-- Fehler- und Retry-Logik gehoeren in den Orchestrator-Vertrag:
-  - Tool/MCP transient fehlgeschlagen -> einmal retry
-  - Qualitaetsgate rot -> Ruecksprung zum `builder`
-  - Architekturfrage aufgedeckt -> Ruecksprung zum `architect`
-- Push, Merge und Deploy bleiben separate menschliche Freigabepunkte.
+### Architecture notes
 
-### Key Decisions
+- The main thread must explicitly say when subagents are started, waited on, reused, or closed.
+- Resume cannot depend on chat history alone; state must stay visible outside the thread.
+- Parallelism should never turn into multiple builders writing the same files.
 
-- Die Portierung orientiert sich an einem expliziten Entscheidungskreis statt an "Automatik im Hintergrund".
-- Die Runtime soll Ergebnisse verdichten, nicht alle Agenten-Kontexte in den Haupt-Thread kopieren.
-- "Hotfix" bedeutet in Codex hoechstens ein Fast-Pass-Architekturcheck, aber kein kompletter Verzicht auf Architektur.
+### Error and retry model
 
-### Next Step
+- transient tool or MCP failure: retry once
+- red quality gate: loop back to `builder`
+- uncovered architecture issue: loop back to `architect`
+- push, merge, or deploy: always require an explicit human decision
 
-- Die Blueprint in Repo-Struktur, Agentendefinitionen, State-Schema und spaetere Referenzimplementierung ueberfuehren.
-
-## Zielbild als Ablauf
+## Target flow
 
 ```mermaid
 flowchart TD
-    A["Intake und Klassifikation"] --> B["Preflight und State-Init"]
-    B --> C{"Recherche noetig?"}
-    C -->|ja| D["researcher"]
-    C -->|nein| E["architect"]
+    A["Intake and classification"] --> B["Preflight and state init"]
+    B --> C{"Need research?"}
+    C -->|yes| D["researcher"]
+    C -->|no| E["architect"]
     D --> E
-    E --> F{"Contract- oder API-Impact?"}
-    F -->|ja| G["api_guardian"]
-    F -->|nein| H["builder"]
+    E --> F{"API or contract impact?"}
+    F -->|yes| G["api_guardian"]
+    F -->|no| H["builder"]
     G --> H
     H --> I["validator"]
     H --> J["tester"]
-    I --> K{"Beide Gates gruen?"}
+    I --> K{"Both gates green?"}
     J --> K
-    K -->|nein| H
-    K -->|ja| L["scribe"]
-    L --> M{"PR, Release oder Repo-Aktion noetig?"}
-    M -->|ja| N["github_manager"]
-    M -->|nein| O["Abschluss"]
+    K -->|no| H
+    K -->|yes| L["scribe"]
+    L --> M{"Need PR or release action?"}
+    M -->|yes| N["github_manager"]
+    M -->|no| O["Done"]
     N --> O
 ```
 
-## Benoetigte Laufzeit-Agenten
+## Runtime roles
 
-| Rolle | Aufgabe | Schreibrechte |
+| Role | Responsibility | Write access |
 | --- | --- | --- |
-| `orchestrator` | intake, routing, state, gates, approvals | nein |
-| `researcher` | externe oder interne Recherche, Kontextgewinn | nein |
-| `architect` | Zielstruktur, Schnittstellen, Plan, Risiken | nein |
-| `api_guardian` | API-, Schema-, CLI- und Config-Impact pruefen | nein |
-| `builder` | kleinste vertretbare Aenderung implementieren | ja |
-| `validator` | statische und strukturelle Validierung | nein |
-| `tester` | reproduzierbare Ausfuehrungs- und Testpruefung | nein |
-| `scribe` | changelog, docs, release-notes, Abschlussartefakte | begrenzt auf Doku |
-| `github_manager` | PR-, Branch- und Release-bezogene Repo-Arbeit | nein, ausser explizit angefordert |
+| `orchestrator` | intake, routing, state, gates, approvals | no |
+| `researcher` | external or internal research | no |
+| `architect` | target structure, interfaces, risks, plan | no |
+| `api_guardian` | API, schema, CLI, and config impact review | no |
+| `builder` | smallest safe implementation | yes |
+| `validator` | structural and static validation | no |
+| `tester` | executable and test validation | no |
+| `scribe` | changelog, docs, release notes, completion artifacts | docs only |
+| `github_manager` | PR, release, and repo-facing coordination | no by default |
 
-## Invarianten des Zielsystems
+## Invariants
 
-- Der Orchestrator implementiert nicht selbst.
-- `builder` ist der einzige normale Code-Schreiber.
-- `validator` und `tester` sind beide Pflicht fuer ein gruennes Qualitaetsgate.
-- `api_guardian` ist Pflicht, wenn Vertragsflaechen betroffen sind.
-- Push und Deploy passieren nie ohne explizite menschliche Zustimmung.
-- State und Reports sind die Resume-Quelle, nicht nur der Chat-Verlauf.
+- The orchestrator does not implement code itself.
+- `builder` is the only normal code-writing role.
+- `validator` and `tester` are both required for a green quality gate.
+- `api_guardian` is required when contract surfaces are touched.
+- Push and deploy never happen without explicit human approval.
+- State and reports are the resume source of truth, not chat history alone.
 
-## Vorgesehene Artefakte
+## Planned artifacts
 
-Noch nicht implementiert, aber als Ziel definiert:
+Not fully implemented yet, but part of the intended design:
 
 - `reports/v{workflow_version}/NN-role-report.md`
 - `state/workflow-state.json`
-- `docs/` fuer Architektur- und Betriebsdokumentation
-- spaeter `.codex/agents/*.toml` fuer die Rollen
-- spaeter `.agents/skills/` fuer wiederverwendbare Prozeduren
+- `docs/` for architecture and operations
+- `.codex/agents/*.toml` for role definitions
+- `.agents/skills/` for reusable procedures
 
-## Warum diese Portierung sinnvoll ist
+## Why this port matters
 
-Die Claude-Vorlage hat bereits gezeigt, dass das eigentliche Wertversprechen nicht im Modellnamen liegt, sondern in:
+The Claude template already proved that the value is not the model name. The value comes from:
 
-- harter Rollentrennung
-- kontrollierten Handoffs
-- nachvollziehbaren Gates
-- sauberer menschlicher Freigabe bei riskanten Aktionen
+- hard role separation
+- controlled handoffs
+- auditable gates
+- clear human approval for risky actions
 
-Codex bringt dafuer heute die nativen Bausteine mit. Diese Repo sorgt dafuer, dass daraus keine lose Sammlung von Ideen wird, sondern ein dokumentiertes, versionierbares und spaeter implementierbares System.
+Codex now has the native building blocks for that pattern. This repo exists to turn those ideas into a documented, versioned, and eventually fully implemented system.
 
-## Quellen
+## Sources
 
-- Ausgangsrepo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
-- Codex Docs: [Subagents](https://developers.openai.com/codex/subagents/)
-- Codex Docs: [Agent Skills](https://developers.openai.com/codex/skills/)
-- Codex Docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
-- Codex Docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)
+- Source repo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
+- Codex docs: [Subagents](https://developers.openai.com/codex/subagents/)
+- Codex docs: [Agent Skills](https://developers.openai.com/codex/skills/)
+- Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
+- Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)

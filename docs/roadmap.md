@@ -1,105 +1,105 @@
 # Roadmap
 
-Diese Roadmap beschreibt nicht "alles, was irgendwann nett waere", sondern die geplanten Lieferphasen fuer die Codex-GodMode-Portierung.
+This roadmap is not a list of “nice someday ideas.” It is the delivery path for the Codex GodMode port.
 
-## Phase 0 - Blueprint
+## Phase 0: Blueprint
 
-Ziel:
+Goal:
 
-- Ausgangssystem analysieren
-- aktuelle Codex-Faehigkeiten verifizieren
-- Zielarchitektur, Rollen und Gates sauber dokumentieren
+- analyze the source system
+- verify current Codex capabilities
+- document the target architecture, roles, and gates
 
-Lieferobjekte:
+Deliverables:
 
-- `README.md` als Repo-Einstieg
-- `docs/blueprint.md` als Architekturkern
-- `docs/roadmap.md` als Umsetzungsfahrplan
+- `README.md` as the public entry point
+- `docs/blueprint.md` as the architecture core
+- `docs/roadmap.md` as the delivery plan
 
-Fertig wenn:
+Done when:
 
-- ein externer Leser versteht Zweck, Zielbild und naechsten Umsetzungsschritt ohne Zusatzkontext
+- a new reader understands the purpose, target shape, and next implementation step without extra context
 
-## Phase 1 - Repo-Scaffolding fuer das Zielsystem
+## Phase 1: Repository scaffolding
 
-Ziel:
+Goal:
 
-- die dokumentierte Zielstruktur im Repo vorbereiten, ohne die volle Runtime bereits zu bauen
+- prepare the target structure in the repo without building the full runtime yet
 
-Geplante Inhalte:
+Expected contents:
 
-- `.codex/agents/` fuer Custom-Agent-Definitionen
-- State- und Report-Verzeichnisstruktur
-- dokumentierte Beispielkonfiguration fuer `[agents]`
+- `.codex/agents/`
+- state and report directories
+- documented `[agents]` configuration examples
 
-Fertig wenn:
+Done when:
 
-- die Repo-Struktur dem Blueprint sichtbar entspricht
+- the visible repo structure matches the blueprint
 
-## Phase 2 - Orchestrator-Vertrag
+## Phase 2: Orchestrator contract
 
-Ziel:
+Goal:
 
-- den Steuerungsvertrag des Haupt-Orchestrators festziehen
+- lock down the control contract of the main orchestrator
 
-Geplante Inhalte:
+Expected contents:
 
-- State-Schema
-- Report-Schema
-- Routing-Regeln
-- Gate-Definitionen
-- Resume- und Fehlerpfade
+- state schema
+- report schema
+- routing rules
+- gate definitions
+- resume and failure paths
 
-Fertig wenn:
+Done when:
 
-- jeder Schritt zwischen Intake und Abschluss als deterministischer Ablauf dokumentiert ist
+- every step between intake and completion is documented as a deterministic flow
 
-## Phase 3 - Guardrails und Hilfswerkzeuge
+## Phase 3: Guardrails and helper tools
 
-Ziel:
+Goal:
 
-- die wenigen Helfer bauen, die das System hart und nachvollziehbar absichern
+- build the few helpers that make the system safer and more auditable
 
-Geplante Inhalte:
+Expected contents:
 
-- Preflight-Checks
-- API-Impact-Erkennung
-- Report-Validierung
-- Pre-push-Gate fuer explizite Freigabe
+- preflight checks
+- API impact detection
+- report validation
+- pre-push approval guard
 
-Fertig wenn:
+Done when:
 
-- kritische Regeln nicht nur beschrieben, sondern technisch absicherbar sind
+- critical rules are not only described but can also be enforced technically
 
-## Phase 4 - Referenzimplementierung im Repo
+## Phase 4: Reference implementation
 
-Ziel:
+Goal:
 
-- die dokumentierte Architektur als lauffaehige Referenz im Repo abbilden
+- express the documented architecture as a runnable reference inside the repo
 
-Geplante Inhalte:
+Expected contents:
 
-- erste Custom Agents
-- erste Skills
-- Beispielablauf fuer Feature-, Bugfix- und API-Change-Workflows
+- first custom agents
+- first skills
+- example flows for feature work, debugging, and API changes
 
-Fertig wenn:
+Done when:
 
-- ein neuer Nutzer den Workflow lokal reproduzieren kann
+- a new user can reproduce the workflow locally
 
-## Phase 5 - Validierung und Community-Haertung
+## Phase 5: Validation and community hardening
 
-Ziel:
+Goal:
 
-- die Referenz an realen Faellen pruefen und schaerfen
+- test the reference against real use cases and sharpen the weak points
 
-Geplante Inhalte:
+Expected contents:
 
-- Demo-Durchlaeufe
-- Feedback aus Discussions
-- Ueberarbeitung unklarer Rollen und Gates
-- Versionierung der Blueprint und spaeter der Runtime
+- demo runs
+- discussion-driven feedback
+- refinement of unclear roles and gates
+- versioning of the blueprint and later of the runtime
 
-Fertig wenn:
+Done when:
 
-- das System fuer wiederholte Nutzung stabil genug und fuer andere nachvollziehbar ist
+- the system is stable enough for repeated use and understandable to contributors outside the core team

@@ -1,13 +1,13 @@
 # Reports
 
-Dieses Verzeichnis ist fuer persistente Agenten-Handoffs und nachvollziehbare lokale Reports gedacht.
+This directory is for persistent agent handoffs and locally reproducible reports.
 
-## Empfohlene Nutzung
+## Recommended use
 
-- versionierte Beispiel- oder Referenzreports duerfen im Repo bleiben
-- lokal generierte Laufzeitreports gehoeren unter `reports/generated/`
+- versioned example or reference reports may stay in the repository
+- generated runtime reports should go under `reports/generated/`
 
-## Konvention
+## Convention
 
 - `reports/generated/NN-role-report.md`
-- kurze, konkrete Zusammenfassungen statt voller Chat-Protokolle
+- short, concrete summaries instead of full chat transcripts
