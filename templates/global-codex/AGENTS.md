@@ -12,16 +12,20 @@
 ## Execution flow
 
 - For non-trivial work: Research -> Plan -> Build -> Validate -> Release Summary.
+- Start with a governance preflight: inspect the nearest `AGENTS.md`, repo-root `README.md`, `CONTRIBUTING.md`, PR template, and any versioning, release, or contract docs that control the touched scope.
+- If the workspace is empty, newly initialized, or missing repo-local governance, bootstrap a local project constitution before parallel implementation work.
 - Before editing, report workspace root, current branch if present, touched files, and expected impact when that is not already obvious.
 - Run only the checks that match the changed scope.
 - Use the installed global workflow, custom agents, and skills by default.
 - If the current workspace provides its own `AGENTS.md`, `.codex/agents/`, or `.agents/skills/`, treat them as local overrides and adapt to them instead of ignoring them.
+- If repo rules are split across docs instead of a root `AGENTS.md`, treat those docs as binding once discovered.
 
 ## Global workflow
 
 - Prefer the GodMode loop for non-trivial work.
 - Available global agents: `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager`.
-- Available global skills: `godmode-workflow`, `apple-platforms`, `web-platforms`, `flutter-dart`, `release-manager`.
+- Optional department agents: `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`.
+- Available global skills: `godmode-workflow`, `godmode-departments`, `greenfield-bootstrap`, `apple-platforms`, `web-platforms`, `flutter-dart`, `release-manager`.
 
 ## Profile intents
 
@@ -40,7 +44,10 @@
 ## Git safety
 
 - Classify changes as major, minor, patch, or none.
-- When a repo uses a manual changelog, update `[Unreleased]` for behavior or setup changes.
+- Do not start multi-agent parallel delivery in a greenfield repo until a repo-root `AGENTS.md` or equivalent local governance scaffold exists.
+- Before editing `VERSION`, `CHANGELOG.md`, release notes, or change fragments, determine the repo's release law.
+- Only update `[Unreleased]` when the repo explicitly uses that model for unreleased work.
+- If the repo uses change fragments or release-managed versioning, follow that system instead of editing `VERSION` or `CHANGELOG.md` during normal feature work.
 - Suggest Conventional Commit style titles when preparing commits.
 - Never commit or push without explicit approval.
 - Never force-push a shared branch.

@@ -1,10 +1,10 @@
 # Blueprint: Codex GodMode
 
-Updated: 2026-03-18
+Updated: 2026-04-12
 
 This document is the core architecture blueprint for the Codex-native port of [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On).
 
-The goal is not to copy the Claude implementation blindly. The goal is to preserve the proven orchestration pattern and translate it into a modern Codex structure built around:
+The goal is not to copy the Claude implementation blindly. The goal is to preserve the strong orchestration pattern and translate it into a modern Codex structure built around:
 
 - `AGENTS.md`
 - `.codex/config.toml`
@@ -12,192 +12,185 @@ The goal is not to copy the Claude implementation blindly. The goal is to preser
 - `.agents/skills/`
 - persistent `reports/` and `state/`
 
-## Stage 1: Research Codex orchestration capabilities
+## Current Repo State
 
-### Findings
+Today this repository ships a role-centric GodMode baseline:
 
-- Current Codex documentation describes the feature as `Subagents`, not as a separate “super-agent” product.
-- Codex can spawn specialized agents in parallel and consolidate their output in the main thread.
-- The built-in role types are `default`, `worker`, and `explorer`.
-- Project-specific custom agents belong in `.codex/agents/*.toml`.
-- Reusable procedures belong in `.agents/skills/`.
-- `AGENTS.md` remains the main layered guidance mechanism.
+- the main thread acts as orchestrator
+- the installed runtime centers on `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, and `github_manager`
+- the repo now also ships first optional department-oriented agents for runtime, workflow, governance, operations, and docs surfaces
+- reusable procedures live in skills such as `$godmode-workflow`
+- persistent reports and state are present, but still lightweight
 
-### Architecture notes
+This is the current repo state, not the final target architecture.
 
-- Codex cleanly separates guidance, technical configuration, custom agents, and reusable skills.
-- Parallel subagents are best for read-heavy tasks such as research, mapping, and review.
-- Write-heavy work should stay narrowly owned to avoid edit conflicts and unclear responsibility.
+## Verified Codex Constraints
 
-### Key decisions
+The current official Codex docs support the following design assumptions:
 
-- This port will be built around explicit subagent calls, not hidden hook automation.
-- Roles will stay narrow and focused.
-- Stable repeated procedures will later be moved into skills.
+- Codex uses explicit subagent workflows rather than hidden automatic delegation.
+- Read-heavy work is the safest default for parallel subagents.
+- Write-heavy parallelism requires careful ownership boundaries.
+- `AGENTS.md` remains the primary layered governance surface.
+- Skills are the right place for reusable procedures, not for every one-off idea.
+- `gpt-5.4` is the default model for main orchestration and deeper reasoning.
+- `gpt-5.4-mini` is appropriate for faster supporting scans and read-heavy helpers.
 
-## Stage 2: Analyze `ClaudeCode_GodMode-On`
+## Core Architecture Direction
 
-### Findings
+GodMode should evolve into a two-layer system:
 
-- The source repository is a managed workflow system, not just a set of prompts.
-- Its core pattern is:
-  - non-implementing orchestrator
-  - specialist roles
-  - file-based report handoffs
-  - quality gates
-  - return loop back to the builder
-- The main runtime roles are:
-  - `researcher`
-  - `architect`
-  - `api_guardian`
-  - `builder`
-  - `validator`
-  - `tester`
-  - `scribe`
-  - `github_manager`
-- Communication relies heavily on report files rather than only on chat context.
-- The strongest control mechanism is the dual quality gate: `validator` and `tester` both need to pass.
+1. a `CEO/CTO` orchestrator in the main thread
+2. an optional department layer for larger, multi-domain tasks
 
-### Architecture notes
+The word optional matters. Not every task should fan out into many agents.
 
-- Stability comes from strict role separation and clear handoffs, not from one oversized generalist agent.
-- The original system expects long sessions and context loss, which is why it keeps its own state and restore mechanics.
-- Some implementation details in the Claude repo are inconsistent and should not be copied as-is.
+## Scalable Routing Modes
 
-### Key decisions
+### Lean lane
 
-- Preserve the role model, gate logic, report contracts, and explicit approval boundaries.
-- Do not preserve the mix of hook magic, prompt pack behavior, and inconsistent state schemas.
+Use this for small, single-scope work.
 
-## Stage 3: Codex-native target architecture
+- orchestrator
+- `builder`
+- normal validation and test gates
 
-### Findings
+This should remain the default for many day-to-day tasks.
 
-- The Codex-native version does not need an all-purpose agent. It needs an explicit orchestrator plus focused custom agents.
-- The target repository structure is:
-  - `AGENTS.md` for the orchestrator constitution
-  - `.codex/config.toml` for technical defaults and `[agents]` limits
-  - `.codex/agents/*.toml` for role definitions
-  - `.agents/skills/` for reusable procedures
-  - `reports/` and `state/` for persistent artifacts
+### Guided lane
 
-### Architecture notes
+Use this when the task is still small enough to avoid departments, but planning or contracts matter.
 
-- The main thread remains the orchestrator and owns routing, gates, and approvals.
-- `builder` stays the only normal code-writing role.
-- `validator` and `tester` may run in parallel because they are validation-oriented and mostly read-heavy.
-- `api_guardian` is conditional and activates only when API, schema, CLI, or config surfaces are affected.
-- `scribe` and `github_manager` run only after the quality gate is green.
+- orchestrator
+- optional `researcher`
+- `architect`
+- optional `api_guardian`
+- `builder`
+- `validator` and `tester`
 
-### Key decisions
+### Department lane
 
-- Introduce one clean state schema instead of carrying forward the inconsistent Claude state model.
-- Keep report files in the design because they improve resume, auditability, and review.
-- Reduce hooks to guardrails. Keep the real orchestration flow explicit in Codex.
+Use this only when the task crosses multiple ownership areas and needs explicit handoffs.
 
-## Stage 4: Runtime workflow design
+- orchestrator
+- staff-office preflight
+- 2-4 bounded department tracks
+- validation gates
+- release/docs closeout if needed
 
-### Findings
+## Target Control Structure
 
-The target runtime loop is:
-
-1. intake and task classification
-2. preflight and state initialization
-3. optional `researcher`
-4. `architect`
-5. conditional `api_guardian`
-6. `builder`
-7. parallel `validator` and `tester`
-8. gate decision: done or back to `builder`
-9. `scribe`
-10. optional `github_manager`
-
-### Architecture notes
-
-- The main thread must explicitly say when subagents are started, waited on, reused, or closed.
-- Resume cannot depend on chat history alone; state must stay visible outside the thread.
-- Parallelism should never turn into multiple builders writing the same files.
-
-### Error and retry model
-
-- transient tool or MCP failure: retry once
-- red quality gate: loop back to `builder`
-- uncovered architecture issue: loop back to `architect`
-- push, merge, or deploy: always require an explicit human decision
-
-## Target flow
-
-```mermaid
-flowchart TD
-    A["Intake and classification"] --> B["Preflight and state init"]
-    B --> C{"Need research?"}
-    C -->|yes| D["researcher"]
-    C -->|no| E["architect"]
-    D --> E
-    E --> F{"API or contract impact?"}
-    F -->|yes| G["api_guardian"]
-    F -->|no| H["builder"]
-    G --> H
-    H --> I["validator"]
-    H --> J["tester"]
-    I --> K{"Both gates green?"}
-    J --> K
-    K -->|no| H
-    K -->|yes| L["scribe"]
-    L --> M{"Need PR or release action?"}
-    M -->|yes| N["github_manager"]
-    M -->|no| O["Done"]
-    N --> O
+```text
+CEO/CTO Orchestrator (main thread, read-only)
+|- Staff Offices
+|  |- Research Office
+|  |- Architecture Office
+|  |- Contract Office
+|  `- Release Office
+|- Product Departments
+|  |- Runtime Platform
+|  |- Workflow Design
+|  |- Workspace Governance
+|  |- Quality & Operations
+|  `- Docs & Developer Experience
+`- Specialist Guilds
+   |- Web
+   |- Apple
+   `- Flutter
 ```
 
-## Runtime roles
+## Current Roles Mapped Into The Target Model
 
-| Role | Responsibility | Write access |
+| Current role | Target place | Notes |
 | --- | --- | --- |
-| `orchestrator` | intake, routing, state, gates, approvals | no |
-| `researcher` | external or internal research | no |
-| `architect` | target structure, interfaces, risks, plan | no |
-| `api_guardian` | API, schema, CLI, and config impact review | no |
-| `builder` | smallest safe implementation | yes |
-| `validator` | structural and static validation | no |
-| `tester` | executable and test validation | no |
-| `scribe` | changelog, docs, release notes, completion artifacts | docs only |
-| `github_manager` | PR, release, and repo-facing coordination | no by default |
+| `researcher` | `Research Office` | read-only fact finding |
+| `architect` | `Architecture Office` | design, rollback, dependency planning |
+| `api_guardian` | `Contract Office` | contract and surface review |
+| `builder` | implementation lane | still the normal writer |
+| `validator` | quality gate | read-heavy structural checks |
+| `tester` | quality gate | executable verification |
+| `scribe` | `Release Office` | final docs and summary layer |
+| `github_manager` | `Release Office` | PR/release/governance coordination |
+
+The department layer is now partially scaffolded in the runtime, but it remains optional and should not replace the role-centric baseline for routine work.
+
+## Department Responsibilities
+
+| Department | Owns |
+| --- | --- |
+| `Runtime Platform` | `.codex/config.toml`, `.codex/agents/`, runtime defaults, state schema |
+| `Workflow Design` | `.agents/skills/`, orchestration loops, handoffs, resume behavior |
+| `Workspace Governance` | `AGENTS.md`, templates, repo-local constitutions |
+| `Quality & Operations` | `scripts/`, checks, install/verify flow, smoke paths |
+| `Docs & Developer Experience` | `README.md`, `docs/`, prompts, operator guidance |
+
+## Routing Law
+
+The target routing law is:
+
+1. governance preflight
+2. choose the smallest viable team
+3. if uncertainty is high, use `Research Office`
+4. if structure is unclear, use `Architecture Office`
+5. if contracts are touched, use `Contract Office`
+6. only then activate departments when the task truly spans multiple ownership areas
+7. keep one active writer per path unless a temporary lease is explicitly granted
+8. run `validator` and `tester`
+9. use `Release Office` only after the gates are green
+
+## Mandatory Artifacts For Department Mode
+
+Department mode should not start without these artifacts:
+
+- `Intake Brief`
+- `Department Routing Map`
+- `Frozen Vocabulary And Contract Pack`
+- `Write-Scope Matrix`
+- `Department Handoff Report`
+- `State Record`
+
+These artifacts are now documented in [docs/department-orchestration.md](./department-orchestration.md) and templated under `reports/templates/` and `state/templates/`.
 
 ## Invariants
 
-- The orchestrator does not implement code itself.
-- `builder` is the only normal code-writing role.
-- `validator` and `tester` are both required for a green quality gate.
-- `api_guardian` is required when contract surfaces are touched.
-- Push and deploy never happen without explicit human approval.
-- State and reports are the resume source of truth, not chat history alone.
+- The orchestrator does not implement code directly.
+- The orchestrator chooses the smallest viable team instead of defaulting to maximum fan-out.
+- Repo governance must be discovered before planning or editing.
+- Greenfield work must create repo-local governance before parallel delivery starts.
+- `builder` remains the normal code writer.
+- `validator` and `tester` remain the required joint quality gate.
+- `api_guardian` remains mandatory when contract surfaces are touched.
+- Push and deploy still require explicit human approval.
+- State and reports support resume, but current repo docs and code remain the source of truth.
 
-## Planned artifacts
+## Staged Rollout
 
-Not fully implemented yet, but part of the intended design:
+This repo should evolve in this order:
 
-- `reports/v{workflow_version}/NN-role-report.md`
-- `state/workflow-state.json`
-- `docs/` for architecture and operations
-- `.codex/agents/*.toml` for role definitions
-- `.agents/skills/` for reusable procedures
+1. document optional department routing and the mandatory artifacts
+2. add templates for intake, routing, write scopes, handoffs, and state
+3. align README, blueprint, roadmap, and skill guidance
+4. add department-specific agents only after the documents and templates are stable
+5. add machine-readable enforcement later
 
 ## Why this port matters
 
-The Claude template already proved that the value is not the model name. The value comes from:
+The value does not come from "more agents." The value comes from:
 
-- hard role separation
+- hard ownership boundaries
 - controlled handoffs
 - auditable gates
-- clear human approval for risky actions
+- explicit human approval for risky actions
+- the ability to scale up and back down depending on the task
 
 Codex now has the native building blocks for that pattern. This repo exists to turn those ideas into a documented, versioned, and eventually fully implemented system.
 
 ## Sources
 
 - Source repo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
-- Codex docs: [Subagents](https://developers.openai.com/codex/subagents/)
-- Codex docs: [Agent Skills](https://developers.openai.com/codex/skills/)
+- Codex docs: [Subagents](https://developers.openai.com/codex/concepts/subagents)
+- Codex docs: [Best practices](https://developers.openai.com/codex/learn/best-practices)
+- Codex docs: [Agent Skills](https://developers.openai.com/codex/skills)
 - Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
 - Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)
+- OpenAI Cookbook: [Codex Prompting Guide](https://developers.openai.com/cookbook/examples/gpt-5/codex_prompting_guide)

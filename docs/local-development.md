@@ -74,6 +74,7 @@ To verify the global setup:
 ## Repo structure
 
 - `.codex/agents/` contains the canonical GodMode agent-role definitions
+- `.codex/agents/` now also contains the first optional department-oriented agent definitions
 - `.agents/skills/` contains the canonical reusable workflow and stack skills
 - `templates/global-codex/` contains the global `AGENTS.md` and `config.toml` templates
 - `reports/generated/` is for local generated reports
@@ -96,6 +97,8 @@ To verify the global setup:
 ## Good first skills in this repo
 
 - `godmode-workflow`
+- `godmode-departments`
+- `greenfield-bootstrap`
 - `apple-platforms`
 - `web-platforms`
 - `flutter-dart`

@@ -1,0 +1,20 @@
+{
+  "task_id": "<task-id>",
+  "date": "<YYYY-MM-DD>",
+  "mode": "lean",
+  "phase": "intake",
+  "orchestrator": "main-thread",
+  "active_staff_offices": [],
+  "active_departments": [],
+  "gates": {
+    "architecture": "pending",
+    "contract": "pending",
+    "validation": "pending",
+    "test": "pending",
+    "release": "pending"
+  },
+  "write_scope_version": 1,
+  "blockers": [],
+  "assumptions": [],
+  "next_step": "<describe next action>"
+}

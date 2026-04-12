@@ -25,6 +25,8 @@ Priority rules that matter:
 
 - the closest `AGENTS.md` to the current working directory wins
 - `.codex/config.toml` is loaded only for trusted projects
+- if a repo has no root `AGENTS.md`, Codex should still inspect repo-root `README.md`, `CONTRIBUTING.md`, PR templates, and release or governance docs before editing contracts or release artifacts
+- if the workspace starts empty, create repo-local governance before parallel implementation begins
 
 ## Fast start on this Mac
 
@@ -80,6 +82,7 @@ Example:
 
 ## Execution flow
 - For non-trivial tasks: Research -> Plan -> Build -> Validate -> Release Summary.
+- Start with a governance preflight and identify the repo's release and documentation rules before editing versioned artifacts.
 - Before editing, report repo root, current branch, touched files, and expected impact.
 
 ## Safety gates
@@ -130,6 +133,8 @@ codex --profile review
 
 These profiles are intentionally thin. The workflow itself comes from the globally installed `AGENTS.md`, custom agents, and skills.
 
+For greenfield work, the installed skills also include `greenfield-bootstrap` so a new repo can establish local rules before the rest of the workflow fans out.
+
 ## Installed runtime layout
 
 After running the installer, the user-level runtime looks like this:
@@ -147,15 +152,29 @@ After running the installer, the user-level runtime looks like this:
     tester.toml
     scribe.toml
     github_manager.toml
+    runtime_platform.toml
+    workflow_design.toml
+    workspace_governance.toml
+    quality_operations.toml
+    docs_dx.toml
 
 ~/.agents/
   skills/
     godmode-workflow/
+    godmode-departments/
+    greenfield-bootstrap/
     apple-platforms/
     web-platforms/
     flutter-dart/
     release-manager/
 ```
+
+The first eight agents remain the role-centric baseline. The department-oriented agents are optional additions for larger multi-domain runs and do not mean every task should fan out by default.
+
+The matching skill split is:
+
+- `godmode-workflow` for the normal orchestrator loop
+- `godmode-departments` as the explicit opt-in layer for department-mode routing
 
 That is the important UX boundary: users do not need this repository open in every new Codex session after installation.
 
@@ -180,6 +199,8 @@ Why the split matters:
 - `.codex/agents/*.toml` defines role-specific custom agents
 - `.agents/skills/` stores reusable procedures
 - workspace-local copies remain optional overrides when a project needs them
+- repos with custom versioning or documentation law should strongly prefer a root `AGENTS.md` so those rules are not left implicit in deeper docs only
+- new repos should establish that root `AGENTS.md` early, before multi-agent delivery work starts
 
 ## Why not a giant start prompt
 
