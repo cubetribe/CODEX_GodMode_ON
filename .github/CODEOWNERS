@@ -4,3 +4,5 @@
 /.agents/skills/ @cubetribe
 /.github/workflows/ @cubetribe
 /.github/CODEOWNERS @cubetribe
+/.github/dependabot.yml @cubetribe
+/SECURITY.md @cubetribe

@@ -18,6 +18,35 @@ jobs:
       - name: Validate local environment contract
         run: ./scripts/check-local-env.sh
 
+  shellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install ShellCheck
+        run: |
+          curl -fsSLo /tmp/shellcheck.tar.xz https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.xz
+          echo "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198  /tmp/shellcheck.tar.xz" | sha256sum --check --
+          tar -xJf /tmp/shellcheck.tar.xz -C /tmp
+          sudo mv /tmp/shellcheck-v0.11.0/shellcheck /usr/local/bin/shellcheck
+      - name: Lint shell scripts
+        run: |
+          find . -type f -name '*.sh' -print0 | xargs -0 -r shellcheck
+
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Install actionlint
+        run: |
+          curl -fsSLo /tmp/actionlint.tar.gz https://github.com/rhysd/actionlint/releases/download/v1.7.12/actionlint_1.7.12_linux_amd64.tar.gz
+          echo "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8  /tmp/actionlint.tar.gz" | sha256sum --check --
+          tar -xzf /tmp/actionlint.tar.gz -C /tmp
+          sudo mv /tmp/actionlint /usr/local/bin/actionlint
+      - name: Lint GitHub workflows
+        run: actionlint -color
+
   lint-markdown:
     runs-on: ubuntu-latest
     steps:
