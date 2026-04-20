@@ -118,6 +118,20 @@ A GodMode run is done only when all of these are true:
 - `flutter-dart`
 - `release-manager`
 
+## Local install testing note
+
+When you test the global install while working inside this installer repo,
+Codex can legitimately see both:
+
+- the repo-local canonical skills under `.agents/skills/`
+- the globally installed copies under `~/.agents/skills/`
+
+That overlap is expected in this repo because it is both the source of truth
+and the installer source. The real bug is stale `*.backup-*` artifacts inside
+`~/.agents/skills/` or `~/.codex/agents/`, because those can surface as extra
+duplicate entries. The installer now archives those backups under
+`~/.codex/backups/` so the live discovery roots stay clean.
+
 ## Not part of this step
 
 - a dedicated GUI for the agent system

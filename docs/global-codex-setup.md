@@ -52,6 +52,11 @@ That script does five things:
 - ensures `~/.codex/playwright-output/isolated` exists
 - adds the current repo path as a trusted project
 
+It also archives prior install snapshots under `~/.codex/backups/` instead of
+leaving `*.backup-*` files or directories inside the active agent and skill
+discovery roots. That matters because in-place backups can surface as duplicate
+skills or agents in Codex.
+
 It also replaces the `__CODEX_HOME__` placeholder inside the config template so the Playwright output path stays portable.
 
 To verify the result:

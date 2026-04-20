@@ -68,6 +68,7 @@ target_config="${codex_home}/config.toml"
 target_agents_dir="${codex_home}/agents"
 playwright_output="${codex_home}/playwright-output/isolated"
 timestamp="$(date +%Y-%m-%dT%H-%M-%S)"
+backup_root="${codex_home}/backups/install-archives/${timestamp}"
 
 require_file() {
   local path="$1"
@@ -88,9 +89,58 @@ require_dir() {
 backup_path() {
   local path="$1"
   if [[ -e "$path" ]]; then
-    local backup_path="${path}.backup-${timestamp}"
+    local backup_path=""
+    case "$path" in
+      "$target_agents")
+        backup_path="${backup_root}/root/AGENTS.md"
+        ;;
+      "$target_config")
+        backup_path="${backup_root}/root/config.toml"
+        ;;
+      "$target_agents_dir"/*)
+        backup_path="${backup_root}/agents/$(basename "$path")"
+        ;;
+      "$user_skills_home"/*)
+        backup_path="${backup_root}/skills/$(basename "$path")"
+        ;;
+      *)
+        backup_path="${backup_root}/misc/$(basename "$path")"
+        ;;
+    esac
+    mkdir -p "$(dirname "$backup_path")"
     cp -R "$path" "$backup_path"
     printf 'Backed up %s -> %s\n' "$path" "$backup_path"
+  fi
+}
+
+archive_legacy_discovery_conflicts() {
+  local path=""
+  local found=false
+
+  if [[ -d "$target_agents_dir" ]]; then
+    while IFS= read -r path; do
+      [[ -n "$path" ]] || continue
+      found=true
+      local archived_path="${backup_root}/legacy-discovery-conflicts/agents/$(basename "$path")"
+      mkdir -p "$(dirname "$archived_path")"
+      mv "$path" "$archived_path"
+      printf 'Archived legacy agent backup %s -> %s\n' "$path" "$archived_path"
+    done < <(find "$target_agents_dir" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort)
+  fi
+
+  if [[ -d "$user_skills_home" ]]; then
+    while IFS= read -r path; do
+      [[ -n "$path" ]] || continue
+      found=true
+      local archived_path="${backup_root}/legacy-discovery-conflicts/skills/$(basename "$path")"
+      mkdir -p "$(dirname "$archived_path")"
+      mv "$path" "$archived_path"
+      printf 'Archived legacy skill backup %s -> %s\n' "$path" "$archived_path"
+    done < <(find "$user_skills_home" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort)
+  fi
+
+  if [[ "$found" == true ]]; then
+    printf 'Legacy discovery conflicts were moved under %s\n' "$backup_root"
   fi
 }
 
@@ -121,6 +171,26 @@ check_contains() {
     printf '[missing] %s\n' "$label"
     return 1
   fi
+}
+
+check_no_legacy_discovery_conflicts() {
+  local root="$1"
+  local label="$2"
+  local conflicts=""
+
+  if [[ ! -d "$root" ]]; then
+    printf '[ok] %s clean\n' "$label"
+    return 0
+  fi
+
+  conflicts="$(find "$root" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort || true)"
+  if [[ -n "$conflicts" ]]; then
+    printf '[invalid] %s contains legacy backup artifacts that may surface as duplicate entries\n' "$label"
+    printf '%s\n' "$conflicts"
+    return 1
+  fi
+
+  printf '[ok] %s clean\n' "$label"
 }
 
 ensure_project_trust() {
@@ -169,6 +239,8 @@ run_check() {
   check_path "$target_agents_dir" "Global agents dir" || status=1
   check_path "$user_skills_home" "User skills home" || status=1
   check_path "$playwright_output" "Playwright output" || status=1
+  check_no_legacy_discovery_conflicts "$target_agents_dir" "Global agents dir" || status=1
+  check_no_legacy_discovery_conflicts "$user_skills_home" "User skills home" || status=1
   check_path "${target_agents_dir}/builder.toml" "Global agent builder" || status=1
   check_path "${target_agents_dir}/researcher.toml" "Global agent researcher" || status=1
   check_path "${target_agents_dir}/runtime_platform.toml" "Global agent runtime_platform" || status=1
@@ -250,6 +322,8 @@ if [[ "$check_only" == true ]]; then
 fi
 
 mkdir -p "$codex_home" "$user_skills_home" "$playwright_output" "$target_agents_dir"
+
+archive_legacy_discovery_conflicts
 
 backup_path "$target_agents"
 backup_path "$target_config"
