@@ -1,0 +1,6 @@
+# Critical governance and automation paths
+/AGENTS.md @cubetribe
+/.codex/agents/ @cubetribe
+/.agents/skills/ @cubetribe
+/.github/workflows/ @cubetribe
+/.github/CODEOWNERS @cubetribe

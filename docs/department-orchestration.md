@@ -1,6 +1,6 @@
 # Department Orchestration
 
-Updated: 2026-04-12
+Updated: 2026-04-17
 
 This document explains how GodMode should scale from a lean orchestrator loop into a department-based model without forcing every task through a large multi-agent setup.
 
@@ -16,6 +16,9 @@ That means:
 
 The explicit skill entrypoint for this mode is `godmode-departments`, used together with `godmode-workflow`.
 
+`godmode-debug` and `godmode-review` are narrower workflow companions. They do
+not imply department mode on their own.
+
 ## Current State Versus Target State
 
 ### Current repo state
@@ -23,7 +26,9 @@ The explicit skill entrypoint for this mode is `godmode-departments`, used toget
 - the installed runtime is role-centric
 - the main thread orchestrates
 - the standard roles are `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, and `github_manager`
-- the repo now also includes first optional department-oriented agents for runtime, workflow, governance, operations, and docs surfaces
+- the repo now also includes optional department-oriented agents for runtime, workflow, governance, operations, docs, and GitHub security/CI surfaces
+- the repo also includes focused workflow companions for debugging and
+  findings-first review without forcing department mode
 
 ### Target state
 
@@ -101,6 +106,17 @@ Typical team:
 | `Workspace Governance` | `AGENTS.md`, templates, governance layering |
 | `Quality & Operations` | `scripts/`, verification flow, local readiness, smoke paths |
 | `Docs & Developer Experience` | `README.md`, `docs/`, prompts, maintainer guidance |
+
+## Optional Department Agents
+
+| Agent | Department | Owns | Triggered when |
+| --- | --- | --- | --- |
+| `runtime_platform` | `Runtime Platform` | `.codex/agents/**`, runtime defaults, state scaffolding | runtime defaults, agent definitions, or state scaffolding change |
+| `workflow_design` | `Workflow Design` | `.agents/skills/**`, routing templates, orchestration procedures | workflow law, reusable skill behavior, or routing artifacts change |
+| `workspace_governance` | `Workspace Governance` | `AGENTS.md`, governance templates, bootstrap constitutions | repo governance or template law changes |
+| `quality_operations` | `Quality & Operations` | `scripts/**`, readiness checks, smoke paths | local validation, readiness checks, or install/verify flow changes |
+| `docs_dx` | `Docs & Developer Experience` | `README.md`, `docs/**`, prompt surfaces | contributor docs, prompts, or maintainer guidance change |
+| `ci_security_guardian` | `Quality & Operations` | `.github/workflows/**`, `.github/CODEOWNERS`, `.github/dependabot.yml`, GitHub security guidance | any `.github/**` or CI/CD behavior changes, and optionally as a release gate before release prep |
 
 ## When To Escalate Into Department Mode
 

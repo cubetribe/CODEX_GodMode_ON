@@ -176,8 +176,11 @@ run_check() {
   check_path "${target_agents_dir}/workspace_governance.toml" "Global agent workspace_governance" || status=1
   check_path "${target_agents_dir}/quality_operations.toml" "Global agent quality_operations" || status=1
   check_path "${target_agents_dir}/docs_dx.toml" "Global agent docs_dx" || status=1
+  check_path "${target_agents_dir}/ci_security_guardian.toml" "Global agent ci_security_guardian" || status=1
   check_path "${user_skills_home}/godmode-workflow/SKILL.md" "Global skill godmode-workflow" || status=1
   check_path "${user_skills_home}/godmode-departments/SKILL.md" "Global skill godmode-departments" || status=1
+  check_path "${user_skills_home}/godmode-debug/SKILL.md" "Global skill godmode-debug" || status=1
+  check_path "${user_skills_home}/godmode-review/SKILL.md" "Global skill godmode-review" || status=1
   check_path "${user_skills_home}/greenfield-bootstrap/SKILL.md" "Global skill greenfield-bootstrap" || status=1
   check_path "${user_skills_home}/web-platforms/SKILL.md" "Global skill web-platforms" || status=1
 
@@ -204,12 +207,24 @@ run_check() {
     check_contains "${target_agents_dir}/runtime_platform.toml" 'name = "runtime_platform"' "installed runtime_platform agent name" || status=1
   fi
 
+  if [[ -f "${target_agents_dir}/ci_security_guardian.toml" ]]; then
+    check_contains "${target_agents_dir}/ci_security_guardian.toml" 'name = "ci_security_guardian"' "installed ci_security_guardian agent name" || status=1
+  fi
+
   if [[ -f "${user_skills_home}/godmode-workflow/SKILL.md" ]]; then
     check_contains "${user_skills_home}/godmode-workflow/SKILL.md" "GodMode Workflow" "installed godmode skill" || status=1
   fi
 
   if [[ -f "${user_skills_home}/godmode-departments/SKILL.md" ]]; then
     check_contains "${user_skills_home}/godmode-departments/SKILL.md" "GodMode Departments" "installed godmode departments skill" || status=1
+  fi
+
+  if [[ -f "${user_skills_home}/godmode-debug/SKILL.md" ]]; then
+    check_contains "${user_skills_home}/godmode-debug/SKILL.md" "GodMode Debug" "installed godmode debug skill" || status=1
+  fi
+
+  if [[ -f "${user_skills_home}/godmode-review/SKILL.md" ]]; then
+    check_contains "${user_skills_home}/godmode-review/SKILL.md" "GodMode Review" "installed godmode review skill" || status=1
   fi
 
   if [[ -f "${user_skills_home}/greenfield-bootstrap/SKILL.md" ]]; then

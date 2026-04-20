@@ -1,6 +1,6 @@
-# Dev Start Prompt
+# Default Start Prompt
 
-Use this for implementation work.
+Use this for most GodMode sessions.
 
 These prompts assume the global install has already been applied.
 
@@ -9,12 +9,13 @@ These prompts assume the global install has already been applied.
 ```text
 $godmode-workflow
 
-GODMODE DEV
-
 Goal: <goal>
 
-Inspect the current workspace first.
-Loop: research -> plan -> build -> validate.
+Context:
+- <relevant files, errors, constraints, or architecture notes>
+
+Done when:
+- <what finished looks like>
 ```
 
 ## Best for
@@ -22,11 +23,13 @@ Loop: research -> plan -> build -> validate.
 - new features
 - scoped refactors
 - setup and documentation work that still needs validation
+- most repo-local work where `godmode-workflow` is enough on its own
 
 ## Optional extras
 
-- target files or directories
-- required validation command such as `pnpm test`, `xcodebuild test`, or `flutter test`
-- explicit non-goals to keep scope tight
-- prepend `$web-platforms`, `$apple-platforms`, or `$flutter-dart` if stack-specific guidance should trigger immediately
-- whether the current workspace has local rules that should override the global defaults
+- add `$godmode-departments` for multi-domain work that needs explicit routing and write-scope control
+- add `$godmode-debug` when the task is mainly bug-fixing or failure isolation
+- add `$godmode-review` when the task is mainly findings-first analysis
+- add `$greenfield-bootstrap` if the workspace is empty or still lacks repo-local governance
+- add `$web-platforms`, `$apple-platforms`, or `$flutter-dart` only when stack-specific guidance should shape the run immediately
+- include a validation command, explicit non-goals, or release-policy references only when they materially change the task

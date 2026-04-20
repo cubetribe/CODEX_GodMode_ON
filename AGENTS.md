@@ -24,6 +24,19 @@
 - For new example skills, keep metadata concise and descriptions triggerable.
 - For runtime-scaffolding changes, run `./scripts/check-local-env.sh`.
 
+## Changelog law
+
+- `CHANGELOG.md` under `[Unreleased]` is the only durable home for unreleased, user-relevant changes in this repo, including changes to prompts, skills, agents, templates, scripts, and setup guidance.
+- `reports/generated/` is only for analysis artifacts such as discovery notes, orchestration plans, and other generated reports. It is not a release ledger and must not replace the changelog.
+- `state/` is only for in-flight workflow state such as phase status, gate status, and resumable execution records. It must not be used as the human release summary.
+- `scribe` writes only after the required gates pass. If a run needs both changelog text and generated reports, `CHANGELOG.md` must be updated first before any new report artifact is created.
+
+## Validation law
+
+- `validator` is the structural gate. It checks TOML syntax for `.codex/agents/*.toml`, Markdown consistency, internal links, and role-name consistency across `AGENTS.md`, `.codex/agents/*.toml`, and `.agents/skills/`. It does not edit source files.
+- `tester` is the executable gate. It runs `./scripts/check-local-env.sh`, verifies shell-script syntax with `bash -n`, and confirms that new skills carry `name` and `description` frontmatter.
+- Both gates must be explicitly recorded as pass or fail before `scribe` updates changelog text, reports, or final summary artifacts.
+
 ## Release impact
 
 - Docs, structure, and example-only changes are usually `none`.

@@ -1,6 +1,6 @@
 # Blueprint: Codex GodMode
 
-Updated: 2026-04-12
+Updated: 2026-04-17
 
 This document is the core architecture blueprint for the Codex-native port of [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On).
 
@@ -18,11 +18,26 @@ Today this repository ships a role-centric GodMode baseline:
 
 - the main thread acts as orchestrator
 - the installed runtime centers on `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, and `github_manager`
-- the repo now also ships first optional department-oriented agents for runtime, workflow, governance, operations, and docs surfaces
-- reusable procedures live in skills such as `$godmode-workflow`
+- the repo now ships optional department-oriented agents: `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, and `ci_security_guardian`
+- reusable procedures live in skills such as `$godmode-workflow`, `$godmode-departments`, `$godmode-debug`, `$godmode-review`, and `$greenfield-bootstrap`
+- `release-manager` now discovers repo release law before drafting changelog or fragment output
 - persistent reports and state are present, but still lightweight
 
 This is the current repo state, not the final target architecture.
+
+## Current Workflow Skill Family
+
+Today the GodMode workflow surface is intentionally split like this:
+
+- `godmode-workflow` is the primary orchestrator skill
+- `godmode-departments` is the optional multi-domain routing companion
+- `godmode-debug` is the focused bug-fixing companion
+- `godmode-review` is the findings-first assessment companion
+- `greenfield-bootstrap` stays separate because it changes the startup
+  contract before normal delivery begins
+
+This keeps the main entry surface stable while still letting recurring
+workflow types become explicit skills.
 
 ## Verified Codex Constraints
 
@@ -112,7 +127,24 @@ CEO/CTO Orchestrator (main thread, read-only)
 | `scribe` | `Release Office` | final docs and summary layer |
 | `github_manager` | `Release Office` | PR/release/governance coordination |
 
-The department layer is now partially scaffolded in the runtime, but it remains optional and should not replace the role-centric baseline for routine work.
+The department layer now has concrete runtime scaffolding, but it remains optional and should not replace the role-centric baseline for routine work.
+
+## Department Agent Rollout Status
+
+Already implemented as `.toml` agents in the current repo state:
+
+- `runtime_platform`
+- `workflow_design`
+- `workspace_governance`
+- `quality_operations`
+- `docs_dx`
+- `ci_security_guardian`
+
+Still target-state behavior rather than a separate current `.toml` surface:
+
+- department mode should stay optional instead of becoming the default path for every run
+- machine-enforced write-scope governance is still evolving beyond the current docs, validation law, and repo checks
+- specialist guilds such as web, Apple, and Flutter remain skills first, not dedicated department agents
 
 ## Department Responsibilities
 
@@ -140,16 +172,19 @@ The target routing law is:
 
 ## Mandatory Artifacts For Department Mode
 
-Department mode should not start without these artifacts:
+Current repo state documents and templates these department-mode artifacts:
 
 - `Intake Brief`
 - `Department Routing Map`
-- `Frozen Vocabulary And Contract Pack`
 - `Write-Scope Matrix`
 - `Department Handoff Report`
 - `State Record`
 
-These artifacts are now documented in [docs/department-orchestration.md](./department-orchestration.md) and templated under `reports/templates/` and `state/templates/`.
+Still target-state rather than a separate current template:
+
+- `Frozen Vocabulary And Contract Pack`
+
+The current documented and templated artifacts live in [docs/department-orchestration.md](./department-orchestration.md) and under `reports/templates/` and `state/templates/`.
 
 ## Invariants
 

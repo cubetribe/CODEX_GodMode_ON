@@ -2,7 +2,15 @@
 
 This roadmap is not a list of “nice someday ideas.” It is the delivery path for the Codex GodMode port.
 
+Current status as of 2026-04-17:
+
+- Phases 0-3 are complete in the repo baseline.
+- Phase 4 is in progress through the current improvement sprint.
+- Phase 5 remains next.
+
 ## Phase 0: Blueprint baseline
+
+Status: done
 
 Goal:
 
@@ -22,6 +30,8 @@ Done when:
 
 ## Phase 1: Optional department scaffolding
 
+Status: done
+
 Goal:
 
 - add the planning artifacts that make larger multi-domain runs safe without forcing department mode on every task
@@ -38,6 +48,8 @@ Done when:
 - a contributor can choose lean, guided, or department mode without guessing what artifacts are required
 
 ## Phase 2: Blueprint and docs alignment
+
+Status: done
 
 Goal:
 
@@ -60,6 +72,8 @@ Done when:
 
 ## Phase 3: Department-aware runtime additions
 
+Status: done
+
 Goal:
 
 - add department-specific runtime pieces only after the docs and templates are stable
@@ -67,6 +81,7 @@ Goal:
 Expected contents:
 
 - first department-oriented agent definitions
+- GitHub security and CI coverage for `.github/**` and repo-protection surfaces
 - skill refinements where procedures repeat
 - runtime rules for write scopes and bounded delegation
 
@@ -76,9 +91,19 @@ Done when:
 
 ## Phase 4: Guardrails and enforcement
 
+Status: in progress
+
 Goal:
 
 - build the helpers that make the system safer and more auditable
+
+Current sprint focus:
+
+- fill `CHANGELOG.md` under `[Unreleased]` and codify the changelog law
+- add `ci_security_guardian`, baseline CI, and `CODEOWNERS`
+- codify the validation law and expand `scripts/check-local-env.sh`
+- publish `docs/agent-registry.md` and close current-state versus target-state doc drift
+- expand the GodMode skill family with dedicated debug and review companion skills
 
 Expected contents:
 
@@ -93,6 +118,8 @@ Done when:
 - critical rules are not only described but can also be checked technically
 
 ## Phase 5: Pilot runs and hardening
+
+Status: next
 
 Goal:
 

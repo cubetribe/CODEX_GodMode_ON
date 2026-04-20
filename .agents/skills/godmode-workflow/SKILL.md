@@ -5,13 +5,21 @@ description: Run a non-trivial task through the Codex GodMode workflow with expl
 
 # GodMode Workflow
 
-Use this skill when a task is large enough to benefit from explicit orchestration instead of a single undifferentiated agent run.
+Use this skill when a task is large enough to benefit from explicit
+orchestration instead of a single undifferentiated agent run.
 
-For very large multi-domain work, pair this skill with `godmode-departments` to activate the explicit department-routing layer.
+Pair this skill with:
+
+- `godmode-departments` for explicit department routing on very large
+  multi-domain work
+- `godmode-debug` for reproduce -> isolate -> fix -> re-test work
+- `godmode-review` for findings-first, read-heavy assessment work
 
 ## Core rules
 
 - The main thread is the orchestrator.
+- `godmode-workflow` stays the top-level control loop even when companion
+  skills narrow the lane.
 - Scale the workflow to the task. Start with the smallest viable team and only fan out when the task crosses ownership boundaries or contract risk.
 - Start every non-trivial run with a governance preflight: inspect the nearest `AGENTS.md`, repo-root `README.md`, `CONTRIBUTING.md`, PR template, and any versioning or contract docs that govern the touched scope.
 - Treat repo docs as binding once discovered, even when the repo has no root `AGENTS.md`.

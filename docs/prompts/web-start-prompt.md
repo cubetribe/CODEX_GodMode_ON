@@ -10,12 +10,13 @@ These prompts assume the global install has already been applied.
 $godmode-workflow
 $web-platforms
 
-GODMODE WEB
-
 Goal: <goal>
 
-Inspect the current workspace first.
-Loop: research -> plan -> build -> validate.
+Context:
+- <affected app, package, validation command, or contract surface>
+
+Done when:
+- <what finished looks like>
 ```
 
 ## Best for
@@ -30,3 +31,5 @@ Loop: research -> plan -> build -> validate.
 - affected app, package, or directory
 - required validation command such as `pnpm lint`, `pnpm test`, or `pnpm build`
 - explicit contract surface such as route handlers, `package.json` exports, or environment loading
+- add `$godmode-debug` or `$godmode-review` if the run is primarily debugging or assessment rather than implementation
+- any release, versioning, or governance docs that the change must obey
