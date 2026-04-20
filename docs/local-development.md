@@ -50,6 +50,13 @@ Optional full check:
 
 The same script is also used in GitHub Actions. In CI, it switches to repo-validation mode instead of requiring the full local Mac toolchain.
 
+That repo-validation mode also enforces the GitHub security baseline for this repository:
+
+- `.github/dependabot.yml` must exist
+- `.github/workflows/*.yml` must declare explicit `permissions`
+- third-party actions must be pinned to full commit SHAs
+- `pull_request_target` is not allowed in this repo's workflows
+
 ## Global profiles
 
 The example global config installs four profiles:

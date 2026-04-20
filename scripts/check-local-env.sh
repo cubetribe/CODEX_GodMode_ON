@@ -77,7 +77,7 @@ check_agent_contracts() {
 
   for file in "$repo_root"/.codex/agents/*.toml; do
     local output=""
-    if output="$(python3 - "$file" <<'PY'
+    if output="$(python3 - "$file" 2>&1 <<'PY'
 import os
 import sys
 
@@ -105,10 +105,10 @@ if data["name"] != expected:
     print(f"name field '{data['name']}' does not match filename '{expected}'")
     sys.exit(1)
 PY
-    2>&1)"; then
-      printf '[ok] %s\n' "${file#$repo_root/}"
+    )"; then
+      printf '[ok] %s\n' "${file#"$repo_root"/}"
     else
-      printf '[invalid] %s: %s\n' "${file#$repo_root/}" "$output"
+      printf '[invalid] %s: %s\n' "${file#"$repo_root"/}" "$output"
       status=1
     fi
   done
@@ -137,9 +137,9 @@ check_skill_frontmatter() {
         }
       }
     ' "$file"; then
-      printf '[ok] %s\n' "${file#$repo_root/}"
+      printf '[ok] %s\n' "${file#"$repo_root"/}"
     else
-      printf '[invalid] %s: missing name/description frontmatter\n' "${file#$repo_root/}"
+      printf '[invalid] %s: missing name/description frontmatter\n' "${file#"$repo_root"/}"
       status=1
     fi
   done
@@ -204,12 +204,48 @@ check_version_alignment() {
 check_shell_syntax() {
   while IFS= read -r file; do
     if bash -n "$file"; then
-      printf '[ok] %s\n' "${file#$repo_root/}"
+      printf '[ok] %s\n' "${file#"$repo_root"/}"
     else
-      printf '[invalid] %s: bash -n failed\n' "${file#$repo_root/}"
+      printf '[invalid] %s: bash -n failed\n' "${file#"$repo_root"/}"
       status=1
     fi
   done < <(find "$repo_root" -type f -name '*.sh' | sort)
+}
+
+check_workflow_security() {
+  while IFS= read -r file; do
+    local relative="${file#"$repo_root"/}"
+
+    if rg -n '^[[:space:]]*pull_request_target:' "$file" >/dev/null; then
+      printf '[invalid] %s: pull_request_target is not allowed in this repo\n' "$relative"
+      status=1
+    else
+      printf '[ok] %s: no pull_request_target trigger\n' "$relative"
+    fi
+
+    if rg -q '^[[:space:]]*permissions:' "$file"; then
+      printf '[ok] %s: explicit permissions block\n' "$relative"
+    else
+      printf '[invalid] %s: missing explicit permissions block\n' "$relative"
+      status=1
+    fi
+
+    while IFS= read -r line; do
+      local ref=""
+      ref="$(printf '%s\n' "$line" | sed -E 's/^[[:space:]]*uses:[[:space:]]*([^[:space:]#]+).*/\1/')"
+
+      if [[ "$ref" == ./* ]] || [[ "$ref" == docker://* ]]; then
+        continue
+      fi
+
+      if [[ "$ref" =~ @[0-9a-f]{40}$ ]]; then
+        continue
+      fi
+
+      printf '[invalid] %s: action must be pinned to a full commit SHA (%s)\n' "$relative" "$ref"
+      status=1
+    done < <(rg '^[[:space:]]*uses:[[:space:]]*' "$file")
+  done < <(find "$repo_root/.github/workflows" -type f \( -name '*.yml' -o -name '*.yaml' \) | sort)
 }
 
 printf 'Repo root: %s\n' "$repo_root"
@@ -249,7 +285,9 @@ check_path ".agents/skills/godmode-review/SKILL.md"
 check_path ".agents/skills/greenfield-bootstrap/SKILL.md"
 check_path ".agents/skills/web-platforms/SKILL.md"
 check_path ".github/CODEOWNERS"
+check_path ".github/dependabot.yml"
 check_path ".github/workflows/ci.yml"
+check_path ".github/workflows/codeql.yml"
 check_path "docs/blueprint.md"
 check_path "docs/global-codex-setup.md"
 check_path "docs/local-development.md"
@@ -275,6 +313,7 @@ check_skill_frontmatter
 check_unreleased_when_dirty
 check_version_alignment
 check_shell_syntax
+check_workflow_security
 
 if [[ "$full_check" == true ]] && [[ "$ci_mode" != true ]] && command -v flutter >/dev/null 2>&1; then
   printf '\nFlutter doctor:\n'

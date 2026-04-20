@@ -119,9 +119,10 @@ archive_legacy_discovery_conflicts() {
 
   if [[ -d "$target_agents_dir" ]]; then
     while IFS= read -r path; do
+      local archived_path=""
       [[ -n "$path" ]] || continue
       found=true
-      local archived_path="${backup_root}/legacy-discovery-conflicts/agents/$(basename "$path")"
+      archived_path="${backup_root}/legacy-discovery-conflicts/agents/$(basename "$path")"
       mkdir -p "$(dirname "$archived_path")"
       mv "$path" "$archived_path"
       printf 'Archived legacy agent backup %s -> %s\n' "$path" "$archived_path"
@@ -130,9 +131,10 @@ archive_legacy_discovery_conflicts() {
 
   if [[ -d "$user_skills_home" ]]; then
     while IFS= read -r path; do
+      local archived_path=""
       [[ -n "$path" ]] || continue
       found=true
-      local archived_path="${backup_root}/legacy-discovery-conflicts/skills/$(basename "$path")"
+      archived_path="${backup_root}/legacy-discovery-conflicts/skills/$(basename "$path")"
       mkdir -p "$(dirname "$archived_path")"
       mv "$path" "$archived_path"
       printf 'Archived legacy skill backup %s -> %s\n' "$path" "$archived_path"
@@ -208,9 +210,10 @@ ensure_project_trust() {
 
 install_agent_files() {
   local source_path
+  local target_path=""
   for source_path in "${source_repo_agents}"/*.toml; do
     [[ -f "$source_path" ]] || continue
-    local target_path="${target_agents_dir}/$(basename "$source_path")"
+    target_path="${target_agents_dir}/$(basename "$source_path")"
     backup_path "$target_path"
     install -m 0644 "$source_path" "$target_path"
   done

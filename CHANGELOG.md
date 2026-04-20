@@ -12,6 +12,7 @@ The format is based on Keep a Changelog.
 - `godmode-debug` and `godmode-review`, two focused workflow-companion skills for bug work and findings-first assessment
 - a maintainer-focused improvement-sprint prompt under `docs/prompts/improvement-sprint-prompt.md`
 - `ci_security_guardian`, a new GitHub security and CI department agent, plus baseline `CODEOWNERS` and pinned GitHub Actions CI coverage
+- GitHub Dependabot updates for Actions plus a pinned CodeQL workflow for repository security scanning
 - `docs/agent-registry.md`, a machine-readable register of the installed GodMode agents
 - a research brief for the next post-merge decision about whether GodMode should stay as one primary skill or split into several narrower workflow skills
 
@@ -21,6 +22,7 @@ The format is based on Keep a Changelog.
 - updated the starter prompts to require governance preflight and to surface release, versioning, and policy constraints as explicit task inputs
 - codified changelog law and validation law in `AGENTS.md`
 - expanded `scripts/check-local-env.sh` to validate agent contracts, skill frontmatter, changelog and version alignment, shell syntax, and CI-mode repo checks
+- hardened local and CI validation so GitHub workflow security rules are checked for pinned actions, explicit permissions, and disallowed `pull_request_target`
 - aligned `README.md`, `docs/blueprint.md`, `docs/department-orchestration.md`, `docs/local-development.md`, and `docs/roadmap.md` with the current department-agent runtime and guardrail model
 - simplified the documented entry surface toward a skill-first model where `$godmode-workflow` is primary and prompt files are optional examples rather than the main runtime interface
 - aligned the GodMode prompt examples around a minimal skill-first format and documented `departments`, `debug`, and `review` as focused companion lanes
