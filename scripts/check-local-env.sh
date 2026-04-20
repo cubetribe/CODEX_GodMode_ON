@@ -213,21 +213,47 @@ check_shell_syntax() {
 }
 
 check_workflow_security() {
+  local grep_cmd="grep"
+  local grep_has_rg=false
+
+  if command -v rg >/dev/null 2>&1; then
+    grep_cmd="rg"
+    grep_has_rg=true
+  fi
+
   while IFS= read -r file; do
     local relative="${file#"$repo_root"/}"
 
-    if rg -n '^[[:space:]]*pull_request_target:' "$file" >/dev/null; then
-      printf '[invalid] %s: pull_request_target is not allowed in this repo\n' "$relative"
-      status=1
+    if [[ "$grep_has_rg" == true ]]; then
+      if $grep_cmd -n '^[[:space:]]*pull_request_target:' "$file" >/dev/null; then
+        printf '[invalid] %s: pull_request_target is not allowed in this repo\n' "$relative"
+        status=1
+      else
+        printf '[ok] %s: no pull_request_target trigger\n' "$relative"
+      fi
     else
-      printf '[ok] %s: no pull_request_target trigger\n' "$relative"
+      if $grep_cmd -Eq '^[[:space:]]*pull_request_target:' "$file"; then
+        printf '[invalid] %s: pull_request_target is not allowed in this repo\n' "$relative"
+        status=1
+      else
+        printf '[ok] %s: no pull_request_target trigger\n' "$relative"
+      fi
     fi
 
-    if rg -q '^[[:space:]]*permissions:' "$file"; then
-      printf '[ok] %s: explicit permissions block\n' "$relative"
+    if [[ "$grep_has_rg" == true ]]; then
+      if $grep_cmd -q '^[[:space:]]*permissions:' "$file"; then
+        printf '[ok] %s: explicit permissions block\n' "$relative"
+      else
+        printf '[invalid] %s: missing explicit permissions block\n' "$relative"
+        status=1
+      fi
     else
-      printf '[invalid] %s: missing explicit permissions block\n' "$relative"
-      status=1
+      if $grep_cmd -Eq '^[[:space:]]*permissions:' "$file"; then
+        printf '[ok] %s: explicit permissions block\n' "$relative"
+      else
+        printf '[invalid] %s: missing explicit permissions block\n' "$relative"
+        status=1
+      fi
     fi
 
     while IFS= read -r line; do
@@ -244,7 +270,13 @@ check_workflow_security() {
 
       printf '[invalid] %s: action must be pinned to a full commit SHA (%s)\n' "$relative" "$ref"
       status=1
-    done < <(rg '^[[:space:]]*uses:[[:space:]]*' "$file")
+    done < <(
+      if [[ "$grep_has_rg" == true ]]; then
+        $grep_cmd '^[[:space:]]*uses:[[:space:]]*' "$file"
+      else
+        $grep_cmd -E '^[[:space:]]*uses:[[:space:]]*' "$file" || true
+      fi
+    )
   done < <(find "$repo_root/.github/workflows" -type f \( -name '*.yml' -o -name '*.yaml' \) | sort)
 }
 
