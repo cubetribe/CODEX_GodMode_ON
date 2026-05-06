@@ -23,6 +23,7 @@ The format is based on Keep a Changelog.
 - codified changelog law and validation law in `AGENTS.md`
 - expanded `scripts/check-local-env.sh` to validate agent contracts, skill frontmatter, changelog and version alignment, shell syntax, and CI-mode repo checks
 - hardened local and CI validation so GitHub workflow security rules are checked for pinned actions, explicit permissions, and disallowed `pull_request_target`
+- documented the Windows PowerShell global installer path and matching `-Check` verification command in the public setup guides
 - aligned `README.md`, `docs/blueprint.md`, `docs/department-orchestration.md`, `docs/local-development.md`, and `docs/roadmap.md` with the current department-agent runtime and guardrail model
 - simplified the documented entry surface toward a skill-first model where `$godmode-workflow` is primary and prompt files are optional examples rather than the main runtime interface
 - aligned the GodMode prompt examples around a minimal skill-first format and documented `departments`, `debug`, and `review` as focused companion lanes
