@@ -20,6 +20,7 @@ Use a different branch only if you explicitly decide to.
 Expected toolchain classes:
 
 - `git`
+- `python3`
 - `node`, `npm`, `pnpm`
 - `swift`, `xcodebuild`
 - `flutter`, `dart`
@@ -46,6 +47,15 @@ Optional full check:
 ```
 
 `--full` also runs `flutter doctor -v`, so it takes longer.
+
+The same script is also used in GitHub Actions. In CI, it switches to repo-validation mode instead of requiring the full local Mac toolchain.
+
+That repo-validation mode also enforces the GitHub security baseline for this repository:
+
+- `.github/dependabot.yml` must exist
+- `.github/workflows/*.yml` must declare explicit `permissions`
+- third-party actions must be pinned to full commit SHAs
+- `pull_request_target` is not allowed in this repo's workflows
 
 ## Global profiles
 
@@ -122,7 +132,7 @@ Do not place the packaged global GodMode runtime under this repo's `.codex/agent
 4. re-run `./scripts/apply-global-codex-setup.sh` after changing global guidance, agents, or skills
 5. validate the installed setup, not just the repo files
 6. start Codex in a representative workspace
-7. use the starter prompt that matches the task
+7. start with `$godmode-workflow` and add only the extra skills the task really needs
 8. make the smallest safe change
 9. run the relevant validations only
 10. commit on `main` when you really want to keep the change
@@ -151,10 +161,22 @@ Do not place the packaged global GodMode runtime under this repo's `.codex/agent
 - `flutter-dart`
 - `release-manager`
 
+## Local install testing note
+
+When you test the global install while working inside this installer repo, Codex
+must not see repo-local copies of the packaged GodMode skills or agents. Keep
+the package sources under `templates/global-codex/agents/` and
+`templates/global-codex/skills/`, not under `.codex/agents/` or
+`.agents/skills/`.
+
+Stale `*.backup-*` artifacts inside `~/.agents/skills/` or `~/.codex/agents/`
+can also surface as extra duplicate entries. The installer archives those
+backups under `~/.codex/backups/` so the live discovery roots stay clean.
+
 ## Not part of this step
 
 - a dedicated GUI for the agent system
 - a fully automated runtime outside Codex
-- CI/CD or release automation
+- deployment automation or release automation beyond the repo validation CI
 
 Those can come later once the global install flow is stable.

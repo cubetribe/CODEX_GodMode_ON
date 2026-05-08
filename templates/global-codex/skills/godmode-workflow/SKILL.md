@@ -60,6 +60,7 @@ Pair this skill with:
 - `workspace_governance`
 - `quality_operations`
 - `docs_dx`
+- `ci_security_guardian`
 
 Ask for them explicitly and treat them as advisory lanes; they do not replace the default route.
 

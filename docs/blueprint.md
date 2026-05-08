@@ -29,7 +29,7 @@ The runtime is intentionally explicit. The main thread remains responsible for d
 
 ## Stage 1: Research Codex orchestration capabilities
 
-### Findings
+Today this repository ships a role-centric GodMode baseline:
 
 - Current Codex documentation describes the feature as `Subagents`, not as a separate “super-agent” product.
 - Codex can spawn specialized agents in parallel and consolidate their output in the main thread.
@@ -42,7 +42,7 @@ The runtime is intentionally explicit. The main thread remains responsible for d
 - `AGENTS.md` remains the main layered guidance mechanism.
 - This bootstrap repo packages global agents and skills under `templates/global-codex/` because `.codex/agents/` and `.agents/skills/` would be discovered as project-local duplicates after global installation.
 
-### Architecture notes
+This is the current repo state, not the final target architecture.
 
 - Codex cleanly separates guidance, technical configuration, custom agents, and reusable skills.
 - Parallel subagents are best for read-heavy tasks such as research, mapping, and review.
@@ -50,49 +50,37 @@ The runtime is intentionally explicit. The main thread remains responsible for d
 - Multi-agent splits are worthwhile only when they improve capability isolation, policy isolation, prompt clarity, trace legibility, or parallel read-heavy work.
 - Prompt and workflow quality should be validated with concrete checks where possible, such as trigger behavior, command execution, handoff accuracy, and final-answer correctness.
 
-### Key decisions
+Today the GodMode workflow surface is intentionally split like this:
 
 - This port will be built around explicit subagent calls, not hidden hook automation.
 - Roles will stay narrow and focused.
 - Stable repeated procedures belong in focused skills.
 
-## Stage 2: Analyze `ClaudeCode_GodMode-On`
+This keeps the main entry surface stable while still letting recurring
+workflow types become explicit skills.
 
-### Findings
+## Verified Codex Constraints
 
-- The source repository is a managed workflow system, not just a set of prompts.
-- Its core pattern is:
-  - non-implementing orchestrator
-  - specialist roles
-  - file-based report handoffs
-  - quality gates
-  - return loop back to the builder
-- The main runtime roles are:
-  - `researcher`
-  - `architect`
-  - `api_guardian`
-  - `builder`
-  - `validator`
-  - `tester`
-  - `scribe`
-  - `github_manager`
-- Communication relies heavily on report files rather than only on chat context.
-- The strongest control mechanism is the dual quality gate: `validator` and `tester` both need to pass.
+The current official Codex docs support the following design assumptions:
 
-### Architecture notes
+- Codex uses explicit subagent workflows rather than hidden automatic delegation.
+- Read-heavy work is the safest default for parallel subagents.
+- Write-heavy parallelism requires careful ownership boundaries.
+- `AGENTS.md` remains the primary layered governance surface.
+- Skills are the right place for reusable procedures, not for every one-off idea.
+- `gpt-5.5` is the default model for main orchestration and deeper reasoning in this runtime.
+- smaller current Codex models can be appropriate for faster supporting scans and read-heavy helpers when explicitly selected.
 
-- Stability comes from strict role separation and clear handoffs, not from one oversized generalist agent.
-- The original system expects long sessions and context loss, which is why it keeps its own state and restore mechanics.
-- Some implementation details in the Claude repo are inconsistent and should not be copied as-is.
+## Core Architecture Direction
 
-### Key decisions
+GodMode should evolve into a two-layer system:
 
-- Preserve the role model, gate logic, report contracts, and explicit approval boundaries.
-- Do not preserve the mix of hook magic, prompt pack behavior, and inconsistent state schemas.
+1. a `CEO/CTO` orchestrator in the main thread
+2. an optional department layer for larger, multi-domain tasks
 
-## Stage 3: Codex-native target architecture
+The word optional matters. Not every task should fan out into many agents.
 
-### Findings
+## Scalable Routing Modes
 
 - The Codex-native version does not need an all-purpose agent. It needs an explicit orchestrator plus focused custom agents.
 - The target repository structure is:
@@ -102,38 +90,34 @@ The runtime is intentionally explicit. The main thread remains responsible for d
   - `templates/global-codex/skills/` for packaged global reusable procedures
   - `reports/` and `state/` for persistent artifacts
 
-### Architecture notes
+Use this for small, single-scope work.
 
-- The main thread remains the orchestrator and owns routing, gates, and approvals.
-- `builder` stays the only normal code-writing role.
-- `validator` and `tester` may run in parallel because they are validation-oriented and mostly read-heavy.
-- `api_guardian` is conditional and activates only when API, schema, CLI, or config surfaces are affected.
-- `scribe` and `github_manager` run only after the quality gate is green.
+- orchestrator
+- `builder`
+- normal validation and test gates
 
-### Key decisions
+This should remain the default for many day-to-day tasks.
 
-- Introduce one clean state schema instead of carrying forward the inconsistent Claude state model.
-- Keep report files in the design because they improve resume, auditability, and review.
-- Reduce hooks to guardrails. Keep the real orchestration flow explicit in Codex.
+### Guided lane
 
-## Stage 4: Runtime workflow design
+Use this when the task is still small enough to avoid departments, but planning or contracts matter.
 
-### Findings
+- orchestrator
+- optional `researcher`
+- `architect`
+- optional `api_guardian`
+- `builder`
+- `validator` and `tester`
 
-The target runtime loop is:
+### Department lane
 
-1. intake and task classification
-2. preflight and state initialization
-3. optional `researcher`
-4. `architect`
-5. conditional `api_guardian`
-6. `builder`
-7. parallel `validator` and `tester`
-8. gate decision: done or back to `builder`
-9. `scribe`
-10. optional `github_manager`
+Use this only when the task crosses multiple ownership areas and needs explicit handoffs.
 
-### Architecture notes
+- orchestrator
+- staff-office preflight
+- 2-4 bounded department tracks
+- validation gates
+- release/docs closeout if needed
 
 - The main thread must explicitly say when subagents are started, waited on, reused, or closed.
 - Resume cannot depend on chat history alone; state must stay visible outside the thread.
@@ -152,51 +136,97 @@ Start with one agent whenever possible. Add specialists when one of these signal
 
 Avoid extra agents when they only add more prompts, approval surfaces, latency, or token cost without clarifying the work.
 
-### Error and retry model
-
-- transient tool or MCP failure: retry once
-- red quality gate: loop back to `builder`
-- uncovered architecture issue: loop back to `architect`
-- push, merge, or deploy: always require an explicit human decision
-
-## Target flow
-
-```mermaid
-flowchart TD
-    A["Intake and classification"] --> B["Preflight and state init"]
-    B --> C{"Need research?"}
-    C -->|yes| D["researcher"]
-    C -->|no| E["architect"]
-    D --> E
-    E --> F{"API or contract impact?"}
-    F -->|yes| G["api_guardian"]
-    F -->|no| H["builder"]
-    G --> H
-    H --> I["validator"]
-    H --> J["tester"]
-    I --> K{"Both gates green?"}
-    J --> K
-    K -->|no| H
-    K -->|yes| L["scribe"]
-    L --> M{"Need PR or release action?"}
-    M -->|yes| N["github_manager"]
-    M -->|no| O["Done"]
-    N --> O
+```text
+CEO/CTO Orchestrator (main thread, read-only)
+|- Staff Offices
+|  |- Research Office
+|  |- Architecture Office
+|  |- Contract Office
+|  `- Release Office
+|- Product Departments
+|  |- Runtime Platform
+|  |- Workflow Design
+|  |- Workspace Governance
+|  |- Quality & Operations
+|  `- Docs & Developer Experience
+`- Specialist Guilds
+   |- Web
+   |- Apple
+   `- Flutter
 ```
 
-## Runtime roles
+## Current Roles Mapped Into The Target Model
 
-| Role | Responsibility | Write access |
+| Current role | Target place | Notes |
 | --- | --- | --- |
-| `orchestrator` | intake, routing, state, gates, approvals | no |
-| `researcher` | external or internal research | no |
-| `architect` | target structure, interfaces, risks, plan | no |
-| `api_guardian` | API, schema, CLI, and config impact review | no |
-| `builder` | smallest safe implementation | yes |
-| `validator` | structural and static validation | no |
-| `tester` | executable and test validation | no |
-| `scribe` | changelog, docs, release notes, completion artifacts | docs only |
-| `github_manager` | PR, release, and repo-facing coordination | no by default |
+| `researcher` | `Research Office` | read-only fact finding |
+| `architect` | `Architecture Office` | design, rollback, dependency planning |
+| `api_guardian` | `Contract Office` | contract and surface review |
+| `builder` | implementation lane | still the normal writer |
+| `validator` | quality gate | read-heavy structural checks |
+| `tester` | quality gate | executable verification |
+| `scribe` | `Release Office` | final docs and summary layer |
+| `github_manager` | `Release Office` | PR/release/governance coordination |
+
+The department layer now has concrete runtime scaffolding, but it remains optional and should not replace the role-centric baseline for routine work.
+
+## Department Agent Rollout Status
+
+Already implemented as `.toml` agents in the current repo state:
+
+- `runtime_platform`
+- `workflow_design`
+- `workspace_governance`
+- `quality_operations`
+- `docs_dx`
+- `ci_security_guardian`
+
+Still target-state behavior rather than a separate current `.toml` surface:
+
+- department mode should stay optional instead of becoming the default path for every run
+- machine-enforced write-scope governance is still evolving beyond the current docs, validation law, and repo checks
+- specialist guilds such as web, Apple, and Flutter remain skills first, not dedicated department agents
+
+## Department Responsibilities
+
+| Department | Owns |
+| --- | --- |
+| `Runtime Platform` | `.codex/config.toml`, `templates/global-codex/agents/`, runtime defaults, state schema |
+| `Workflow Design` | `templates/global-codex/skills/`, orchestration loops, handoffs, resume behavior |
+| `Workspace Governance` | `AGENTS.md`, templates, repo-local constitutions |
+| `Quality & Operations` | `scripts/`, checks, install/verify flow, smoke paths |
+| `Docs & Developer Experience` | `README.md`, `docs/`, prompts, operator guidance |
+| `CI & Security` | `.github/`, CODEOWNERS, Dependabot, pinned actions, workflow permissions |
+
+## Routing Law
+
+The target routing law is:
+
+1. governance preflight
+2. choose the smallest viable team
+3. if uncertainty is high, use `Research Office`
+4. if structure is unclear, use `Architecture Office`
+5. if contracts are touched, use `Contract Office`
+6. only then activate departments when the task truly spans multiple ownership areas
+7. keep one active writer per path unless a temporary lease is explicitly granted
+8. run `validator` and `tester`
+9. use `Release Office` only after the gates are green
+
+## Mandatory Artifacts For Department Mode
+
+Current repo state documents and templates these department-mode artifacts:
+
+- `Intake Brief`
+- `Department Routing Map`
+- `Write-Scope Matrix`
+- `Department Handoff Report`
+- `State Record`
+
+Still target-state rather than a separate current template:
+
+- `Frozen Vocabulary And Contract Pack`
+
+The current documented and templated artifacts live in [docs/department-orchestration.md](./department-orchestration.md) and under `reports/templates/` and `state/templates/`.
 
 ## Optional department agents
 
@@ -221,7 +251,7 @@ Department agents are not the default path. They exist to clarify ownership when
 - Push and deploy never happen without explicit human approval.
 - State and reports are the resume source of truth, not chat history alone.
 
-## Planned artifacts
+## Staged Rollout
 
 Current conventions:
 
@@ -246,12 +276,13 @@ Those are future hardening areas. The current contract is a documented, installa
 
 ## Why this port matters
 
-The Claude template already proved that the value is not the model name. The value comes from:
+The value does not come from "more agents." The value comes from:
 
-- hard role separation
+- hard ownership boundaries
 - controlled handoffs
 - auditable gates
-- clear human approval for risky actions
+- explicit human approval for risky actions
+- the ability to scale up and back down depending on the task
 
 Codex now has the native building blocks for that pattern. This repo exists to turn those ideas into a documented, versioned, and eventually fully implemented system.
 

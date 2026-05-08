@@ -10,15 +10,16 @@ These prompts assume the global install has already been applied.
 $godmode-workflow
 $apple-platforms
 
-GODMODE APPLE
-
 Goal: <goal>
 Context: <app, target, scheme, platform, or user flow>
 Constraints: <non-goals, deployment target, compatibility requirements>
 Done when: <xcodebuild command or manual verification signal>
 
-Inspect the current workspace first.
-Loop: research -> plan -> build -> validate.
+Context:
+- <target app, scheme, directory, platform scope, or validation command>
+
+Done when:
+- <what finished looks like>
 ```
 
 ## Best for
@@ -33,3 +34,5 @@ Loop: research -> plan -> build -> validate.
 - target app, scheme, or directory
 - expected platform such as `macOS`, `iOS`, or both
 - required validation command such as `xcodebuild build` or `xcodebuild test`
+- add `$godmode-debug` or `$godmode-review` if the run is primarily debugging or assessment rather than implementation
+- any release, versioning, or governance docs that the change must obey

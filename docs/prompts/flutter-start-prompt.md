@@ -10,15 +10,16 @@ These prompts assume the global install has already been applied.
 $godmode-workflow
 $flutter-dart
 
-GODMODE FLUTTER
-
 Goal: <goal>
 Context: <app, package, platform, or user flow>
 Constraints: <non-goals, supported platforms, compatibility requirements>
 Done when: <flutter analyze, flutter test, or runtime check>
 
-Inspect the current workspace first.
-Loop: research -> plan -> build -> validate.
+Context:
+- <affected package, app, platform scope, or validation command>
+
+Done when:
+- <what finished looks like>
 ```
 
 ## Best for
@@ -33,3 +34,5 @@ Loop: research -> plan -> build -> validate.
 - affected package, app, or directory
 - required validation command such as `flutter analyze`, `flutter test`, or `dart analyze`
 - platform scope such as `iOS`, `Android`, `macOS`, or `web`
+- add `$godmode-debug` or `$godmode-review` if the run is primarily debugging or assessment rather than implementation
+- any release, versioning, or governance docs that the change must obey

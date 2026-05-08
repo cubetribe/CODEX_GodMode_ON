@@ -1,0 +1,8 @@
+# Critical governance and automation paths
+/AGENTS.md @cubetribe
+/templates/global-codex/agents/ @cubetribe
+/templates/global-codex/skills/ @cubetribe
+/.github/workflows/ @cubetribe
+/.github/CODEOWNERS @cubetribe
+/.github/dependabot.yml @cubetribe
+/SECURITY.md @cubetribe

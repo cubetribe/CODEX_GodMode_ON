@@ -32,7 +32,7 @@ Discovery rules that matter:
 - `.codex/config.toml` is loaded only for trusted projects
 - same-name skills are not AGENTS-style merged; keep skill names focused and avoid accidental duplicates
 
-## Fast start on this Mac
+## Fast start by platform
 
 This repository ships a reproducible global setup under:
 
@@ -41,14 +41,23 @@ This repository ships a reproducible global setup under:
 - `templates/global-codex/agents/`
 - `templates/global-codex/skills/`
 - `scripts/apply-global-codex-setup.sh`
+- `scripts/apply-global-codex-setup.ps1`
 
-Apply it with:
+Apply the matching installer for your platform:
+
+macOS/Linux:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
 ```
 
-That script does five things:
+Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1
+```
+
+These installers do five things:
 
 - installs `~/.codex/AGENTS.md` and `~/.codex/config.toml` from the repo templates
 - installs the GodMode agents to `~/.codex/agents/`
@@ -56,12 +65,25 @@ That script does five things:
 - ensures `~/.codex/playwright-output/isolated` exists
 - adds the current repo path as a trusted project
 
+It also archives prior install snapshots under `~/.codex/backups/` instead of
+leaving `*.backup-*` files or directories inside the active agent and skill
+discovery roots. That matters because in-place backups can surface as duplicate
+skills or agents in Codex.
+
 It also replaces the `__CODEX_HOME__` placeholder inside the config template so the Playwright output path stays portable.
 
 To verify the result:
 
+macOS/Linux:
+
 ```bash
 ./scripts/apply-global-codex-setup.sh --check
+```
+
+Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1 -Check
 ```
 
 ## Upgrade from 0.2.x
@@ -76,6 +98,8 @@ git pull --ff-only origin main
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
 ```
+
+On Windows, use the PowerShell installer and `-Check` command instead of the shell script.
 
 The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the nine skills shipped by this repo.
 
@@ -105,6 +129,7 @@ Example:
 
 ## Execution flow
 - For non-trivial tasks: Research -> Plan -> Build -> Validate -> Release Summary.
+- Start with a governance preflight and identify the repo's release and documentation rules before editing versioned artifacts.
 - Before editing, report repo root, current branch, touched files, and expected impact.
 
 ## Safety gates
@@ -157,6 +182,10 @@ codex --profile review
 
 These profiles are intentionally thin. The workflow itself comes from the globally installed `AGENTS.md`, custom agents, and skills.
 
+For greenfield work, the installed skills also include
+`greenfield-bootstrap` so a new repo can establish local rules before the
+rest of the workflow fans out.
+
 ## Installed runtime layout
 
 After running the installer, the user-level runtime looks like this:
@@ -193,6 +222,15 @@ After running the installer, the user-level runtime looks like this:
     flutter-dart/
     release-manager/
 ```
+
+The first eight agents remain the role-centric baseline. The department-oriented agents are optional additions for larger multi-domain runs and do not mean every task should fan out by default.
+
+The matching skill split is:
+
+- `godmode-workflow` as the primary entry skill for most runs
+- `godmode-departments` as the explicit opt-in layer for department-mode routing
+- `godmode-debug` as the focused companion for reproduce -> isolate -> fix work
+- `godmode-review` as the focused companion for findings-first assessment work
 
 That is the important UX boundary: users do not need this repository open in every new Codex session after installation.
 
@@ -310,9 +348,22 @@ That smoke test proves a first-time install can create the full runtime without 
 
 ## Smoke-test the install
 
-After applying the installer, start Codex in any workspace and use one of the README prompts.
+After applying the installer, start Codex in any workspace and use a minimal skill-first prompt such as:
 
-The prompt should explicitly invoke `$godmode-workflow` and should not refer to this repository as a required runtime dependency.
+```text
+$godmode-workflow
+
+Goal: <goal>
+Context:
+- <files, errors, constraints>
+Done when:
+- <finish condition>
+```
+
+Add companion skills such as `$godmode-departments`, `$godmode-debug`,
+`$godmode-review`, `$greenfield-bootstrap`, or stack-specific skills only
+when the task actually needs them. The prompt should not refer to this
+repository as a required runtime dependency.
 
 ## Notes about Local vs Worktree
 
@@ -332,6 +383,7 @@ I have not seen a documented global setting that forces every new session to use
 - OpenAI Codex docs: [Config basics](https://developers.openai.com/codex/config-basic)
 - OpenAI Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md)
 - OpenAI Codex docs: [Customization](https://developers.openai.com/codex/concepts/customization)
+- OpenAI Codex docs: [Best practices](https://developers.openai.com/codex/learn/best-practices)
 - OpenAI Codex docs: [Agent Skills](https://developers.openai.com/codex/skills)
 - OpenAI Codex docs: [Subagents](https://developers.openai.com/codex/subagents)
 - OpenAI Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference)

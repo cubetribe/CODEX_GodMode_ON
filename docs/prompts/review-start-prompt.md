@@ -1,6 +1,6 @@
 # Review Start Prompt
 
-Use this for analysis, review, and architecture assessment.
+Use this for findings-first code, architecture, and release-risk review.
 
 These prompts assume the global install has already been applied.
 
@@ -17,9 +17,11 @@ Context: <files, branch, PR, release, or architecture background>
 Constraints: <review focus, non-goals, and whether edits are allowed>
 Done when: <finding format, validation expectation, or decision needed>
 
-Inspect the current workspace first.
-Loop: inspect -> analyze -> verify -> report.
-Findings first. No code changes unless asked.
+Context:
+- <files, diff, risks, constraints, or review focus>
+
+Done when:
+- <what the review output should contain>
 ```
 
 ## Best for
@@ -27,6 +29,7 @@ Findings first. No code changes unless asked.
 - code or architecture reviews
 - understanding an existing repo or subsystem
 - risk, scope, or integration assessments before implementation
+- pre-merge or pre-release review where edits are not the default outcome
 
 ## Optional extras
 

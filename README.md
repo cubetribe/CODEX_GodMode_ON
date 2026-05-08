@@ -135,7 +135,7 @@ starting points, not required templates.
 
 ## How To Use It
 
-1. Install the global runtime once with `./scripts/apply-global-codex-setup.sh`.
+1. Install the global runtime once with the matching setup script for your platform.
 2. Open any workspace in the Codex app or CLI.
 3. Start with `$godmode-workflow` and describe the real task.
 4. Add context, constraints, and a `Done when` condition for non-trivial work.

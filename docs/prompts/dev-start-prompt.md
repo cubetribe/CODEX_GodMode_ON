@@ -1,6 +1,6 @@
-# Dev Start Prompt
+# Default Start Prompt
 
-Use this for implementation work.
+Use this for most GodMode sessions.
 
 These prompts assume the global install has already been applied.
 
@@ -9,15 +9,16 @@ These prompts assume the global install has already been applied.
 ```text
 $godmode-workflow
 
-GODMODE DEV
-
 Goal: <goal>
 Context: <repo, package, branch, or relevant background>
 Constraints: <non-goals, files to avoid, compatibility requirements>
 Done when: <commands, expected behavior, or release output>
 
-Inspect the current workspace first.
-Loop: research -> plan -> build -> validate.
+Context:
+- <relevant files, errors, constraints, or architecture notes>
+
+Done when:
+- <what finished looks like>
 ```
 
 ## Best for
@@ -25,6 +26,7 @@ Loop: research -> plan -> build -> validate.
 - new features
 - scoped refactors
 - setup and documentation work that still needs validation
+- most repo-local work where `godmode-workflow` is enough on its own
 
 ## Optional extras
 

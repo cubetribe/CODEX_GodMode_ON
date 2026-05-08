@@ -12,7 +12,7 @@ Dieses Repository enthaelt vor allem Dokumentation, Konfigurationsbeispiele, Ski
 ## So bitte melden
 
 - keine sensiblen Details in ein oeffentliches Issue schreiben
-- wenn fuer dieses Repo verfuegbar, nutze GitHub private vulnerability reporting
+- nutze GitHub private vulnerability reporting auf der Advisories-Seite des Repos
 - wenn es nicht sensibel ist, oeffne ein normales Issue mit genug Kontext zur Reproduktion
 
 ## Was hilfreich ist
