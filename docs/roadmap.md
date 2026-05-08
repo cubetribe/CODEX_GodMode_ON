@@ -41,7 +41,8 @@ Goal:
 
 Expected contents:
 
-- `.codex/agents/`
+- packaged agent definitions under `templates/global-codex/agents/`
+- packaged skill definitions under `templates/global-codex/skills/`
 - state and report directories
 - documented `[agents]` configuration examples
 

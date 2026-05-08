@@ -19,6 +19,7 @@ The format is based on Keep a Changelog.
 - refreshed the GodMode workflow guidance against current Codex subagent, skills, AGENTS layering, and agent-eval guidance
 - updated the global Codex default model from `gpt-5.4` to `gpt-5.5`
 - expanded local and global setup checks to cover the shipped companion skills and department agents
+- moved packaged agents and skills out of repo-local Codex discovery paths to prevent duplicate project and personal entries after global installation
 - split Codex app and CLI slash-command guidance in the public docs
 - promoted the documented runtime from the 0.2 bootstrap line to a 1.0 release-ready package
 

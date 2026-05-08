@@ -32,8 +32,8 @@ Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Be
 
 - repo instructions: `AGENTS.md`
 - repo config: `.codex/config.toml`
-- repo skills: `.agents/skills/`
-- custom agents: `.codex/agents/`
+- packaged skills: `templates/global-codex/skills/`
+- packaged custom agents: `templates/global-codex/agents/`
 - maintainer docs: `docs/local-development.md`
 - release notes: `CHANGELOG.md` and `VERSION`
 

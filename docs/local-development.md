@@ -106,11 +106,13 @@ Do not commit, tag, push, or publish a GitHub release until that action is expli
 
 ## Repo structure
 
-- `.codex/agents/` contains the canonical GodMode agent-role definitions
-- `.agents/skills/` contains the canonical reusable workflow and stack skills
-- `templates/global-codex/` contains the global `AGENTS.md` and `config.toml` templates
+- `templates/global-codex/agents/` contains the packaged GodMode agent-role definitions
+- `templates/global-codex/skills/` contains the packaged reusable workflow and stack skills
+- `templates/global-codex/` contains the global `AGENTS.md`, `config.toml`, agent, and skill templates
 - `reports/generated/` is for local generated reports
 - `state/` is for local workflow state
+
+Do not place the packaged global GodMode runtime under this repo's `.codex/agents/` or `.agents/skills/` paths. Codex discovers those as project-local capabilities, which duplicates the same entries from the personal global install while maintaining this bootstrap repo.
 
 ## Recommended loop
 
@@ -133,6 +135,7 @@ Do not commit, tag, push, or publish a GitHub release until that action is expli
 | docs-only copy changes | `git diff --check` plus link/path consistency review |
 | skills or agent metadata | `./scripts/check-local-env.sh` |
 | installer or global template changes | `./scripts/apply-global-codex-setup.sh --check` and clean-target smoke test |
+| packaged runtime location changes | verify `.codex/agents` and `.agents/skills` are absent in this repo |
 | model or config defaults | docs review, changelog entry, installer check |
 | release prep | all checks above plus `VERSION` and `CHANGELOG.md` review |
 

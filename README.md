@@ -45,6 +45,7 @@ This repository is the installer, reference implementation, and contribution sur
 - current Codex guidance for subagents, skills, AGENTS layering, app commands, and CLI commands
 - `gpt-5.5` as the default model in the shipped global config template
 - local and global validation scripts that check the packaged runtime surface
+- packaged agents and skills stored outside repo-local discovery paths so this bootstrap repo does not show duplicate project and personal skill entries after global install
 
 This is still an explicit Codex workflow, not a separate hidden automation engine. Codex only uses subagents when you ask it to delegate work.
 
@@ -273,6 +274,8 @@ From a previous 0.2.x install:
 
 The installer backs up existing global files before replacing them. It updates `~/.codex/AGENTS.md`, `~/.codex/config.toml`, `~/.codex/agents/`, and `~/.agents/skills/`.
 
+This repository intentionally stores the packaged agents and skills under `templates/global-codex/agents/` and `templates/global-codex/skills/`, not under repo-local `.codex/agents/` or `.agents/skills/`. That prevents duplicate `CODEX_GodMode_ON` and personal entries in the Codex skill picker after the global runtime is installed.
+
 ## What You Get
 
 | Area | Purpose |
@@ -283,9 +286,9 @@ The installer backs up existing global files before replacing them. It updates `
 | `docs/local-development.md` | maintainer operating guide for this repo |
 | `docs/global-codex-setup.md` | reproducible install guide for the global runtime |
 | `docs/prompts/` | standalone prompt documents |
-| `.codex/agents/` | canonical GodMode agent role definitions that the installer publishes to `~/.codex/agents/` |
-| `.agents/skills/` | canonical GodMode skills that the installer publishes to `~/.agents/skills/` |
-| `templates/global-codex/` | global `AGENTS.md` and `config.toml` templates |
+| `templates/global-codex/agents/` | packaged GodMode agent role definitions that the installer publishes to `~/.codex/agents/` |
+| `templates/global-codex/skills/` | packaged GodMode skills that the installer publishes to `~/.agents/skills/` |
+| `templates/global-codex/` | global `AGENTS.md`, `config.toml`, agent, and skill templates |
 | `scripts/check-local-env.sh` | local repo validation |
 | `scripts/apply-global-codex-setup.sh` | install the documented global setup, agents, and skills |
 | `reports/` | persistent report conventions |

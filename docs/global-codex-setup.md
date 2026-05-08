@@ -38,8 +38,8 @@ This repository ships a reproducible global setup under:
 
 - `templates/global-codex/AGENTS.md`
 - `templates/global-codex/config.toml`
-- `.codex/agents/`
-- `.agents/skills/`
+- `templates/global-codex/agents/`
+- `templates/global-codex/skills/`
 - `scripts/apply-global-codex-setup.sh`
 
 Apply it with:
@@ -80,6 +80,8 @@ git pull --ff-only origin main
 The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 13 agent manifests and `~/.agents/skills/` should contain the nine skills shipped by this repo.
 
 If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md` or `~/.codex/config.toml`, inspect the generated backup files and reapply personal edits intentionally.
+
+This bootstrap repository intentionally does not keep the packaged runtime under repo-local `.codex/agents/` or `.agents/skills/`. Those are official project discovery paths; keeping the global package source there would make Codex show duplicate project and personal skills when this repository is open after installation.
 
 ## Minimal global files
 
@@ -256,6 +258,8 @@ Why the split matters:
 - `.agents/skills/` stores reusable procedures
 - workspace-local files remain project-scoped guidance or capabilities when a project needs them
 
+In this bootstrap repository, packaged global runtime sources live under `templates/global-codex/agents/` and `templates/global-codex/skills/` instead. Downstream projects should still use `.codex/agents/` and `.agents/skills/` when they intentionally need project-local agents or skills.
+
 ## Why not a giant start prompt
 
 The durable pattern is:
@@ -268,6 +272,7 @@ The durable pattern is:
 - repo `.codex/config.toml` for technical repo defaults
 - repo `.codex/agents/*.toml` for project roles
 - repo `.agents/skills/` for reusable procedures
+- this repo's `templates/global-codex/agents/` and `templates/global-codex/skills/` for package sources that should not be discovered as project-local duplicates
 
 This repository keeps prompts short on purpose because the real behavior belongs in those layers.
 

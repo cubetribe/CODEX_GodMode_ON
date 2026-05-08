@@ -10,8 +10,8 @@ The goal is not to copy the Claude implementation blindly. The goal is to preser
 
 - `AGENTS.md`
 - `.codex/config.toml`
-- `.codex/agents/*.toml`
-- `.agents/skills/`
+- `templates/global-codex/agents/*.toml`
+- `templates/global-codex/skills/`
 - persistent `reports/` and `state/`
 
 ## Current 1.0 Runtime
@@ -23,6 +23,7 @@ The repository now ships:
 - five optional department agents for large cross-domain work
 - nine reusable skills covering the normal workflow, debug lane, review lane, department routing, greenfield bootstrap, stack guidance, and release framing
 - local checks that verify both the repo package and the installed global runtime
+- package sources stored outside repo-local Codex discovery paths to avoid duplicate project and personal skills in this bootstrap repository
 
 The runtime is intentionally explicit. The main thread remains responsible for deciding when to use a specialist, when to wait for results, when to loop back, and when to stop for human approval.
 
@@ -39,6 +40,7 @@ The runtime is intentionally explicit. The main thread remains responsible for d
 - Reusable procedures belong in `.agents/skills/`.
 - Skills use progressive disclosure: metadata is visible first, and `SKILL.md` is loaded only when the skill is selected.
 - `AGENTS.md` remains the main layered guidance mechanism.
+- This bootstrap repo packages global agents and skills under `templates/global-codex/` because `.codex/agents/` and `.agents/skills/` would be discovered as project-local duplicates after global installation.
 
 ### Architecture notes
 
@@ -96,8 +98,8 @@ The runtime is intentionally explicit. The main thread remains responsible for d
 - The target repository structure is:
   - `AGENTS.md` for the orchestrator constitution
   - `.codex/config.toml` for technical defaults and `[agents]` limits
-  - `.codex/agents/*.toml` for role definitions
-  - `.agents/skills/` for reusable procedures
+  - `templates/global-codex/agents/*.toml` for packaged global role definitions
+  - `templates/global-codex/skills/` for packaged global reusable procedures
   - `reports/` and `state/` for persistent artifacts
 
 ### Architecture notes
@@ -225,8 +227,8 @@ Current conventions:
 - `reports/generated/NN-role-report.md`
 - `state/workflow-state.local.json`
 - `docs/` for architecture and operations
-- `.codex/agents/*.toml` for role definitions
-- `.agents/skills/` for reusable procedures
+- `templates/global-codex/agents/*.toml` for packaged role definitions
+- `templates/global-codex/skills/` for packaged reusable procedures
 
 Future work may add stricter schemas or automated checks for these artifacts. Today they are conventions, not a separate runtime engine.
 
