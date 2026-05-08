@@ -169,9 +169,27 @@ run_check() {
   check_path "$target_agents_dir" "Global agents dir" || status=1
   check_path "$user_skills_home" "User skills home" || status=1
   check_path "$playwright_output" "Playwright output" || status=1
+  check_path "${target_agents_dir}/api_guardian.toml" "Global agent api_guardian" || status=1
+  check_path "${target_agents_dir}/architect.toml" "Global agent architect" || status=1
   check_path "${target_agents_dir}/builder.toml" "Global agent builder" || status=1
+  check_path "${target_agents_dir}/github_manager.toml" "Global agent github_manager" || status=1
   check_path "${target_agents_dir}/researcher.toml" "Global agent researcher" || status=1
+  check_path "${target_agents_dir}/scribe.toml" "Global agent scribe" || status=1
+  check_path "${target_agents_dir}/tester.toml" "Global agent tester" || status=1
+  check_path "${target_agents_dir}/validator.toml" "Global agent validator" || status=1
+  check_path "${target_agents_dir}/runtime_platform.toml" "Global agent runtime_platform" || status=1
+  check_path "${target_agents_dir}/workflow_design.toml" "Global agent workflow_design" || status=1
+  check_path "${target_agents_dir}/workspace_governance.toml" "Global agent workspace_governance" || status=1
+  check_path "${target_agents_dir}/quality_operations.toml" "Global agent quality_operations" || status=1
+  check_path "${target_agents_dir}/docs_dx.toml" "Global agent docs_dx" || status=1
   check_path "${user_skills_home}/godmode-workflow/SKILL.md" "Global skill godmode-workflow" || status=1
+  check_path "${user_skills_home}/godmode-debug/SKILL.md" "Global skill godmode-debug" || status=1
+  check_path "${user_skills_home}/godmode-review/SKILL.md" "Global skill godmode-review" || status=1
+  check_path "${user_skills_home}/godmode-departments/SKILL.md" "Global skill godmode-departments" || status=1
+  check_path "${user_skills_home}/greenfield-bootstrap/SKILL.md" "Global skill greenfield-bootstrap" || status=1
+  check_path "${user_skills_home}/apple-platforms/SKILL.md" "Global skill apple-platforms" || status=1
+  check_path "${user_skills_home}/flutter-dart/SKILL.md" "Global skill flutter-dart" || status=1
+  check_path "${user_skills_home}/release-manager/SKILL.md" "Global skill release-manager" || status=1
   check_path "${user_skills_home}/web-platforms/SKILL.md" "Global skill web-platforms" || status=1
 
   if [[ -f "$target_config" ]]; then

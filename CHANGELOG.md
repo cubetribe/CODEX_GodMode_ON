@@ -6,6 +6,31 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-05-08
+
+### Added
+
+- companion GodMode skills for debug, review, department routing, and greenfield bootstrap workflows
+- optional department custom agents for runtime, workflow, governance, quality, and docs review lanes
+- expanded release documentation for install, upgrade, workflow routing, validation, and maintainer release prep
+
+### Changed
+
+- refreshed the GodMode workflow guidance against current Codex subagent, skills, AGENTS layering, and agent-eval guidance
+- updated the global Codex default model from `gpt-5.4` to `gpt-5.5`
+- expanded local and global setup checks to cover the shipped companion skills and department agents
+- split Codex app and CLI slash-command guidance in the public docs
+- promoted the documented runtime from the 0.2 bootstrap line to a 1.0 release-ready package
+
+### Fixed
+
+- made the local environment check robust against `flutter --version` broken-pipe behavior under `pipefail`
+
+### Upgrade notes
+
+- Run `./scripts/apply-global-codex-setup.sh` after updating to install the new skills, optional department agents, and `gpt-5.5` default.
+- Run `./scripts/apply-global-codex-setup.sh --check` to verify the user-level runtime after installation.
+
 ## [0.2.1] - 2026-03-19
 
 ### Added

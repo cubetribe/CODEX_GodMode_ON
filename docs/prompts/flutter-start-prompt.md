@@ -13,6 +13,9 @@ $flutter-dart
 GODMODE FLUTTER
 
 Goal: <goal>
+Context: <app, package, platform, or user flow>
+Constraints: <non-goals, supported platforms, compatibility requirements>
+Done when: <flutter analyze, flutter test, or runtime check>
 
 Inspect the current workspace first.
 Loop: research -> plan -> build -> validate.

@@ -18,11 +18,12 @@ check_cmd() {
       node) node -v ;;
       npm) npm -v ;;
       pnpm) pnpm -v ;;
-      swift) swift --version | head -n 1 ;;
-      xcodebuild) xcodebuild -version | head -n 2 | tr '\n' ' ' ; printf '\n' ;;
-      flutter) flutter --version | head -n 1 ;;
-      dart) dart --version 2>&1 | head -n 1 ;;
+      swift) swift --version | sed -n '1p' ;;
+      xcodebuild) xcodebuild -version | sed -n '1,2p' | tr '\n' ' ' ; printf '\n' ;;
+      flutter) flutter --version | sed -n '1p' ;;
+      dart) dart --version 2>&1 | sed -n '1p' ;;
       git) git --version ;;
+      codex) codex --version ;;
       *) echo "present" ;;
     esac
   else
@@ -43,19 +44,39 @@ check_path() {
 
 printf 'Repo root: %s\n' "$repo_root"
 
-for cmd in git node npm pnpm swift xcodebuild flutter dart; do
+for cmd in git node npm pnpm swift xcodebuild flutter dart codex; do
   check_cmd "$cmd"
 done
 
 printf '\nRepo structure:\n'
 check_path "AGENTS.md"
 check_path "README.md"
+check_path "CHANGELOG.md"
+check_path "VERSION"
 check_path ".codex/config.toml"
 check_path ".codex/agents"
+check_path ".codex/agents/api_guardian.toml"
+check_path ".codex/agents/architect.toml"
 check_path ".codex/agents/builder.toml"
+check_path ".codex/agents/github_manager.toml"
 check_path ".codex/agents/researcher.toml"
+check_path ".codex/agents/scribe.toml"
+check_path ".codex/agents/tester.toml"
+check_path ".codex/agents/validator.toml"
+check_path ".codex/agents/runtime_platform.toml"
+check_path ".codex/agents/workflow_design.toml"
+check_path ".codex/agents/workspace_governance.toml"
+check_path ".codex/agents/quality_operations.toml"
+check_path ".codex/agents/docs_dx.toml"
 check_path ".agents/skills"
 check_path ".agents/skills/godmode-workflow/SKILL.md"
+check_path ".agents/skills/godmode-debug/SKILL.md"
+check_path ".agents/skills/godmode-review/SKILL.md"
+check_path ".agents/skills/godmode-departments/SKILL.md"
+check_path ".agents/skills/greenfield-bootstrap/SKILL.md"
+check_path ".agents/skills/apple-platforms/SKILL.md"
+check_path ".agents/skills/flutter-dart/SKILL.md"
+check_path ".agents/skills/release-manager/SKILL.md"
 check_path ".agents/skills/web-platforms/SKILL.md"
 check_path "docs/blueprint.md"
 check_path "docs/global-codex-setup.md"
@@ -71,7 +92,9 @@ check_path "templates/global-codex/config.toml"
 check_path "scripts/apply-global-codex-setup.sh"
 check_path "scripts/check-local-env.sh"
 check_path "reports"
+check_path "reports/README.md"
 check_path "state"
+check_path "state/README.md"
 
 if [[ "$full_check" == true ]] && command -v flutter >/dev/null 2>&1; then
   printf '\nFlutter doctor:\n'

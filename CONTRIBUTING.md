@@ -32,8 +32,10 @@ Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Be
 
 - repo instructions: `AGENTS.md`
 - repo config: `.codex/config.toml`
-- repo rules: `.codex/rules/`
 - repo skills: `.agents/skills/`
+- custom agents: `.codex/agents/`
+- maintainer docs: `docs/local-development.md`
+- release notes: `CHANGELOG.md` and `VERSION`
 
 ## Vor dem PR kurz checken
 
@@ -41,6 +43,8 @@ Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Be
 - gibt es schon eine laufende Diskussion dazu?
 - ist der Diff klein genug, um schnell reviewt zu werden?
 - wurden Doku oder Beispiele aktualisiert, falls sich Verhalten aendert?
+- wurde der Release Impact als `none`, `patch`, `minor` oder `major` eingeordnet?
+- wurden `./scripts/check-local-env.sh` und bei Installer-Aenderungen `./scripts/apply-global-codex-setup.sh --check` ausgefuehrt?
 
 ## Freundlicher Rahmen
 

@@ -1,4 +1,4 @@
-model = "gpt-5.4"
+model = "gpt-5.5"
 model_reasoning_effort = "high"
 personality = "pragmatic"
 approval_policy = "on-request"
@@ -58,6 +58,3 @@ command = "npx"
 # Disabled on 2026-03-16 because the local Docker-backed GitHub MCP wrapper
 # repeatedly timed out during `codex exec` startup and left hanging container
 # processes behind. Use `git` and `gh` directly until the wrapper is stable.
-
-[features]
-multi_agent = true

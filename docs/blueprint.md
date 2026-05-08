@@ -1,8 +1,10 @@
 # Blueprint: Codex GodMode
 
-Updated: 2026-03-18
+Updated: 2026-05-08
 
 This document is the core architecture blueprint for the Codex-native port of [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On).
+
+`1.0.0` is the first release where this blueprint matches an installable runtime package instead of only a target design.
 
 The goal is not to copy the Claude implementation blindly. The goal is to preserve the proven orchestration pattern and translate it into a modern Codex structure built around:
 
@@ -12,15 +14,30 @@ The goal is not to copy the Claude implementation blindly. The goal is to preser
 - `.agents/skills/`
 - persistent `reports/` and `state/`
 
+## Current 1.0 Runtime
+
+The repository now ships:
+
+- a global installer that publishes guidance, config, agents, and skills to the user's Codex home
+- eight core role agents for the normal workflow
+- five optional department agents for large cross-domain work
+- nine reusable skills covering the normal workflow, debug lane, review lane, department routing, greenfield bootstrap, stack guidance, and release framing
+- local checks that verify both the repo package and the installed global runtime
+
+The runtime is intentionally explicit. The main thread remains responsible for deciding when to use a specialist, when to wait for results, when to loop back, and when to stop for human approval.
+
 ## Stage 1: Research Codex orchestration capabilities
 
 ### Findings
 
 - Current Codex documentation describes the feature as `Subagents`, not as a separate “super-agent” product.
 - Codex can spawn specialized agents in parallel and consolidate their output in the main thread.
+- Current Codex releases enable subagent workflows by default, but Codex only spawns subagents when explicitly asked.
+- Subagents inherit the parent sandbox and approval state, and live parent runtime overrides are reapplied to children.
 - The built-in role types are `default`, `worker`, and `explorer`.
 - Project-specific custom agents belong in `.codex/agents/*.toml`.
 - Reusable procedures belong in `.agents/skills/`.
+- Skills use progressive disclosure: metadata is visible first, and `SKILL.md` is loaded only when the skill is selected.
 - `AGENTS.md` remains the main layered guidance mechanism.
 
 ### Architecture notes
@@ -28,12 +45,14 @@ The goal is not to copy the Claude implementation blindly. The goal is to preser
 - Codex cleanly separates guidance, technical configuration, custom agents, and reusable skills.
 - Parallel subagents are best for read-heavy tasks such as research, mapping, and review.
 - Write-heavy work should stay narrowly owned to avoid edit conflicts and unclear responsibility.
+- Multi-agent splits are worthwhile only when they improve capability isolation, policy isolation, prompt clarity, trace legibility, or parallel read-heavy work.
+- Prompt and workflow quality should be validated with concrete checks where possible, such as trigger behavior, command execution, handoff accuracy, and final-answer correctness.
 
 ### Key decisions
 
 - This port will be built around explicit subagent calls, not hidden hook automation.
 - Roles will stay narrow and focused.
-- Stable repeated procedures will later be moved into skills.
+- Stable repeated procedures belong in focused skills.
 
 ## Stage 2: Analyze `ClaudeCode_GodMode-On`
 
@@ -117,6 +136,19 @@ The target runtime loop is:
 - The main thread must explicitly say when subagents are started, waited on, reused, or closed.
 - Resume cannot depend on chat history alone; state must stay visible outside the thread.
 - Parallelism should never turn into multiple builders writing the same files.
+- Use `Goal`, `Context`, `Constraints`, and `Done when` as the default task frame when the user has not already supplied equivalent structure.
+- For long-horizon work, keep durable project memory in markdown reports, state files, or specs that can be re-read after compaction or resume.
+
+### When to use multi-agent routing
+
+Start with one agent whenever possible. Add specialists when one of these signals is present:
+
+- the task crosses runtime, workflow, governance, docs, or validation ownership
+- a specialist needs different tools, policy, or instructions
+- read-heavy exploration, verification, or source research can run independently
+- eval or review evidence shows routing, tool selection, or handoff accuracy is a risk
+
+Avoid extra agents when they only add more prompts, approval surfaces, latency, or token cost without clarifying the work.
 
 ### Error and retry model
 
@@ -164,24 +196,50 @@ flowchart TD
 | `scribe` | changelog, docs, release notes, completion artifacts | docs only |
 | `github_manager` | PR, release, and repo-facing coordination | no by default |
 
+## Optional department agents
+
+Department agents are not the default path. They exist to clarify ownership when a task spans multiple domains.
+
+| Agent | Responsibility | Write access |
+| --- | --- | --- |
+| `runtime_platform` | Codex runtime defaults, toolchains, sandboxing, and environment behavior | no |
+| `workflow_design` | workflow procedures, skill boundaries, and handoff artifacts | no |
+| `workspace_governance` | AGENTS layering, release law, branch policy, and repo rules | no |
+| `quality_operations` | validation plans, install checks, smoke paths, and eval-oriented checks | no |
+| `docs_dx` | README, setup docs, prompts, and contributor-facing clarity | no |
+
 ## Invariants
 
 - The orchestrator does not implement code itself.
 - `builder` is the only normal code-writing role.
 - `validator` and `tester` are both required for a green quality gate.
 - `api_guardian` is required when contract surfaces are touched.
+- Department agents are advisory unless the parent workflow explicitly assigns a bounded write scope.
 - Push and deploy never happen without explicit human approval.
 - State and reports are the resume source of truth, not chat history alone.
 
 ## Planned artifacts
 
-Not fully implemented yet, but part of the intended design:
+Current conventions:
 
-- `reports/v{workflow_version}/NN-role-report.md`
-- `state/workflow-state.json`
+- `reports/generated/NN-role-report.md`
+- `state/workflow-state.local.json`
 - `docs/` for architecture and operations
 - `.codex/agents/*.toml` for role definitions
 - `.agents/skills/` for reusable procedures
+
+Future work may add stricter schemas or automated checks for these artifacts. Today they are conventions, not a separate runtime engine.
+
+## Release boundary
+
+The 1.0 release is a runtime-package milestone. It does not claim:
+
+- automatic state-machine execution outside Codex
+- hidden auto-spawning of subagents
+- automatic report or state schema enforcement
+- CI/CD, deployment, or GitHub release automation
+
+Those are future hardening areas. The current contract is a documented, installable, validated Codex workflow package.
 
 ## Why this port matters
 
@@ -198,6 +256,12 @@ Codex now has the native building blocks for that pattern. This repo exists to t
 
 - Source repo: [cubetribe/ClaudeCode_GodMode-On](https://github.com/cubetribe/ClaudeCode_GodMode-On)
 - Codex docs: [Subagents](https://developers.openai.com/codex/subagents/)
+- Codex docs: [Subagent concepts](https://developers.openai.com/codex/concepts/subagents)
 - Codex docs: [Agent Skills](https://developers.openai.com/codex/skills/)
 - Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
 - Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference/)
+- Codex docs: [Best practices](https://developers.openai.com/codex/learn/best-practices)
+- OpenAI API docs: [Agents orchestration](https://developers.openai.com/api/docs/guides/agents/orchestration)
+- OpenAI API docs: [Evaluate agent workflows](https://developers.openai.com/api/docs/guides/agent-evals)
+- OpenAI Developers blog: [Testing Agent Skills Systematically with Evals](https://developers.openai.com/blog/eval-skills)
+- OpenAI Developers blog: [Run long horizon tasks with Codex](https://developers.openai.com/blog/run-long-horizon-tasks-with-codex)

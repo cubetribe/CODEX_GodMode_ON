@@ -13,6 +13,9 @@ $web-platforms
 GODMODE WEB
 
 Goal: <goal>
+Context: <app, package, route, API surface, or framework version>
+Constraints: <non-goals, browser targets, compatibility requirements>
+Done when: <lint, test, build, or runtime check>
 
 Inspect the current workspace first.
 Loop: research -> plan -> build -> validate.

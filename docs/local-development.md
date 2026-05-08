@@ -71,6 +71,39 @@ To verify the global setup:
 ./scripts/apply-global-codex-setup.sh --check
 ```
 
+## Release prep
+
+Current release target: `1.0.0`.
+
+Before publishing a release:
+
+1. confirm `VERSION` matches the intended release
+2. move relevant `CHANGELOG.md` entries from `[Unreleased]` into the dated release section
+3. run `git diff --check`
+4. run `./scripts/check-local-env.sh`
+5. run `./scripts/apply-global-codex-setup.sh --check`
+6. run a clean-target installer smoke test when installer behavior changed
+7. inspect `git diff --stat` and confirm no unrelated files changed
+8. prepare a clear release summary and upgrade notes
+
+Clean-target installer smoke test:
+
+```bash
+tmp_root="$(mktemp -d)"
+tmp_codex="$tmp_root/.codex"
+tmp_skills="$tmp_root/.agents/skills"
+./scripts/apply-global-codex-setup.sh \
+  --codex-home "$tmp_codex" \
+  --user-skills-home "$tmp_skills" \
+  --no-trust-project
+./scripts/apply-global-codex-setup.sh --check \
+  --codex-home "$tmp_codex" \
+  --user-skills-home "$tmp_skills" \
+  --no-trust-project
+```
+
+Do not commit, tag, push, or publish a GitHub release until that action is explicitly approved.
+
 ## Repo structure
 
 - `.codex/agents/` contains the canonical GodMode agent-role definitions
@@ -93,9 +126,23 @@ To verify the global setup:
 10. commit on `main` when you really want to keep the change
 11. push `main` when explicitly approved
 
+## Validation matrix
+
+| Change type | Minimum validation |
+| --- | --- |
+| docs-only copy changes | `git diff --check` plus link/path consistency review |
+| skills or agent metadata | `./scripts/check-local-env.sh` |
+| installer or global template changes | `./scripts/apply-global-codex-setup.sh --check` and clean-target smoke test |
+| model or config defaults | docs review, changelog entry, installer check |
+| release prep | all checks above plus `VERSION` and `CHANGELOG.md` review |
+
 ## Good first skills in this repo
 
 - `godmode-workflow`
+- `godmode-debug`
+- `godmode-review`
+- `godmode-departments`
+- `greenfield-bootstrap`
 - `apple-platforms`
 - `web-platforms`
 - `flutter-dart`

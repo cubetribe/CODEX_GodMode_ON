@@ -13,6 +13,9 @@ $apple-platforms
 GODMODE APPLE
 
 Goal: <goal>
+Context: <app, target, scheme, platform, or user flow>
+Constraints: <non-goals, deployment target, compatibility requirements>
+Done when: <xcodebuild command or manual verification signal>
 
 Inspect the current workspace first.
 Loop: research -> plan -> build -> validate.

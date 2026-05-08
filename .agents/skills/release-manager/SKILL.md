@@ -4,7 +4,7 @@ description: Classify release impact, draft changelog text, and suggest PR or co
 ---
 
 1. Determine whether the change is `major`, `minor`, `patch`, or `none`.
-2. If behavior or recommended setup changed, draft a `CHANGELOG.md` entry under `[Unreleased]`.
+2. If behavior or recommended setup changed, draft a `CHANGELOG.md` entry under `[Unreleased]`; when explicitly preparing a release, move the entry into the dated release section and verify `VERSION`.
 3. Suggest a Conventional Commit style title that matches the real scope.
 4. Produce a short PR summary with:
    - what changed

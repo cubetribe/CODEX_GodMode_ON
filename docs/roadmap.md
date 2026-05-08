@@ -2,6 +2,19 @@
 
 This roadmap is not a list of “nice someday ideas.” It is the delivery path for the Codex GodMode port.
 
+Current release: `1.0.0`.
+
+## Release status
+
+| Phase | Status in 1.0.0 |
+| --- | --- |
+| Phase 0: Blueprint | complete |
+| Phase 1: Repository scaffolding | complete |
+| Phase 2: Orchestrator contract | complete as documented workflow guidance |
+| Phase 3: Guardrails and helper tools | partially complete through install and environment checks |
+| Phase 4: Reference implementation | complete as an installable Codex runtime package |
+| Phase 5: Validation and community hardening | ongoing |
+
 ## Phase 0: Blueprint
 
 Goal:
@@ -18,7 +31,7 @@ Deliverables:
 
 Done when:
 
-- a new reader understands the purpose, target shape, and next implementation step without extra context
+- a new reader understands the purpose, target shape, and implementation status without extra context
 
 ## Phase 1: Repository scaffolding
 
@@ -52,7 +65,7 @@ Expected contents:
 
 Done when:
 
-- every step between intake and completion is documented as a deterministic flow
+- every step between intake and completion is documented as a deterministic Codex workflow
 
 ## Phase 3: Guardrails and helper tools
 
@@ -69,7 +82,7 @@ Expected contents:
 
 Done when:
 
-- critical rules are not only described but can also be enforced technically
+- critical install and readiness rules are not only described but can also be checked locally
 
 ## Phase 4: Reference implementation
 
@@ -79,8 +92,8 @@ Goal:
 
 Expected contents:
 
-- first custom agents
-- first skills
+- core custom agents and optional department agents
+- core workflow skills, companion lane skills, and stack skills
 - example flows for feature work, debugging, and API changes
 
 Done when:
@@ -103,3 +116,13 @@ Expected contents:
 Done when:
 
 - the system is stable enough for repeated use and understandable to contributors outside the core team
+
+## After 1.0.0
+
+Likely next hardening areas:
+
+- example reports and state files that demonstrate clean handoffs
+- optional schema checks for `reports/` and `state/`
+- eval-style examples for skill trigger accuracy and workflow routing
+- broader documentation examples from real web, Apple, Flutter, review, and debug runs
+- CI checks for shell scripts, markdown links, and packaged agent or skill metadata
