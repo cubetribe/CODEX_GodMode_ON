@@ -234,6 +234,34 @@ install_skill_dirs() {
   done
 }
 
+run_dynamic_runtime_checks() {
+  local status_ref="$1"
+  local source_path=""
+  local agent_name=""
+  local skill_dir=""
+  local skill_name=""
+  local target_skill=""
+
+  for source_path in "${source_repo_agents}"/*.toml; do
+    [[ -f "$source_path" ]] || continue
+    agent_name="$(basename "$source_path")"
+    check_path "${target_agents_dir}/${agent_name}" "Global agent ${agent_name%.toml}" || printf -v "$status_ref" '1'
+    if [[ -f "${target_agents_dir}/${agent_name}" ]]; then
+      check_contains "${target_agents_dir}/${agent_name}" "name = \"${agent_name%.toml}\"" "installed ${agent_name%.toml} agent name" || printf -v "$status_ref" '1'
+    fi
+  done
+
+  for skill_dir in "${source_repo_skills}"/*; do
+    [[ -d "$skill_dir" ]] || continue
+    skill_name="$(basename "$skill_dir")"
+    target_skill="${user_skills_home}/${skill_name}/SKILL.md"
+    check_path "$target_skill" "Global skill ${skill_name}" || printf -v "$status_ref" '1'
+    if [[ -f "$target_skill" ]]; then
+      check_contains "$target_skill" "name: ${skill_name}" "installed ${skill_name} skill metadata" || printf -v "$status_ref" '1'
+    fi
+  done
+}
+
 run_check() {
   local status=0
 
@@ -244,20 +272,7 @@ run_check() {
   check_path "$playwright_output" "Playwright output" || status=1
   check_no_legacy_discovery_conflicts "$target_agents_dir" "Global agents dir" || status=1
   check_no_legacy_discovery_conflicts "$user_skills_home" "User skills home" || status=1
-  check_path "${target_agents_dir}/builder.toml" "Global agent builder" || status=1
-  check_path "${target_agents_dir}/researcher.toml" "Global agent researcher" || status=1
-  check_path "${target_agents_dir}/runtime_platform.toml" "Global agent runtime_platform" || status=1
-  check_path "${target_agents_dir}/workflow_design.toml" "Global agent workflow_design" || status=1
-  check_path "${target_agents_dir}/workspace_governance.toml" "Global agent workspace_governance" || status=1
-  check_path "${target_agents_dir}/quality_operations.toml" "Global agent quality_operations" || status=1
-  check_path "${target_agents_dir}/docs_dx.toml" "Global agent docs_dx" || status=1
-  check_path "${target_agents_dir}/ci_security_guardian.toml" "Global agent ci_security_guardian" || status=1
-  check_path "${user_skills_home}/godmode-workflow/SKILL.md" "Global skill godmode-workflow" || status=1
-  check_path "${user_skills_home}/godmode-departments/SKILL.md" "Global skill godmode-departments" || status=1
-  check_path "${user_skills_home}/godmode-debug/SKILL.md" "Global skill godmode-debug" || status=1
-  check_path "${user_skills_home}/godmode-review/SKILL.md" "Global skill godmode-review" || status=1
-  check_path "${user_skills_home}/greenfield-bootstrap/SKILL.md" "Global skill greenfield-bootstrap" || status=1
-  check_path "${user_skills_home}/web-platforms/SKILL.md" "Global skill web-platforms" || status=1
+  run_dynamic_runtime_checks status
 
   if [[ -f "$target_config" ]]; then
     check_contains "$target_config" "[profiles.swiftui]" "config profile swiftui" || status=1
@@ -272,38 +287,6 @@ run_check() {
   if [[ -f "$target_agents" ]]; then
     check_contains "$target_agents" "## Profile intents" "global AGENTS profile guidance" || status=1
     check_contains "$target_agents" "## Global workflow" "global AGENTS workflow guidance" || status=1
-  fi
-
-  if [[ -f "${target_agents_dir}/builder.toml" ]]; then
-    check_contains "${target_agents_dir}/builder.toml" 'name = "builder"' "installed builder agent name" || status=1
-  fi
-
-  if [[ -f "${target_agents_dir}/runtime_platform.toml" ]]; then
-    check_contains "${target_agents_dir}/runtime_platform.toml" 'name = "runtime_platform"' "installed runtime_platform agent name" || status=1
-  fi
-
-  if [[ -f "${target_agents_dir}/ci_security_guardian.toml" ]]; then
-    check_contains "${target_agents_dir}/ci_security_guardian.toml" 'name = "ci_security_guardian"' "installed ci_security_guardian agent name" || status=1
-  fi
-
-  if [[ -f "${user_skills_home}/godmode-workflow/SKILL.md" ]]; then
-    check_contains "${user_skills_home}/godmode-workflow/SKILL.md" "GodMode Workflow" "installed godmode skill" || status=1
-  fi
-
-  if [[ -f "${user_skills_home}/godmode-departments/SKILL.md" ]]; then
-    check_contains "${user_skills_home}/godmode-departments/SKILL.md" "GodMode Departments" "installed godmode departments skill" || status=1
-  fi
-
-  if [[ -f "${user_skills_home}/godmode-debug/SKILL.md" ]]; then
-    check_contains "${user_skills_home}/godmode-debug/SKILL.md" "GodMode Debug" "installed godmode debug skill" || status=1
-  fi
-
-  if [[ -f "${user_skills_home}/godmode-review/SKILL.md" ]]; then
-    check_contains "${user_skills_home}/godmode-review/SKILL.md" "GodMode Review" "installed godmode review skill" || status=1
-  fi
-
-  if [[ -f "${user_skills_home}/greenfield-bootstrap/SKILL.md" ]]; then
-    check_contains "${user_skills_home}/greenfield-bootstrap/SKILL.md" "Greenfield Bootstrap" "installed greenfield skill" || status=1
   fi
 
   if [[ "$status" -ne 0 ]]; then

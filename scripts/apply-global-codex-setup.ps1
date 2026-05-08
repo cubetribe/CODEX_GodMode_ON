@@ -242,6 +242,30 @@ function Install-SkillDirs {
   }
 }
 
+function Run-DynamicRuntimeChecks {
+  param([ref]$Status)
+
+  $sourceAgentFiles = @(Get-ChildItem -LiteralPath $script:sourceRepoAgents -Filter '*.toml' -File | Sort-Object Name)
+  foreach ($sourceAgentFile in $sourceAgentFiles) {
+    $agentName = $sourceAgentFile.BaseName
+    $targetAgentPath = Join-Path $script:targetAgentsDir $sourceAgentFile.Name
+    if (-not (Check-Path $targetAgentPath "Global agent $agentName")) { $Status.Value = 1 }
+    if (Test-Path -LiteralPath $targetAgentPath -PathType Leaf) {
+      if (-not (Check-Contains $targetAgentPath "name = ""$agentName""" "installed $agentName agent name")) { $Status.Value = 1 }
+    }
+  }
+
+  $sourceSkillDirs = @(Get-ChildItem -LiteralPath $script:sourceRepoSkills -Directory | Sort-Object Name)
+  foreach ($sourceSkillDir in $sourceSkillDirs) {
+    $skillName = $sourceSkillDir.Name
+    $targetSkillPath = Join-Path (Join-Path $script:userSkillsHome $skillName) 'SKILL.md'
+    if (-not (Check-Path $targetSkillPath "Global skill $skillName")) { $Status.Value = 1 }
+    if (Test-Path -LiteralPath $targetSkillPath -PathType Leaf) {
+      if (-not (Check-Contains $targetSkillPath "name: $skillName" "installed $skillName skill metadata")) { $Status.Value = 1 }
+    }
+  }
+}
+
 function Run-Check {
   $status = 0
 
@@ -252,20 +276,7 @@ function Run-Check {
   if (-not (Check-Path $script:playwrightOutput 'Playwright output')) { $status = 1 }
   if (-not (Check-NoLegacyDiscoveryConflicts $script:targetAgentsDir 'Global agents dir')) { $status = 1 }
   if (-not (Check-NoLegacyDiscoveryConflicts $script:userSkillsHome 'User skills home')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'builder.toml') 'Global agent builder')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'researcher.toml') 'Global agent researcher')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'runtime_platform.toml') 'Global agent runtime_platform')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'workflow_design.toml') 'Global agent workflow_design')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'workspace_governance.toml') 'Global agent workspace_governance')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'quality_operations.toml') 'Global agent quality_operations')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'docs_dx.toml') 'Global agent docs_dx')) { $status = 1 }
-  if (-not (Check-Path (Join-Path $script:targetAgentsDir 'ci_security_guardian.toml') 'Global agent ci_security_guardian')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'godmode-workflow') 'SKILL.md') 'Global skill godmode-workflow')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'godmode-departments') 'SKILL.md') 'Global skill godmode-departments')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'godmode-debug') 'SKILL.md') 'Global skill godmode-debug')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'godmode-review') 'SKILL.md') 'Global skill godmode-review')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'greenfield-bootstrap') 'SKILL.md') 'Global skill greenfield-bootstrap')) { $status = 1 }
-  if (-not (Check-Path (Join-Path (Join-Path $script:userSkillsHome 'web-platforms') 'SKILL.md') 'Global skill web-platforms')) { $status = 1 }
+  Run-DynamicRuntimeChecks ([ref]$status)
 
   if (Test-Path -LiteralPath $script:targetConfig -PathType Leaf) {
     if (-not (Check-Contains $script:targetConfig '[profiles.swiftui]' 'config profile swiftui')) { $status = 1 }
@@ -280,46 +291,6 @@ function Run-Check {
   if (Test-Path -LiteralPath $script:targetAgents -PathType Leaf) {
     if (-not (Check-Contains $script:targetAgents '## Profile intents' 'global AGENTS profile guidance')) { $status = 1 }
     if (-not (Check-Contains $script:targetAgents '## Global workflow' 'global AGENTS workflow guidance')) { $status = 1 }
-  }
-
-  $builderPath = Join-Path $script:targetAgentsDir 'builder.toml'
-  if (Test-Path -LiteralPath $builderPath -PathType Leaf) {
-    if (-not (Check-Contains $builderPath 'name = "builder"' 'installed builder agent name')) { $status = 1 }
-  }
-
-  $runtimePath = Join-Path $script:targetAgentsDir 'runtime_platform.toml'
-  if (Test-Path -LiteralPath $runtimePath -PathType Leaf) {
-    if (-not (Check-Contains $runtimePath 'name = "runtime_platform"' 'installed runtime_platform agent name')) { $status = 1 }
-  }
-
-  $guardianPath = Join-Path $script:targetAgentsDir 'ci_security_guardian.toml'
-  if (Test-Path -LiteralPath $guardianPath -PathType Leaf) {
-    if (-not (Check-Contains $guardianPath 'name = "ci_security_guardian"' 'installed ci_security_guardian agent name')) { $status = 1 }
-  }
-
-  $workflowSkill = Join-Path (Join-Path $script:userSkillsHome 'godmode-workflow') 'SKILL.md'
-  if (Test-Path -LiteralPath $workflowSkill -PathType Leaf) {
-    if (-not (Check-Contains $workflowSkill 'GodMode Workflow' 'installed godmode skill')) { $status = 1 }
-  }
-
-  $departmentsSkill = Join-Path (Join-Path $script:userSkillsHome 'godmode-departments') 'SKILL.md'
-  if (Test-Path -LiteralPath $departmentsSkill -PathType Leaf) {
-    if (-not (Check-Contains $departmentsSkill 'GodMode Departments' 'installed godmode departments skill')) { $status = 1 }
-  }
-
-  $debugSkill = Join-Path (Join-Path $script:userSkillsHome 'godmode-debug') 'SKILL.md'
-  if (Test-Path -LiteralPath $debugSkill -PathType Leaf) {
-    if (-not (Check-Contains $debugSkill 'GodMode Debug' 'installed godmode debug skill')) { $status = 1 }
-  }
-
-  $reviewSkill = Join-Path (Join-Path $script:userSkillsHome 'godmode-review') 'SKILL.md'
-  if (Test-Path -LiteralPath $reviewSkill -PathType Leaf) {
-    if (-not (Check-Contains $reviewSkill 'GodMode Review' 'installed godmode review skill')) { $status = 1 }
-  }
-
-  $greenfieldSkill = Join-Path (Join-Path $script:userSkillsHome 'greenfield-bootstrap') 'SKILL.md'
-  if (Test-Path -LiteralPath $greenfieldSkill -PathType Leaf) {
-    if (-not (Check-Contains $greenfieldSkill 'Greenfield Bootstrap' 'installed greenfield skill')) { $status = 1 }
   }
 
   if ($status -ne 0) {

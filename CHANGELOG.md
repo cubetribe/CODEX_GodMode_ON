@@ -18,6 +18,7 @@ The format is based on Keep a Changelog.
 
 ### Changed
 
+- made both global setup `--check` / `-Check` paths validate the full published agent and skill inventory from the repo instead of a stale hard-coded subset
 - updated `release-manager` so it discovers the repo's release law before deciding how changelog, version, or fragment files should be handled
 - updated the starter prompts to require governance preflight and to surface release, versioning, and policy constraints as explicit task inputs
 - codified changelog law and validation law in `AGENTS.md`
