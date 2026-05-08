@@ -19,10 +19,17 @@
 
 Users should not need to pull this repository into every new session.
 
-Install the workflow once:
+Install the workflow once for your platform:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
+```
+
+On Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1 -Check
 ```
 
 After that, start Codex in any workspace and invoke the workflow skill directly.
@@ -70,7 +77,7 @@ Optional example prompts:
 
 ## How To Use It
 
-1. Install the global runtime once with `./scripts/apply-global-codex-setup.sh`.
+1. Install the global runtime once with the matching setup script for your platform.
 2. Open any workspace in the Codex app or CLI.
 3. Start with `$godmode-workflow` and describe the real task.
 4. Add context, constraints, and `Done when` only as needed.
@@ -159,7 +166,7 @@ It is not just a prompt pack. It is the bootstrap repo for the globally installe
 | `templates/global-codex/` | global `AGENTS.md` and `config.toml` templates |
 | `templates/project-bootstrap/` | starter template for repo-local governance in greenfield work |
 | `scripts/check-local-env.sh` | local repo validation |
-| `scripts/apply-global-codex-setup.sh` | install the documented global setup, agents, and skills |
+| `scripts/apply-global-codex-setup.sh`, `scripts/apply-global-codex-setup.ps1` | install the documented global setup, agents, and skills |
 | `reports/` | persistent report conventions |
 | `reports/templates/` | reusable intake, routing, handoff, and write-scope templates |
 | `state/` | persistent workflow state conventions |

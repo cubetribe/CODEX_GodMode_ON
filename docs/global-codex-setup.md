@@ -28,7 +28,7 @@ Priority rules that matter:
 - if a repo has no root `AGENTS.md`, Codex should still inspect repo-root `README.md`, `CONTRIBUTING.md`, PR templates, and release or governance docs before editing contracts or release artifacts
 - if the workspace starts empty, create repo-local governance before parallel implementation begins
 
-## Fast start on this Mac
+## Fast start by platform
 
 This repository ships a reproducible global setup under:
 
@@ -37,14 +37,23 @@ This repository ships a reproducible global setup under:
 - `.codex/agents/`
 - `.agents/skills/`
 - `scripts/apply-global-codex-setup.sh`
+- `scripts/apply-global-codex-setup.ps1`
 
-Apply it with:
+Apply the matching installer for your platform:
+
+macOS/Linux:
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
 ```
 
-That script does five things:
+Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1
+```
+
+These installers do five things:
 
 - installs `~/.codex/AGENTS.md` and `~/.codex/config.toml` from the repo templates
 - installs the GodMode agents to `~/.codex/agents/`
@@ -61,8 +70,16 @@ It also replaces the `__CODEX_HOME__` placeholder inside the config template so 
 
 To verify the result:
 
+macOS/Linux:
+
 ```bash
 ./scripts/apply-global-codex-setup.sh --check
+```
+
+Windows:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1 -Check
 ```
 
 ## Minimal global files
