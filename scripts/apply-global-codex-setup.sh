@@ -169,6 +169,7 @@ run_check() {
   check_path "$target_agents_dir" "Global agents dir" || status=1
   check_path "$user_skills_home" "User skills home" || status=1
   check_path "$playwright_output" "Playwright output" || status=1
+  check_path "${target_agents_dir}/ci_security_guardian.toml" "Global agent ci_security_guardian" || status=1
   check_path "${target_agents_dir}/api_guardian.toml" "Global agent api_guardian" || status=1
   check_path "${target_agents_dir}/architect.toml" "Global agent architect" || status=1
   check_path "${target_agents_dir}/builder.toml" "Global agent builder" || status=1

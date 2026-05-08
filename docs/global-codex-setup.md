@@ -77,7 +77,7 @@ git pull --ff-only origin main
 ./scripts/apply-global-codex-setup.sh --check
 ```
 
-The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 13 agent manifests and `~/.agents/skills/` should contain the nine skills shipped by this repo.
+The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the nine skills shipped by this repo.
 
 If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md` or `~/.codex/config.toml`, inspect the generated backup files and reapply personal edits intentionally.
 
@@ -179,6 +179,7 @@ After running the installer, the user-level runtime looks like this:
     workspace_governance.toml
     quality_operations.toml
     docs_dx.toml
+    ci_security_guardian.toml
 
 ~/.agents/
   skills/
@@ -219,6 +220,7 @@ It also installs optional department agents for large cross-domain runs:
 | `workspace_governance` | AGENTS layering, release law, and local project rules |
 | `quality_operations` | validation plans, install checks, smoke paths, and eval-oriented checks |
 | `docs_dx` | public docs, setup guidance, prompts, and developer experience |
+| `ci_security_guardian` | GitHub Actions, CODEOWNERS, pinned actions, and repository security posture |
 
 Department agents are advisory lanes. They do not replace the default `researcher` -> `architect` -> `builder` -> `validator` and `tester` route.
 

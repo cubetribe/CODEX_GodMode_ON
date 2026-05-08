@@ -21,6 +21,7 @@ Use this skill together with `godmode-workflow` only when a task crosses multipl
 - `workspace_governance`: `AGENTS.md`, release law, branch policy, repo contracts, and instruction layering
 - `quality_operations`: validation scope, regression gates, eval ideas, and repeatable checks
 - `docs_dx`: README, setup docs, prompts, and user-facing clarity
+- `ci_security_guardian`: GitHub Actions, CODEOWNERS, pinned actions, and repository security posture
 
 ## Routing rules
 

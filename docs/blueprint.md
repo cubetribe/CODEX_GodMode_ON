@@ -20,7 +20,7 @@ The repository now ships:
 
 - a global installer that publishes guidance, config, agents, and skills to the user's Codex home
 - eight core role agents for the normal workflow
-- five optional department agents for large cross-domain work
+- six optional department agents for large cross-domain work
 - nine reusable skills covering the normal workflow, debug lane, review lane, department routing, greenfield bootstrap, stack guidance, and release framing
 - local checks that verify both the repo package and the installed global runtime
 - package sources stored outside repo-local Codex discovery paths to avoid duplicate project and personal skills in this bootstrap repository
@@ -209,6 +209,7 @@ Department agents are not the default path. They exist to clarify ownership when
 | `workspace_governance` | AGENTS layering, release law, branch policy, and repo rules | no |
 | `quality_operations` | validation plans, install checks, smoke paths, and eval-oriented checks | no |
 | `docs_dx` | README, setup docs, prompts, and contributor-facing clarity | no |
+| `ci_security_guardian` | GitHub Actions, CODEOWNERS, pinned actions, and repository security posture | no by default |
 
 ## Invariants
 
