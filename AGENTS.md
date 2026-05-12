@@ -38,6 +38,15 @@
 - `tester` is the executable gate. It runs `./scripts/check-local-env.sh`, verifies shell-script syntax with `bash -n`, and confirms that new skills carry `name` and `description` frontmatter.
 - Both gates must be explicitly recorded as pass or fail before `scribe` updates changelog text, reports, or final summary artifacts.
 
+## Prototype mode
+
+- `$godmode-prototype` is a local-only fast lane. It is **not** a companion to `$godmode-workflow` — it replaces it for throwaway exploration.
+- Prototype output must never be committed to `main` or deployed directly. The migration checklist in the skill output is the documented path to production.
+- All generated source files in prototype mode must carry the `PROTOTYPE ONLY` header comment. This is non-negotiable.
+- No real credentials, production database connections, or live service endpoints may appear in prototype output.
+- The prototype skill ships under `templates/global-codex/skills/godmode-prototype/`. The governance overlay and lean config ship under `templates/prototype-mode/`.
+- When a prototype is promoted to production, route it through `$godmode-workflow` with the full `validator` + `tester` gate. The prototype watermarks must be removed before that run completes.
+
 ## Release impact
 
 - Docs, structure, and example-only changes are usually `none`.

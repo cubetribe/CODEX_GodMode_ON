@@ -8,6 +8,11 @@ The format is based on Keep a Changelog.
 
 ### Added
 
+- `$godmode-prototype` skill — a local-only fast lane for rapid prototyping with minimal governance, no security review, and maximum iteration speed; all output is watermarked `PROTOTYPE ONLY` and ships with a migration checklist
+- `templates/prototype-mode/AGENTS.md` — minimal governance overlay to drop into any `prototype/` or `spike/` workspace
+- `templates/prototype-mode/config.toml` — lean Codex config for prototype sessions (`gpt-5.5-mini`, `approval_policy = "never"`, `max_threads = 2`)
+- `docs/prototype-mode.md` — reference guide covering the prototype loop, watermark format, file naming rules, migration checklist, and relationship to the rest of the skill family
+- `docs/prompts/prototype-start-prompt.md` — copy-paste start prompt for prototype sessions, including a production-promotion prompt template
 - GitHub Sponsors funding configuration so the repository can show a Sponsor button.
 
 ## [1.0.0] - 2026-05-08
