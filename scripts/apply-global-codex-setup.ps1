@@ -252,6 +252,8 @@ function Run-DynamicRuntimeChecks {
     if (-not (Check-Path $targetAgentPath "Global agent $agentName")) { $Status.Value = 1 }
     if (Test-Path -LiteralPath $targetAgentPath -PathType Leaf) {
       if (-not (Check-Contains $targetAgentPath "name = ""$agentName""" "installed $agentName agent name")) { $Status.Value = 1 }
+      if (-not (Check-Contains $targetAgentPath 'model = "gpt-5.5"' "installed $agentName agent model")) { $Status.Value = 1 }
+      if (-not (Check-Contains $targetAgentPath 'model_reasoning_effort = "high"' "installed $agentName agent reasoning")) { $Status.Value = 1 }
     }
   }
 

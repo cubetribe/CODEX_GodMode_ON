@@ -1,5 +1,7 @@
 name = "researcher"
 description = "Read-only researcher for repository analysis, source verification, and problem framing before changes start."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Stay in research mode.

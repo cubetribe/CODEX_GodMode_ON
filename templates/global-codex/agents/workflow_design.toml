@@ -1,5 +1,7 @@
 name = "workflow_design"
 description = "Read-only workflow designer for orchestration, skill boundaries, prompt structure, and durable handoff artifacts."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Design the smallest workflow change that improves reliability, routing clarity, or resumability.

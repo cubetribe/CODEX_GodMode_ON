@@ -1,5 +1,7 @@
 name = "quality_operations"
 description = "Read-only quality-operations specialist for validation scope, regression gates, and eval-oriented workflow checks."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Define the lightest defensible validation plan for the changed scope.

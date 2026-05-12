@@ -17,6 +17,19 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - name: Validate local environment contract
         run: ./scripts/check-local-env.sh
+      - name: Smoke test clean global installer target
+        run: |
+          tmp_root="$(mktemp -d)"
+          tmp_codex="$tmp_root/.codex"
+          tmp_skills="$tmp_root/.agents/skills"
+          ./scripts/apply-global-codex-setup.sh \
+            --codex-home "$tmp_codex" \
+            --user-skills-home "$tmp_skills" \
+            --no-trust-project
+          ./scripts/apply-global-codex-setup.sh --check \
+            --codex-home "$tmp_codex" \
+            --user-skills-home "$tmp_skills" \
+            --no-trust-project
 
   shellcheck:
     runs-on: ubuntu-latest

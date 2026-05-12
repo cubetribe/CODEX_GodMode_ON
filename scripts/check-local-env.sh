@@ -104,7 +104,14 @@ path = sys.argv[1]
 with open(path, "rb") as handle:
     data = tomllib.load(handle)
 
-required = ["name", "description", "sandbox_mode", "developer_instructions"]
+required = [
+    "name",
+    "description",
+    "model",
+    "model_reasoning_effort",
+    "sandbox_mode",
+    "developer_instructions",
+]
 missing = [key for key in required if not data.get(key)]
 if missing:
     print("missing required fields: " + ", ".join(missing))
@@ -114,6 +121,17 @@ expected = os.path.splitext(os.path.basename(path))[0]
 if data["name"] != expected:
     print(f"name field '{data['name']}' does not match filename '{expected}'")
     sys.exit(1)
+
+if data["model"] != "gpt-5.5":
+    print(f"model must be gpt-5.5, found {data['model']!r}")
+    sys.exit(1)
+
+if data["model_reasoning_effort"] not in {"high", "xhigh"}:
+    print(
+        "model_reasoning_effort must be high or xhigh, "
+        f"found {data['model_reasoning_effort']!r}"
+    )
+    sys.exit(1)
 PY
     )"; then
       printf '[ok] %s\n' "${file#"$repo_root"/}"
@@ -122,6 +140,58 @@ PY
       status=1
     fi
   done
+}
+
+check_toml_config() {
+  local path="$1"
+  local output=""
+
+  if output="$(python3 - "$repo_root/$path" 2>&1 <<'PY'
+import sys
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        print("python3 requires tomllib or tomli for TOML validation")
+        sys.exit(2)
+
+with open(sys.argv[1], "rb") as handle:
+    data = tomllib.load(handle)
+
+model = data.get("model")
+if model is not None and model != "gpt-5.5":
+    print(f"model must be omitted or gpt-5.5, found {model!r}")
+    sys.exit(1)
+
+effort = data.get("model_reasoning_effort")
+if effort is not None and effort not in {"high", "xhigh"}:
+    print(f"model_reasoning_effort must be high or xhigh, found {effort!r}")
+    sys.exit(1)
+
+profiles = data.get("profiles", {})
+for name, profile in profiles.items():
+    profile_model = profile.get("model")
+    if profile_model is not None and profile_model != "gpt-5.5":
+        print(f"profiles.{name}.model must be omitted or gpt-5.5, found {profile_model!r}")
+        sys.exit(1)
+
+    profile_effort = profile.get("model_reasoning_effort")
+    if profile_effort is not None and profile_effort not in {"high", "xhigh"}:
+        print(
+            f"profiles.{name}.model_reasoning_effort must be high or xhigh, "
+            f"found {profile_effort!r}"
+        )
+        sys.exit(1)
+PY
+  )"; then
+    printf '[ok] %s\n' "$path"
+  else
+    printf '[invalid] %s: %s\n' "$path" "$output"
+    status=1
+  fi
 }
 
 check_skill_frontmatter() {
@@ -158,6 +228,8 @@ check_skill_frontmatter() {
 check_unreleased_when_dirty() {
   local dirty=false
   local unreleased_has_entry=false
+  local latest_release_has_entry=false
+  local current_version=""
 
   if git -C "$repo_root" status --short --untracked-files=normal | grep -q .; then
     dirty=true
@@ -172,8 +244,18 @@ check_unreleased_when_dirty() {
     unreleased_has_entry=true
   fi
 
-  if [[ "$dirty" == true && "$unreleased_has_entry" != true ]]; then
-    printf '[invalid] CHANGELOG.md: [Unreleased] must contain at least one bullet when the worktree is dirty\n'
+  current_version="$(tr -d '[:space:]' < "$repo_root/VERSION")"
+  if awk -v version="$current_version" '
+    $0 == "## [" version "]" || $0 ~ ("^## \\[" version "\\] - ") { in_release = 1; next }
+    in_release && /^## \[/ { exit }
+    in_release && /^- / { found = 1 }
+    END { exit(found ? 0 : 1) }
+  ' "$repo_root/CHANGELOG.md"; then
+    latest_release_has_entry=true
+  fi
+
+  if [[ "$dirty" == true && "$unreleased_has_entry" != true && "$latest_release_has_entry" != true ]]; then
+    printf '[invalid] CHANGELOG.md: dirty work must have bullets under [Unreleased] or the current VERSION release section\n'
     status=1
     return
   fi
@@ -327,6 +409,7 @@ check_path "templates/global-codex/agents/quality_operations.toml"
 check_path "templates/global-codex/agents/docs_dx.toml"
 check_path "templates/global-codex/skills"
 check_path "templates/global-codex/skills/godmode-workflow/SKILL.md"
+check_path "templates/global-codex/skills/godmode-prototype/SKILL.md"
 check_path "templates/global-codex/skills/godmode-departments/SKILL.md"
 check_path "templates/global-codex/skills/godmode-debug/SKILL.md"
 check_path "templates/global-codex/skills/godmode-review/SKILL.md"
@@ -344,12 +427,14 @@ check_path ".github/workflows/codeql.yml"
 check_path "docs/blueprint.md"
 check_path "docs/agent-registry.md"
 check_path "docs/department-orchestration.md"
+check_path "docs/prototype-mode.md"
 check_path "docs/global-codex-setup.md"
 check_path "docs/local-development.md"
 check_path "docs/prompts/dev-start-prompt.md"
 check_path "docs/prompts/debug-start-prompt.md"
 check_path "docs/prompts/greenfield-start-prompt.md"
 check_path "docs/prompts/improvement-sprint-prompt.md"
+check_path "docs/prompts/prototype-start-prompt.md"
 check_path "docs/prompts/review-start-prompt.md"
 check_path "docs/prompts/web-start-prompt.md"
 check_path "docs/prompts/apple-start-prompt.md"
@@ -357,6 +442,8 @@ check_path "docs/prompts/flutter-start-prompt.md"
 check_path "templates/global-codex/AGENTS.md"
 check_path "templates/global-codex/config.toml"
 check_path "templates/project-bootstrap/AGENTS.md"
+check_path "templates/prototype-mode/AGENTS.md"
+check_path "templates/prototype-mode/config.toml"
 check_path "scripts/apply-global-codex-setup.sh"
 check_path "scripts/check-local-env.sh"
 check_path "reports"
@@ -368,6 +455,9 @@ check_path "state/templates/workflow-state.local.json"
 
 printf '\nRepo validation:\n'
 check_agent_contracts
+check_toml_config ".codex/config.toml"
+check_toml_config "templates/global-codex/config.toml"
+check_toml_config "templates/prototype-mode/config.toml"
 check_skill_frontmatter
 check_unreleased_when_dirty
 check_version_alignment

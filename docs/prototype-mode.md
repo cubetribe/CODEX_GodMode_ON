@@ -15,6 +15,11 @@ Every prototype output is watermarked `PROTOTYPE ONLY` and comes with a
 migration checklist. Nothing leaves local development without going through
 `$godmode-workflow` first.
 
+Prototype mode does **not** downgrade the main model. The prototype config
+leaves `model` unset so Codex uses the user's selected model, global default,
+or explicit CLI `--model` value. The profile sets reasoning effort to `high`
+because prototype code should still be good code.
+
 ## When to use prototype mode
 
 Use `$godmode-prototype` when:
@@ -28,14 +33,15 @@ Use `$godmode-prototype` when:
 Do not use `$godmode-prototype` when:
 
 - the output will go to production, staging, or be committed to `main`
-- the task touches real credentials, production databases, or live APIs
+- the task touches real credentials, production databases, live APIs, or live
+  external services
 - correctness and contract safety cannot be deferred
 - `$godmode-workflow` is feasible in the available time
 
 ## What prototype mode skips and keeps
 
-| | Prototype mode | Full `$godmode-workflow` |
-|---|---|---|
+| Gate | Prototype mode | Full `$godmode-workflow` |
+| --- | --- | --- |
 | Governance preflight | ❌ Skipped | ✅ Required |
 | `api_guardian` | ❌ Skipped | ✅ Required when contracts change |
 | `validator` | ❌ Skipped | ✅ Required |
@@ -48,7 +54,7 @@ Do not use `$godmode-prototype` when:
 
 ## The prototype loop
 
-```
+```text
 1. State the goal — one sentence
 2. 3-bullet plan — what to build, where files go, what "running" means
 3. Build — builder writes code with prototype header
@@ -62,6 +68,7 @@ Every source file generated in prototype mode must begin with this header,
 adapted to the language:
 
 **Python / Shell:**
+
 ```python
 # ⚠️ PROTOTYPE ONLY — NOT FOR PRODUCTION
 # Created in GodMode Prototype Mode — local testing only.
@@ -70,6 +77,7 @@ adapted to the language:
 ```
 
 **JavaScript / TypeScript / Swift / Dart / Go:**
+
 ```javascript
 // ⚠️ PROTOTYPE ONLY — NOT FOR PRODUCTION
 // Created in GodMode Prototype Mode — local testing only.
@@ -102,8 +110,8 @@ production database connection strings. Use:
 - `localhost` or `127.0.0.1` for service addresses
 - `sqlite:///:memory:` for databases
 
-If a prototype genuinely needs live network access to function, document
-this explicitly in the task goal and treat every credential as disposable.
+Prototype mode is local-only. Keep network access disabled and use local mocks,
+fixtures, or disposable local services instead of live external endpoints.
 
 ## Migration checklist
 
@@ -116,7 +124,8 @@ open a `$godmode-workflow` session and work through this checklist:
 - [ ] Route through `architect` for design review
 - [ ] Run `api_guardian` if any contracts, schemas, or CLI surfaces changed
 - [ ] Run `validator` + `tester` — both gates must be green
-- [ ] Update `CHANGELOG.md` under `[Unreleased]`
+- [ ] Follow the target repository's release law (`CHANGELOG.md`, change
+  fragments, release-please, semantic-release, or no release artifact)
 - [ ] Get explicit human approval before push or deploy
 
 ## Config and templates
@@ -124,15 +133,15 @@ open a `$godmode-workflow` session and work through this checklist:
 The following files ship with prototype mode:
 
 | File | Purpose |
-|---|---|
+| --- | --- |
 | `templates/global-codex/skills/godmode-prototype/SKILL.md` | The skill — invoke with `$godmode-prototype` |
 | `templates/prototype-mode/AGENTS.md` | Minimal governance overlay — copy into `prototype/` directories |
-| `templates/prototype-mode/config.toml` | Lean Codex config — use for prototype sessions |
+| `templates/prototype-mode/config.toml` | Lean local config that keeps the model user-defined — use for prototype sessions |
 | `docs/prompts/prototype-start-prompt.md` | Copy-paste start prompt |
 
 ## Relationship to the rest of the GodMode skill family
 
-```
+```text
 $godmode-workflow          ← main orchestrator for production work
   ├── $godmode-departments ← optional multi-domain routing layer
   ├── $godmode-debug       ← focused bug-fixing lane

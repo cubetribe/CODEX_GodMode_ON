@@ -14,14 +14,14 @@ The goal is not to copy the Claude implementation blindly. The goal is to preser
 - `templates/global-codex/skills/`
 - persistent `reports/` and `state/`
 
-## Current 1.0 Runtime
+## Current 1.1 Runtime
 
 The repository now ships:
 
 - a global installer that publishes guidance, config, agents, and skills to the user's Codex home
 - eight core role agents for the normal workflow
 - six optional department agents for large cross-domain work
-- nine reusable skills covering the normal workflow, debug lane, review lane, department routing, greenfield bootstrap, stack guidance, and release framing
+- ten reusable skills covering the normal workflow, prototype lane, debug lane, review lane, department routing, greenfield bootstrap, stack guidance, and release framing
 - local checks that verify both the repo package and the installed global runtime
 - package sources stored outside repo-local Codex discovery paths to avoid duplicate project and personal skills in this bootstrap repository
 
@@ -69,7 +69,7 @@ The current official Codex docs support the following design assumptions:
 - `AGENTS.md` remains the primary layered governance surface.
 - Skills are the right place for reusable procedures, not for every one-off idea.
 - `gpt-5.5` is the default model for main orchestration and deeper reasoning in this runtime.
-- smaller current Codex models can be appropriate for faster supporting scans and read-heavy helpers when explicitly selected.
+- packaged GodMode agents pin `gpt-5.5` with `high` reasoning so delegated roles do not silently downgrade; smaller models are only an explicit user override outside the packaged defaults.
 
 ## Core Architecture Direction
 

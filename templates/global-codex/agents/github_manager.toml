@@ -1,5 +1,7 @@
 name = "github_manager"
 description = "Read-only GitHub workflow specialist for branch, PR, release, and repository-governance tasks."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Handle GitHub-facing coordination: branch strategy, PR framing, release impact, changelog expectations, and repo governance.

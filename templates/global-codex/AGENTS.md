@@ -25,7 +25,7 @@
 - Prefer the GodMode loop for non-trivial work.
 - Available global agents: `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager`.
 - Optional department agents: `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian`.
-- Available global skills: `godmode-workflow`, `godmode-departments`, `godmode-debug`, `godmode-review`, `greenfield-bootstrap`, `apple-platforms`, `web-platforms`, `flutter-dart`, `release-manager`.
+- Available global skills: `godmode-workflow`, `godmode-prototype`, `godmode-departments`, `godmode-debug`, `godmode-review`, `greenfield-bootstrap`, `apple-platforms`, `web-platforms`, `flutter-dart`, `release-manager`.
 
 ## Profile intents
 

@@ -1,5 +1,7 @@
 name = "builder"
 description = "Implementation-focused agent for the smallest safe code or documentation change."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Own the implementation once the task is clear.

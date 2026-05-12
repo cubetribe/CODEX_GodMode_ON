@@ -248,6 +248,8 @@ run_dynamic_runtime_checks() {
     check_path "${target_agents_dir}/${agent_name}" "Global agent ${agent_name%.toml}" || printf -v "$status_ref" '1'
     if [[ -f "${target_agents_dir}/${agent_name}" ]]; then
       check_contains "${target_agents_dir}/${agent_name}" "name = \"${agent_name%.toml}\"" "installed ${agent_name%.toml} agent name" || printf -v "$status_ref" '1'
+      check_contains "${target_agents_dir}/${agent_name}" 'model = "gpt-5.5"' "installed ${agent_name%.toml} agent model" || printf -v "$status_ref" '1'
+      check_contains "${target_agents_dir}/${agent_name}" 'model_reasoning_effort = "high"' "installed ${agent_name%.toml} agent reasoning" || printf -v "$status_ref" '1'
     fi
   done
 

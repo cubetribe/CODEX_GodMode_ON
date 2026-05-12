@@ -24,7 +24,7 @@
 
 Most AI coding setups are prompt packs. This is not.
 
-CODEX_GodMode_ON is a complete, installable runtime: **14 custom agents**, 9
+CODEX_GodMode_ON is a complete, installable runtime: **14 custom agents**, 10
 workflow skills, explicit quality gates, persistent state artifacts, and an
 orchestration model refined over two years of real-world use. Every design
 decision has been sharpened continuously — and for the past several months, a
@@ -42,8 +42,13 @@ This is the loop closing. The runtime is stable. It's yours for free.
 
 ## What's New
 
-The latest release adds three new workflow modes and a security layer on top of
-the existing core:
+The latest release adds **prototype mode** on top of the production workflow:
+
+**`$godmode-prototype`** — a local-only fast lane for rapid spikes and
+throwaway proof-of-concepts. It skips production gates, forces `PROTOTYPE ONLY`
+watermarks, and hands promotion back to `$godmode-workflow`.
+
+The 1.0 runtime also added three dedicated workflow modes and a security layer:
 
 **`$godmode-debug`** — a dedicated bug-hunting lane with a strict reproduce →
 isolate → fix → re-test loop. Add it when you need to chase a regression,
@@ -76,15 +81,15 @@ is responsible for.
 
 Install once. Use everywhere.
 
-| Layer                    | What's installed                                                                                                                                                                     |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Core agents**          | `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager`                                                                              |
-| **Department agents**    | `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian`                                                               |
-| **Workflow skills**      | `$godmode-workflow`, `$godmode-debug`, `$godmode-review`, `$godmode-departments`, `$greenfield-bootstrap`, `$web-platforms`, `$apple-platforms`, `$flutter-dart`, `$release-manager` |
-| **Stack profiles**       | SwiftUI / iOS, React / Next.js, Flutter / Dart, Review mode                                                                                                                          |
-| **Persistent artifacts** | `reports/`, `state/` — workflow history stays in the repo, not only in chat                                                                                                          |
+| Layer | What's installed |
+| --- | --- |
+| **Core agents** | `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager` — pinned to `gpt-5.5` / `high` |
+| **Department agents** | `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian` — pinned to `gpt-5.5` / `high` |
+| **Workflow skills** | `$godmode-workflow`, `$godmode-prototype`, `$godmode-debug`, `$godmode-review`, `$godmode-departments`, `$greenfield-bootstrap`, `$web-platforms`, `$apple-platforms`, `$flutter-dart`, `$release-manager` |
+| **Stack profiles** | SwiftUI / iOS, React / Next.js, Flutter / Dart, Review mode |
+| **Persistent artifacts** | `reports/`, `state/` — workflow history stays in the repo, not only in chat |
 
-14 agents. 9 skills. One global install. Any workspace.
+14 agents. 10 skills. One global install. Any workspace.
 
 ---
 
@@ -130,6 +135,10 @@ Add a companion skill only when the task truly changes shape:
 | `$apple-platforms`      | SwiftUI, macOS, or iOS work where Apple-platform guidance matters from the start              |
 | `$flutter-dart`         | Flutter or Dart work where analyzer/test/state-flow guidance should be active immediately     |
 
+For throwaway local spikes, use `$godmode-prototype` instead of
+`$godmode-workflow`. Prototype mode is not a companion skill; it is a separate
+local-only fast lane with watermark and migration rules.
+
 Optional example prompts live under [docs/prompts/](./docs/prompts/) — they're
 starting points, not required templates.
 
@@ -172,6 +181,7 @@ slash-command list.
 | Skill                   | Use it for                                                      |
 | ----------------------- | --------------------------------------------------------------- |
 | `$godmode-workflow`     | primary entry — research → plan → build → validate delivery     |
+| `$godmode-prototype`    | local-only rapid spikes with watermarks and migration checklist |
 | `$godmode-debug`        | reproduce → isolate → fix → re-test bug work                    |
 | `$godmode-review`       | findings-first assessment, no edits unless asked                |
 | `$godmode-departments`  | optional routing for multi-domain work with frozen write scopes |
@@ -246,6 +256,7 @@ installed system. The same system builds itself.
 | `docs/blueprint.md`                   | full architecture and workflow design                                      |
 | `docs/department-orchestration.md`    | scalable department-based routing model                                    |
 | `docs/agent-registry.md`              | auditable register of the installed agent runtime                          |
+| `docs/prototype-mode.md`              | local-only prototype lane contract, templates, and migration path          |
 | `docs/roadmap.md`                     | phased delivery plan                                                       |
 | `docs/local-development.md`           | maintainer operating guide                                                 |
 | `docs/global-codex-setup.md`          | reproducible install guide for the global runtime                          |
@@ -287,6 +298,7 @@ installed system. The same system builds itself.
 | ------------------------------------------------------------ | ---------------------------------------------------------------------- |
 | understand the full target architecture                      | [docs/blueprint.md](./docs/blueprint.md)                               |
 | learn when to stay lean and when to fan out into departments | [docs/department-orchestration.md](./docs/department-orchestration.md) |
+| run local-only throwaway spikes safely                       | [docs/prototype-mode.md](./docs/prototype-mode.md)                     |
 | see what gets delivered in what order                        | [docs/roadmap.md](./docs/roadmap.md)                                   |
 | run and evolve this repo locally                             | [docs/local-development.md](./docs/local-development.md)               |
 | install the matching global Codex setup                      | [docs/global-codex-setup.md](./docs/global-codex-setup.md)             |

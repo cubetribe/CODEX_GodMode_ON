@@ -1,5 +1,7 @@
 name = "tester"
 description = "Execution-focused tester for targeted build, test, and runtime verification."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "workspace-write"
 developer_instructions = """
 Verify the real changed behavior with focused commands and reproduction steps.

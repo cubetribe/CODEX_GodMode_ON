@@ -1,11 +1,11 @@
 # ⚠️ PROTOTYPE MODE CONFIG — LOCAL TESTING ONLY
 # Do NOT use this config for production, staging, or shared workspaces.
-# This config trades governance depth for raw iteration speed.
+# This config trades governance depth for local iteration speed while keeping
+# the main Codex model user-defined.
 #
-# Usage: copy to your prototype workspace as .codex/config.toml
-#        OR run `codex --config path/to/this/config.toml`
+# Usage: copy to your prototype workspace as .codex/config.toml.
+#        Then run `codex --profile prototype` from that workspace.
 
-model = "gpt-5.5-mini"         # faster and cheaper — fine for rapid local iteration
 approval_policy = "never"       # no interruptions — maximum iteration speed
 sandbox_mode = "workspace-write"
 web_search = "cached"
@@ -20,25 +20,25 @@ network_access = false          # local only — do not enable for prototype wor
 
 # Prototype profile — activate with: codex --profile prototype
 [profiles.prototype]
-model = "gpt-5.5-mini"
-model_reasoning_effort = "medium"   # fast answers over deep analysis
+model_reasoning_effort = "high"     # keep prototype code quality high
 approval_policy = "never"
 web_search = "cached"
 
 # Notes on prototype config decisions:
 #
-# model = "gpt-5.5-mini"
-#   Chosen for speed and cost. Switch to "gpt-5.5" only if the task
-#   requires deeper reasoning that mini cannot handle.
+# model
+#   Intentionally omitted. Prototype mode should use the user's selected
+#   model, normally a strong orchestrator model such as the global default or
+#   a CLI-provided --model value.
 #
 # approval_policy = "never"
-#   Removes all approval interruptions. This is safe only because prototype
-#   output is local-only and not pushed to production.
+#   Removes all approval interruptions. Use it only for disposable prototype
+#   work because this config still allows writes inside the workspace.
 #
 # network_access = false
 #   Prototype code must not reach production services. Keep this false.
-#   If your prototype genuinely needs live network access, set to true and
-#   document why in the task — but do not connect to production endpoints.
+#   Use local mocks, fixtures, or disposable local services instead of live
+#   external endpoints.
 #
 # When to upgrade to the full config:
 #   Switch back to templates/global-codex/config.toml as soon as:

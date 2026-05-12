@@ -83,7 +83,7 @@ To verify the global setup:
 
 ## Release prep
 
-Current release target: `1.0.0`.
+Current release target: `1.1.0`.
 
 Before publishing a release:
 
@@ -152,6 +152,7 @@ Do not place the packaged global GodMode runtime under this repo's `.codex/agent
 ## Good first skills in this repo
 
 - `godmode-workflow`
+- `godmode-prototype`
 - `godmode-debug`
 - `godmode-review`
 - `godmode-departments`

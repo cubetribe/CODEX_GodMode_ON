@@ -6,14 +6,21 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-05-12
+
 ### Added
 
 - `$godmode-prototype` skill — a local-only fast lane for rapid prototyping with minimal governance, no security review, and maximum iteration speed; all output is watermarked `PROTOTYPE ONLY` and ships with a migration checklist
 - `templates/prototype-mode/AGENTS.md` — minimal governance overlay to drop into any `prototype/` or `spike/` workspace
-- `templates/prototype-mode/config.toml` — lean Codex config for prototype sessions (`gpt-5.5-mini`, `approval_policy = "never"`, `max_threads = 2`)
+- `templates/prototype-mode/config.toml` — lean Codex config for prototype sessions that keeps the model user-defined while setting `model_reasoning_effort = "high"`, `approval_policy = "never"`, and `max_threads = 2`
 - `docs/prototype-mode.md` — reference guide covering the prototype loop, watermark format, file naming rules, migration checklist, and relationship to the rest of the skill family
 - `docs/prompts/prototype-start-prompt.md` — copy-paste start prompt for prototype sessions, including a production-promotion prompt template
 - GitHub Sponsors funding configuration so the repository can show a Sponsor button.
+
+### Changed
+
+- pinned every packaged GodMode agent to `model = "gpt-5.5"` and `model_reasoning_effort = "high"`
+- expanded local validation to reject packaged agents or config profiles that drift below `gpt-5.5` or below `high` reasoning
 
 ## [1.0.0] - 2026-05-08
 

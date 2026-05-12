@@ -4,6 +4,8 @@ This registry documents the packaged GodMode agents installed by `./scripts/appl
 
 Source files live under `templates/global-codex/agents/` so this bootstrap repository does not expose duplicate project-local agents after the same runtime is installed globally.
 
+All packaged agents pin `model = "gpt-5.5"` and `model_reasoning_effort = "high"`. That keeps the main orchestration and delegated roles on the strong model path unless a future release intentionally changes the contract.
+
 ## Core agents
 
 | Agent | Source | Purpose |

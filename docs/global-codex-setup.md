@@ -2,7 +2,7 @@
 
 This note explains the user-level Codex setup that turns this repository into a one-time installer instead of a per-session dependency.
 
-This page documents the `1.0.0` runtime layout.
+This page documents the `1.1.0` runtime layout.
 
 The goal is simple:
 
@@ -86,9 +86,12 @@ Windows:
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1 -Check
 ```
 
-## Upgrade from 0.2.x
+## Upgrade from earlier releases
 
-The previous public line was `0.2.1`. Version `1.0.0` expands the installed runtime and changes the default model to `gpt-5.5`.
+Version `1.1.0` adds `$godmode-prototype` and the prototype-mode templates.
+If you are upgrading from the `0.2.x` line, the `1.0.0` runtime changes also
+apply: expanded agents and skills, pinned CI/security coverage, and the
+`gpt-5.5` default model.
 
 Use this sequence:
 
@@ -101,7 +104,7 @@ git pull --ff-only origin main
 
 On Windows, use the PowerShell installer and `-Check` command instead of the shell script.
 
-The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the nine skills shipped by this repo.
+The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the ten skills shipped by this repo.
 
 If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md` or `~/.codex/config.toml`, inspect the generated backup files and reapply personal edits intentionally.
 
@@ -213,6 +216,7 @@ After running the installer, the user-level runtime looks like this:
 ~/.agents/
   skills/
     godmode-workflow/
+    godmode-prototype/
     godmode-debug/
     godmode-review/
     godmode-departments/
@@ -223,11 +227,12 @@ After running the installer, the user-level runtime looks like this:
     release-manager/
 ```
 
-The first eight agents remain the role-centric baseline. The department-oriented agents are optional additions for larger multi-domain runs and do not mean every task should fan out by default.
+The first eight agents remain the role-centric baseline. The department-oriented agents are optional additions for larger multi-domain runs and do not mean every task should fan out by default. Every packaged agent pins `model = "gpt-5.5"` and `model_reasoning_effort = "high"` so delegated roles do not silently downgrade to a smaller model.
 
 The matching skill split is:
 
 - `godmode-workflow` as the primary entry skill for most runs
+- `godmode-prototype` as the local-only fast lane for throwaway spikes
 - `godmode-departments` as the explicit opt-in layer for department-mode routing
 - `godmode-debug` as the focused companion for reproduce -> isolate -> fix work
 - `godmode-review` as the focused companion for findings-first assessment work
@@ -267,6 +272,7 @@ Department agents are advisory lanes. They do not replace the default `researche
 | Skill | Purpose |
 | --- | --- |
 | `godmode-workflow` | the normal non-trivial task loop |
+| `godmode-prototype` | local-only rapid prototyping with watermarks and a migration checklist |
 | `godmode-debug` | reproduce -> isolate -> fix -> re-test work |
 | `godmode-review` | findings-first review with no edits unless requested |
 | `godmode-departments` | optional routing for cross-domain work |
@@ -362,8 +368,9 @@ Done when:
 
 Add companion skills such as `$godmode-departments`, `$godmode-debug`,
 `$godmode-review`, `$greenfield-bootstrap`, or stack-specific skills only
-when the task actually needs them. The prompt should not refer to this
-repository as a required runtime dependency.
+when the task actually needs them. Use `$godmode-prototype` instead of
+`$godmode-workflow` for local-only throwaway spikes. The prompt should not
+refer to this repository as a required runtime dependency.
 
 ## Notes about Local vs Worktree
 

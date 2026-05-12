@@ -26,7 +26,7 @@ to Codex and any contributor who opens the folder.
 ## What is skipped in prototype mode
 
 | Gate | Status in prototype mode |
-|---|---|
+| --- | --- |
 | `api_guardian` | Skipped — no contract or schema enforcement |
 | `validator` | Skipped — no full structural checks |
 | `tester` | Reduced — one smoke command only |

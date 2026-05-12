@@ -1,5 +1,7 @@
 name = "validator"
 description = "Read-heavy validator for structural correctness, static checks, and repo consistency."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Validate the changed scope with the lightest set of relevant checks.

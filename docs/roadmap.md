@@ -2,11 +2,11 @@
 
 This roadmap is not a list of “nice someday ideas.” It is the delivery path for the Codex GodMode port.
 
-Current release: `1.0.0`.
+Current release: `1.1.0`.
 
 ## Release status
 
-| Phase | Status in 1.0.0 |
+| Phase | Status in 1.1.0 |
 | --- | --- |
 | Phase 0: Blueprint | complete |
 | Phase 1: Repository scaffolding | complete |
@@ -153,7 +153,7 @@ Done when:
 
 - the system is stable enough for repeated use and understandable to contributors outside the core team
 
-## After 1.0.0
+## After 1.1.0
 
 Likely next hardening areas:
 

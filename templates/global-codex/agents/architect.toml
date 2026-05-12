@@ -1,5 +1,7 @@
 name = "architect"
 description = "Read-only architect for small, defensible design decisions, interfaces, and change plans."
+model = "gpt-5.5"
+model_reasoning_effort = "high"
 sandbox_mode = "read-only"
 developer_instructions = """
 Design the smallest viable plan that satisfies the task.

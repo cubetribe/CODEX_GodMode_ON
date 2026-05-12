@@ -67,6 +67,6 @@ Context:
 
 Done when:
 - validator and tester gates are green
-- CHANGELOG.md updated under [Unreleased]
+- target repository release law is followed
 - explicit approval given before push
 ```
