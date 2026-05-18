@@ -138,10 +138,111 @@ function Archive-LegacyDiscoveryConflicts {
   }
 }
 
+function Parse-TomlBlocks {
+  param([string]$Text)
+
+  $lines = $Text -split "`r?`n"
+  $topKeys = [ordered]@{}
+  $topLines = New-Object System.Collections.Generic.List[string]
+  $sections = [ordered]@{}
+  $currentName = $null
+  $currentBuf = $null
+
+  foreach ($line in $lines) {
+    if ($line -match '^\s*\[([^\]]+)\]\s*$') {
+      if ($currentName -ne $null) {
+        $sections[$currentName] = ($currentBuf -join "`n")
+      }
+      $currentName = $matches[1]
+      $currentBuf = New-Object System.Collections.Generic.List[string]
+      $currentBuf.Add($line) | Out-Null
+    }
+    elseif ($currentName -eq $null) {
+      $topLines.Add($line) | Out-Null
+      if ($line -match '^\s*([A-Za-z_][A-Za-z0-9_-]*)\s*=') {
+        $topKeys[$matches[1]] = $line
+      }
+    }
+    else {
+      $currentBuf.Add($line) | Out-Null
+    }
+  }
+  if ($currentName -ne $null) {
+    $sections[$currentName] = ($currentBuf -join "`n")
+  }
+  return @{ TopKeys = $topKeys; Sections = $sections }
+}
+
+function Merge-PreservedCustomizations {
+  param(
+    [string]$RenderedTemplate,
+    [string]$ExistingPath
+  )
+
+  if (-not (Test-Path -LiteralPath $ExistingPath -PathType Leaf)) {
+    return @{ Output = $RenderedTemplate; PreservedKeys = @(); PreservedSections = @() }
+  }
+
+  $existingText = [System.IO.File]::ReadAllText($ExistingPath)
+  $tmpl = Parse-TomlBlocks -Text $RenderedTemplate
+  $exist = Parse-TomlBlocks -Text $existingText
+
+  $preservedKeys = @()
+  foreach ($k in $exist.TopKeys.Keys) {
+    if (-not $tmpl.TopKeys.Contains($k)) { $preservedKeys += $k }
+  }
+  $preservedSections = @()
+  foreach ($s in $exist.Sections.Keys) {
+    if (-not $tmpl.Sections.Contains($s)) { $preservedSections += $s }
+  }
+
+  if ($preservedKeys.Count -eq 0 -and $preservedSections.Count -eq 0) {
+    return @{ Output = $RenderedTemplate; PreservedKeys = @(); PreservedSections = @() }
+  }
+
+  $tmplLines = $RenderedTemplate -split "`r?`n"
+  $insertIdx = $tmplLines.Length
+  for ($i = 0; $i -lt $tmplLines.Length; $i++) {
+    if ($tmplLines[$i] -match '^\s*\[') { $insertIdx = $i; break }
+  }
+
+  $out = New-Object System.Collections.Generic.List[string]
+  for ($i = 0; $i -lt $insertIdx; $i++) { $out.Add($tmplLines[$i]) | Out-Null }
+  if ($preservedKeys.Count -gt 0) {
+    if ($out.Count -gt 0 -and $out[$out.Count - 1] -ne '') { $out.Add('') | Out-Null }
+    $out.Add('# --- preserved top-level keys from previous config.toml ---') | Out-Null
+    foreach ($k in $preservedKeys) { $out.Add($exist.TopKeys[$k]) | Out-Null }
+    $out.Add('') | Out-Null
+  }
+  for ($i = $insertIdx; $i -lt $tmplLines.Length; $i++) { $out.Add($tmplLines[$i]) | Out-Null }
+
+  if ($preservedSections.Count -gt 0) {
+    if ($out.Count -gt 0 -and $out[$out.Count - 1] -ne '') { $out.Add('') | Out-Null }
+    $out.Add('# --- preserved sections from previous config.toml ---') | Out-Null
+    foreach ($s in $preservedSections) {
+      $out.Add($exist.Sections[$s]) | Out-Null
+      $out.Add('') | Out-Null
+    }
+  }
+
+  return @{
+    Output = ($out -join "`n")
+    PreservedKeys = $preservedKeys
+    PreservedSections = $preservedSections
+  }
+}
+
 function Render-ConfigTemplate {
   $content = [System.IO.File]::ReadAllText($script:sourceConfig)
   $rendered = $content.Replace('__CODEX_HOME__', $script:tomlCodexHome)
-  Write-Utf8File -Path $script:targetConfig -Content $rendered
+  $result = Merge-PreservedCustomizations -RenderedTemplate $rendered -ExistingPath $script:targetConfig
+  Write-Utf8File -Path $script:targetConfig -Content $result.Output
+  if ($result.PreservedKeys.Count -gt 0) {
+    Write-Output ("Preserved {0} top-level key(s) from previous config.toml: {1}" -f $result.PreservedKeys.Count, ($result.PreservedKeys -join ', '))
+  }
+  if ($result.PreservedSections.Count -gt 0) {
+    Write-Output ("Preserved {0} section(s) from previous config.toml: {1}" -f $result.PreservedSections.Count, (($result.PreservedSections | ForEach-Object { "[$_]" }) -join ', '))
+  }
 }
 
 function Check-Path {

@@ -72,6 +72,15 @@ skills or agents in Codex.
 
 It also replaces the `__CODEX_HOME__` placeholder inside the config template so the Playwright output path stays portable.
 
+When `~/.codex/config.toml` already exists, the installer performs a **section-preserving merge** rather than overwriting it. The template is rendered as the new base, and any top-level keys or `[section]` blocks that exist in your current config but are not shipped by the template are carried over into the result. This preserves things like:
+
+- `model_provider = "..."` and other top-level personal overrides
+- `[model_providers.*]` (Azure, custom OpenAI-compatible backends, etc.)
+- `[mcp_servers.*]` entries you've added beyond the bundled Playwright ones
+- `[features]`, `[plugins.*]`, `[projects."<path>"]` trust entries
+
+Preserved content is grouped at the end of the file under a `# --- preserved from previous config.toml ---` comment so it's easy to review. The installer prints a summary of what was preserved. The full prior `config.toml` is still archived under `~/.codex/backups/install-archives/<timestamp>/root/config.toml` in case you want to compare or revert.
+
 To verify the result:
 
 macOS/Linux:
@@ -106,7 +115,7 @@ On Windows, use the PowerShell installer and `-Check` command instead of the she
 
 The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the ten skills shipped by this repo.
 
-If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md` or `~/.codex/config.toml`, inspect the generated backup files and reapply personal edits intentionally.
+If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md`, inspect the generated backup file and reapply personal edits intentionally. Personal customizations in `~/.codex/config.toml` (custom top-level keys and sections such as `[model_providers.*]`, `[mcp_servers.*]`, `[plugins.*]`, `[projects.*]`) are automatically preserved by the installer; see the "section-preserving merge" note above.
 
 This bootstrap repository intentionally does not keep the packaged runtime under repo-local `.codex/agents/` or `.agents/skills/`. Those are official project discovery paths; keeping the global package source there would make Codex show duplicate project and personal skills when this repository is open after installation.
 

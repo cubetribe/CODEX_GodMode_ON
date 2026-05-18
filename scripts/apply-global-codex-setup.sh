@@ -147,9 +147,140 @@ archive_legacy_discovery_conflicts() {
 }
 
 render_config_template() {
-  local escaped_codex_home
+  local escaped_codex_home rendered_tmp
   escaped_codex_home="$(printf '%s' "$codex_home" | sed 's/[\/&]/\\&/g')"
-  sed "s#__CODEX_HOME__#${escaped_codex_home}#g" "$source_config" > "$target_config"
+  rendered_tmp="$(mktemp)"
+  sed "s#__CODEX_HOME__#${escaped_codex_home}#g" "$source_config" > "$rendered_tmp"
+
+  if [[ ! -f "$target_config" ]]; then
+    mv "$rendered_tmp" "$target_config"
+    return 0
+  fi
+
+  local merged_tmp summary_tmp
+  merged_tmp="$(mktemp)"
+  summary_tmp="$(mktemp)"
+
+  awk -v summary_file="$summary_tmp" '
+    function flush_section(   ) {
+      if (cur_name != "") {
+        if (file_index == 1) {
+          tmpl_body[cur_name] = cur_buf
+          tmpl_order[++tmpl_order_n] = cur_name
+          tmpl_section[cur_name] = 1
+        } else {
+          exist_body[cur_name] = cur_buf
+          exist_order[++exist_order_n] = cur_name
+          exist_section[cur_name] = 1
+        }
+        cur_name = ""
+        cur_buf = ""
+      }
+    }
+    FNR == 1 {
+      flush_section()
+      file_index++
+    }
+    {
+      line = $0
+      if (line ~ /^[[:space:]]*\[[^]]+\][[:space:]]*$/) {
+        flush_section()
+        name = line
+        sub(/^[[:space:]]*\[/, "", name)
+        sub(/\][[:space:]]*$/, "", name)
+        cur_name = name
+        cur_buf = line
+        next
+      }
+      if (cur_name != "") {
+        cur_buf = cur_buf "\n" line
+        next
+      }
+      if (file_index == 1) {
+        tmpl_top[++tmpl_top_n] = line
+        if (match(line, /^[[:space:]]*[A-Za-z_][A-Za-z0-9_-]*[[:space:]]*=/)) {
+          key = line
+          sub(/^[[:space:]]*/, "", key)
+          sub(/[[:space:]]*=.*$/, "", key)
+          tmpl_top_key[key] = 1
+        }
+      } else {
+        if (match(line, /^[[:space:]]*[A-Za-z_][A-Za-z0-9_-]*[[:space:]]*=/)) {
+          key = line
+          sub(/^[[:space:]]*/, "", key)
+          sub(/[[:space:]]*=.*$/, "", key)
+          exist_top_key_order[++exist_key_n] = key
+          exist_top_line[key] = line
+        }
+      }
+    }
+    END {
+      flush_section()
+
+      preserved_key_n = 0
+      preserved_keys = ""
+      for (i = 1; i <= exist_key_n; i++) {
+        k = exist_top_key_order[i]
+        if (!(k in tmpl_top_key)) {
+          preserved_key_list[++preserved_key_n] = k
+          preserved_keys = (preserved_keys == "" ? k : preserved_keys ", " k)
+        }
+      }
+
+      preserved_section_n = 0
+      preserved_sections = ""
+      for (i = 1; i <= exist_order_n; i++) {
+        n = exist_order[i]
+        if (!(n in tmpl_section)) {
+          preserved_section_list[++preserved_section_n] = n
+          preserved_sections = (preserved_sections == "" ? "[" n "]" : preserved_sections ", [" n "]")
+        }
+      }
+
+      for (i = 1; i <= tmpl_top_n; i++) {
+        print tmpl_top[i]
+      }
+      if (preserved_key_n > 0) {
+        if (tmpl_top_n > 0 && tmpl_top[tmpl_top_n] != "") print ""
+        print "# --- preserved top-level keys from previous config.toml ---"
+        for (i = 1; i <= preserved_key_n; i++) {
+          print exist_top_line[preserved_key_list[i]]
+        }
+        print ""
+      }
+      for (i = 1; i <= tmpl_order_n; i++) {
+        print tmpl_body[tmpl_order[i]]
+      }
+      if (preserved_section_n > 0) {
+        print ""
+        print "# --- preserved sections from previous config.toml ---"
+        for (i = 1; i <= preserved_section_n; i++) {
+          print exist_body[preserved_section_list[i]]
+          print ""
+        }
+      }
+
+      printf "%d\t%s\n%d\t%s\n", preserved_key_n, preserved_keys, preserved_section_n, preserved_sections > summary_file
+    }
+  ' "$rendered_tmp" "$target_config" > "$merged_tmp"
+
+  mv "$merged_tmp" "$target_config"
+  rm -f "$rendered_tmp"
+
+  if [[ -s "$summary_tmp" ]]; then
+    local key_count key_list sec_count sec_list
+    {
+      IFS=$'\t' read -r key_count key_list
+      IFS=$'\t' read -r sec_count sec_list
+    } < "$summary_tmp"
+    if [[ "${key_count:-0}" -gt 0 ]]; then
+      printf 'Preserved %s top-level key(s) from previous config.toml: %s\n' "$key_count" "$key_list"
+    fi
+    if [[ "${sec_count:-0}" -gt 0 ]]; then
+      printf 'Preserved %s section(s) from previous config.toml: %s\n' "$sec_count" "$sec_list"
+    fi
+  fi
+  rm -f "$summary_tmp"
 }
 
 check_path() {
