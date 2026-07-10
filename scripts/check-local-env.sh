@@ -4,6 +4,7 @@ set -euo pipefail
 
 full_check=false
 ci_mode=false
+minimum_codex_version="0.134.0"
 
 for arg in "$@"; do
   case "$arg" in
@@ -22,6 +23,82 @@ fi
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 status=0
+
+version_at_least() {
+  local actual="$1"
+  local required="$2"
+  local actual_major actual_minor actual_patch required_major required_minor required_patch
+  IFS=. read -r actual_major actual_minor actual_patch <<<"$actual"
+  IFS=. read -r required_major required_minor required_patch <<<"$required"
+  ((10#$actual_major > 10#$required_major)) ||
+    ((10#$actual_major == 10#$required_major && 10#$actual_minor > 10#$required_minor)) ||
+    ((10#$actual_major == 10#$required_major && 10#$actual_minor == 10#$required_minor && 10#$actual_patch >= 10#$required_patch))
+}
+
+check_codex_runtime() {
+  local requested="${CODEX_BIN:-codex}"
+  local resolved=""
+  local version_output=""
+  local parsed_version=""
+  local locations=""
+  local location=""
+  local location_count=0
+
+  if [[ "$ci_mode" == true ]]; then
+    printf '[skip] codex capability preflight (ci mode)\n'
+    return
+  fi
+
+  if [[ -z "$requested" ]]; then
+    printf '[invalid] CODEX_BIN must not be empty\n'
+    status=1
+    return
+  fi
+  if [[ "$requested" == */* ]]; then
+    if [[ ! -x "$requested" || -d "$requested" ]]; then
+      printf '[missing] Codex executable: %s\n' "$requested"
+      status=1
+      return
+    fi
+    resolved="$requested"
+    printf '[info] CODEX_BIN override: %s\n' "$resolved"
+  else
+    resolved="$(command -v "$requested" 2>/dev/null || true)"
+    if [[ -z "$resolved" ]]; then
+      printf '[missing] codex (requires >= %s)\n' "$minimum_codex_version"
+      status=1
+      return
+    fi
+    locations="$(type -a "$requested" 2>/dev/null | sed -n "s/^${requested} is //p" | awk '!seen[$0]++')"
+    location_count="$(printf '%s\n' "$locations" | awk 'NF { count++ } END { print count + 0 }')"
+    if ((location_count > 1)); then
+      printf '[warn] shadowed Codex installations; shell resolves %s first:\n' "$resolved"
+      while IFS= read -r location; do
+        [[ -n "$location" ]] || continue
+        version_output="$("$location" --version 2>&1 || true)"
+        printf '  - %s (%s)\n' "$location" "${version_output:-version unavailable}"
+      done <<<"$locations"
+    fi
+  fi
+
+  if ! version_output="$("$resolved" --version 2>&1)"; then
+    printf '[invalid] Codex version query failed: %s\n' "$resolved"
+    status=1
+    return
+  fi
+  parsed_version="$(printf '%s\n' "$version_output" | sed -nE 's/.*[^0-9]([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -n 1)"
+  if [[ -z "$parsed_version" ]] || ! version_at_least "$parsed_version" "$minimum_codex_version"; then
+    printf '[invalid] Codex %s at %s; version >= %s required\n' "${parsed_version:-unknown}" "$resolved" "$minimum_codex_version"
+    status=1
+    return
+  fi
+  if ! "$resolved" help doctor >/dev/null 2>&1; then
+    printf '[invalid] Codex %s lacks the doctor help capability: %s\n' "$parsed_version" "$resolved"
+    status=1
+    return
+  fi
+  printf '[ok] codex: %s (%s), doctor capability present\n' "$resolved" "$parsed_version"
+}
 
 check_cmd() {
   local cmd="$1"
@@ -107,8 +184,6 @@ with open(path, "rb") as handle:
 required = [
     "name",
     "description",
-    "model",
-    "model_reasoning_effort",
     "sandbox_mode",
     "developer_instructions",
 ]
@@ -122,16 +197,10 @@ if data["name"] != expected:
     print(f"name field '{data['name']}' does not match filename '{expected}'")
     sys.exit(1)
 
-if data["model"] != "gpt-5.5":
-    print(f"model must be gpt-5.5, found {data['model']!r}")
-    sys.exit(1)
-
-if data["model_reasoning_effort"] not in {"high", "xhigh"}:
-    print(
-        "model_reasoning_effort must be high or xhigh, "
-        f"found {data['model_reasoning_effort']!r}"
-    )
-    sys.exit(1)
+for forbidden in ("model", "model_reasoning_effort"):
+    if forbidden in data:
+        print(f"{forbidden} must be omitted so the agent inherits the parent session")
+        sys.exit(1)
 PY
     )"; then
       printf '[ok] %s\n' "${file#"$repo_root"/}"
@@ -161,30 +230,80 @@ except ModuleNotFoundError:
 with open(sys.argv[1], "rb") as handle:
     data = tomllib.load(handle)
 
-model = data.get("model")
-if model is not None and model != "gpt-5.5":
-    print(f"model must be omitted or gpt-5.5, found {model!r}")
-    sys.exit(1)
-
-effort = data.get("model_reasoning_effort")
-if effort is not None and effort not in {"high", "xhigh"}:
-    print(f"model_reasoning_effort must be high or xhigh, found {effort!r}")
-    sys.exit(1)
-
-profiles = data.get("profiles", {})
-for name, profile in profiles.items():
-    profile_model = profile.get("model")
-    if profile_model is not None and profile_model != "gpt-5.5":
-        print(f"profiles.{name}.model must be omitted or gpt-5.5, found {profile_model!r}")
+for forbidden in ("model", "model_reasoning_effort", "plan_mode_reasoning_effort"):
+    if forbidden in data:
+        print(f"{forbidden} must be omitted so the parent session selection is inherited")
         sys.exit(1)
 
-    profile_effort = profile.get("model_reasoning_effort")
-    if profile_effort is not None and profile_effort not in {"high", "xhigh"}:
-        print(
-            f"profiles.{name}.model_reasoning_effort must be high or xhigh, "
-            f"found {profile_effort!r}"
-        )
+if "profiles" in data:
+    print("inline [profiles.*] tables are unsupported; use separate NAME.config.toml files")
+    sys.exit(1)
+
+agents = data.get("agents", {})
+expected_threads = 2 if sys.argv[1].endswith("templates/prototype-mode/config.toml") else 6
+if agents.get("max_threads") != expected_threads or agents.get("max_depth") != 1:
+    print(
+        f"agents must set max_threads={expected_threads} and max_depth=1, "
+        f"found {agents!r}"
+    )
+    sys.exit(1)
+PY
+  )"; then
+    printf '[ok] %s\n' "$path"
+  else
+    printf '[invalid] %s: %s\n' "$path" "$output"
+    status=1
+  fi
+}
+
+check_profile_config() {
+  local path="$1"
+  local output=""
+
+  if output="$(python3 - "$repo_root/$path" 2>&1 <<'PY'
+import os
+import sys
+
+try:
+    import tomllib
+except ModuleNotFoundError:
+    try:
+        import tomli as tomllib
+    except ModuleNotFoundError:
+        print("python3 requires tomllib or tomli for TOML validation")
+        sys.exit(2)
+
+with open(sys.argv[1], "rb") as handle:
+    data = tomllib.load(handle)
+
+for forbidden in (
+    "model",
+    "model_reasoning_effort",
+    "plan_mode_reasoning_effort",
+    "profiles",
+    "agents",
+):
+    if forbidden in data:
+        print(f"{forbidden} is not allowed in a managed GodMode profile")
         sys.exit(1)
+
+expected = {
+    "godmode-swiftui.config.toml": {"web_search": "cached"},
+    "godmode-web.config.toml": {"web_search": "live"},
+    "godmode-flutter.config.toml": {"web_search": "cached"},
+    "godmode-review.config.toml": {
+        "model_reasoning_summary": "concise",
+        "model_verbosity": "low",
+        "web_search": "cached",
+    },
+}
+name = os.path.basename(sys.argv[1])
+if name not in expected:
+    print(f"unexpected managed profile name: {name}")
+    sys.exit(1)
+if data != expected[name]:
+    print(f"profile keys differ from the managed contract: {data!r}")
+    sys.exit(1)
 PY
   )"; then
     printf '[ok] %s\n' "$path"
@@ -223,6 +342,68 @@ check_skill_frontmatter() {
       status=1
     fi
   done
+}
+
+check_skill_openai_yaml() {
+  local path="templates/global-codex/skills/godmode-workflow/agents/openai.yaml"
+  local output=""
+
+  if output="$(python3 - "$repo_root/$path" 2>&1 <<'PY'
+import re
+import sys
+
+path = sys.argv[1]
+with open(path, encoding="utf-8") as handle:
+    lines = [line.rstrip("\n") for line in handle]
+
+if not lines or lines[0] != "interface:":
+    print("top-level interface mapping is required")
+    sys.exit(1)
+
+values = {}
+pattern = re.compile(r'^  ([a-z_]+): "([^"\\]*(?:\\.[^"\\]*)*)"$')
+for line in lines[1:]:
+    if not line.strip():
+        continue
+    match = pattern.fullmatch(line)
+    if not match:
+        print(f"invalid or unquoted interface line: {line!r}")
+        sys.exit(1)
+    values[match.group(1)] = match.group(2)
+
+expected_keys = {"display_name", "short_description", "default_prompt"}
+if set(values) != expected_keys:
+    print(f"expected only {sorted(expected_keys)}, found {sorted(values)}")
+    sys.exit(1)
+if not values["display_name"]:
+    print("display_name must not be empty")
+    sys.exit(1)
+length = len(values["short_description"])
+if not 25 <= length <= 64:
+    print(f"short_description must be 25-64 characters, found {length}")
+    sys.exit(1)
+if "$godmode-workflow" not in values["default_prompt"]:
+    print("default_prompt must explicitly mention $godmode-workflow")
+    sys.exit(1)
+PY
+  )"; then
+    printf '[ok] %s\n' "$path"
+  else
+    printf '[invalid] %s: %s\n' "$path" "$output"
+    status=1
+  fi
+}
+
+check_installer_regressions() {
+  local output=""
+  local groups=""
+  if output="$("$repo_root/scripts/test-global-codex-setup.sh" 2>&1)"; then
+    groups="$(printf '%s\n' "$output" | sed -nE 's/^All ([0-9]+) global Codex installer regression groups passed\.$/\1/p' | tail -n 1)"
+    printf '[ok] scripts/test-global-codex-setup.sh (%s regression groups)\n' "${groups:-unknown}"
+  else
+    printf '[invalid] scripts/test-global-codex-setup.sh:\n%s\n' "$output"
+    status=1
+  fi
 }
 
 check_unreleased_when_dirty() {
@@ -378,6 +559,7 @@ printf 'Mode: %s\n' "$([[ "$ci_mode" == true ]] && echo ci || echo local)"
 printf '\nTooling:\n'
 check_cmd git
 check_cmd python3
+check_codex_runtime
 if [[ "$ci_mode" == true ]]; then
   for cmd in node npm pnpm swift xcodebuild flutter dart; do
     skip_cmd "$cmd"
@@ -407,8 +589,14 @@ check_path "templates/global-codex/agents/workflow_design.toml"
 check_path "templates/global-codex/agents/workspace_governance.toml"
 check_path "templates/global-codex/agents/quality_operations.toml"
 check_path "templates/global-codex/agents/docs_dx.toml"
+check_path "templates/global-codex/profiles"
+check_path "templates/global-codex/profiles/godmode-swiftui.config.toml"
+check_path "templates/global-codex/profiles/godmode-web.config.toml"
+check_path "templates/global-codex/profiles/godmode-flutter.config.toml"
+check_path "templates/global-codex/profiles/godmode-review.config.toml"
 check_path "templates/global-codex/skills"
 check_path "templates/global-codex/skills/godmode-workflow/SKILL.md"
+check_path "templates/global-codex/skills/godmode-workflow/agents/openai.yaml"
 check_path "templates/global-codex/skills/godmode-prototype/SKILL.md"
 check_path "templates/global-codex/skills/godmode-departments/SKILL.md"
 check_path "templates/global-codex/skills/godmode-debug/SKILL.md"
@@ -445,7 +633,10 @@ check_path "templates/project-bootstrap/AGENTS.md"
 check_path "templates/prototype-mode/AGENTS.md"
 check_path "templates/prototype-mode/config.toml"
 check_path "scripts/apply-global-codex-setup.sh"
+check_path "scripts/apply-global-codex-setup.ps1"
 check_path "scripts/check-local-env.sh"
+check_path "scripts/test-global-codex-setup.sh"
+check_path "scripts/test-global-codex-setup.ps1"
 check_path "reports"
 check_path "reports/README.md"
 check_path "reports/templates/role-report.md"
@@ -458,10 +649,16 @@ check_agent_contracts
 check_toml_config ".codex/config.toml"
 check_toml_config "templates/global-codex/config.toml"
 check_toml_config "templates/prototype-mode/config.toml"
+check_profile_config "templates/global-codex/profiles/godmode-swiftui.config.toml"
+check_profile_config "templates/global-codex/profiles/godmode-web.config.toml"
+check_profile_config "templates/global-codex/profiles/godmode-flutter.config.toml"
+check_profile_config "templates/global-codex/profiles/godmode-review.config.toml"
 check_skill_frontmatter
+check_skill_openai_yaml
 check_unreleased_when_dirty
 check_version_alignment
 check_shell_syntax
+check_installer_regressions
 check_workflow_security
 
 if [[ "$full_check" == true ]] && [[ "$ci_mode" != true ]] && command -v flutter >/dev/null 2>&1; then

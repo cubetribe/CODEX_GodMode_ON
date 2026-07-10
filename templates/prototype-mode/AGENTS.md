@@ -29,14 +29,16 @@ to Codex and any contributor who opens the folder.
 | --- | --- |
 | `api_guardian` | Skipped — no contract or schema enforcement |
 | `validator` | Skipped — no full structural checks |
-| `tester` | Reduced — one smoke command only |
+| `tester` | Reduced — one focused end-to-end outcome check |
 | `scribe` | Skipped — no changelog updates |
 | `github_manager` | Skipped — no PR, no push |
 
 ## What is still required
 
 - `builder` writes all code
-- one smoke command confirms the code runs or produces output
+- one focused end-to-end check exercises the promised user-visible behavior
+- the actual output or observation is recorded; file presence or process start
+  alone is not completion evidence
 - migration checklist is included in output and reviewed before promotion
 
 ## Routing
@@ -49,6 +51,7 @@ migration checklist.
 
 ## Validation note
 
-`tester` in prototype mode runs only the single smoke command specified in
-the task. Full suite runs happen after migration to production under
-`$godmode-workflow`.
+Prototype validation stays narrow, but it must cross the promised path from
+input or trigger to observable result. If that cannot be demonstrated locally,
+the prototype remains incomplete and the missing evidence must be stated. Full
+suite runs happen after migration to production under `$godmode-workflow`.

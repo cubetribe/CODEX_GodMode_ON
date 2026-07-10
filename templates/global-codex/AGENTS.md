@@ -1,3 +1,4 @@
+<!-- CODEX_GODMODE_GLOBAL_AGENTS:BEGIN -->
 # ~/.codex/AGENTS.md
 
 ## Default working style
@@ -23,16 +24,19 @@
 ## Global workflow
 
 - Prefer the GodMode loop for non-trivial work.
+- Use bounded proactive subagents when the user, project guidance, or an active skill authorizes delegation and parallel work materially improves speed or quality.
+- Parallelize independent read-only discovery; keep one implementation writer and one delegation depth unless stricter local guidance applies.
+- Let custom agents inherit the parent session's model and reasoning selection.
 - Available global agents: `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager`.
 - Optional department agents: `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian`.
 - Available global skills: `godmode-workflow`, `godmode-prototype`, `godmode-departments`, `godmode-debug`, `godmode-review`, `greenfield-bootstrap`, `apple-platforms`, `web-platforms`, `flutter-dart`, `release-manager`.
 
 ## Profile intents
 
-- `swiftui`: prioritize Apple platform guidance, SwiftUI state ownership, and `xcodebuild`-based validation.
-- `web`: prioritize React purity, Next.js App Router rules, Node.js contract clarity, and version-sensitive web docs.
-- `flutter`: prioritize analyzer cleanliness, repository boundaries, unidirectional data flow, and `flutter test` / `dart analyze`.
-- `review`: default to review mode with findings first, severity ordering, and file or line references before summaries.
+- `godmode-swiftui`: prioritize Apple platform guidance, SwiftUI state ownership, and `xcodebuild`-based validation.
+- `godmode-web`: prioritize React purity, Next.js App Router rules, Node.js contract clarity, and version-sensitive web docs.
+- `godmode-flutter`: prioritize analyzer cleanliness, repository boundaries, unidirectional data flow, and `flutter test` / `dart analyze`.
+- `godmode-review`: default to review mode with findings first, severity ordering, and file or line references before summaries.
 
 ## Stack defaults
 
@@ -52,3 +56,4 @@
 - Never commit or push without explicit approval.
 - Never force-push a shared branch.
 - Never rewrite shared history.
+<!-- CODEX_GODMODE_GLOBAL_AGENTS:END -->

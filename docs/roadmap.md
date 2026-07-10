@@ -1,164 +1,80 @@
 # Roadmap
 
-This roadmap is not a list of “nice someday ideas.” It is the delivery path for the Codex GodMode port.
+Updated: 2026-07-10
 
-Current release: `1.1.0`.
+Current release: 2.0.0
 
-## Release status
+Version 2.0 completes the installable GPT-5.6-era local orchestration baseline.
+This roadmap separates shipped behavior from future hardening so planned work is
+not mistaken for a current runtime feature.
 
-| Phase | Status in 1.1.0 |
-| --- | --- |
-| Phase 0: Blueprint | complete |
-| Phase 1: Repository scaffolding | complete |
-| Phase 2: Orchestrator contract | complete as documented workflow guidance |
-| Phase 3: Guardrails and helper tools | partially complete through install and environment checks |
-| Phase 4: Reference implementation | complete as an installable Codex runtime package |
-| Phase 5: Validation and community hardening | ongoing |
+## Shipped milestones
 
-## Phase 0: Blueprint
+| Milestone | Status | Outcome |
+| --- | --- | --- |
+| Architecture blueprint | shipped | native Codex layers, roles, gates, and authority boundaries documented |
+| Global runtime package | shipped | 14 agents and 10 skills installed outside repo-local discovery paths |
+| Optional department routing | shipped | lean, guided, and bounded cross-domain lanes |
+| Production companion modes | shipped | workflow, debug, review, department, and local prototype procedures |
+| Repository guardrails | shipped | governance, changelog law, validation law, CI/security baseline |
+| Safe cross-platform install | shipped in 2.0 | byte-preserved config, managed guidance, separate profiles, exact drift checks |
+| Model-inheritance contract | shipped in 2.0 | parent session chooses model and reasoning; custom agents do not pin entitlements |
+| Evidence-backed completion | shipped in 2.0 | user-visible done criteria mapped to concrete outcomes, including prototypes |
 
-Goal:
+## 2.0 release scope
 
-- analyze the source system
-- verify current Codex capabilities
-- document the initial orchestrator, roles, and gates
+Version 2.0 delivers:
 
-Deliverables:
+- Codex CLI `0.134.0+` capability preflight and shadowed-binary diagnostics
+- separate `godmode-*.config.toml` profiles instead of inline profile tables
+- bounded proactive read-only delegation with a six-field task envelope
+- one normal implementation writer after synthesis and scope freeze
+- independent structural and executable quality gates
+- end-to-end outcome evidence before documentation or release handoff
+- exact managed agent, skill, profile, and guidance verification
+- shell and Windows installer regression fixtures, with Windows PowerShell 5.1
+  and PowerShell 7 enforced by CI
 
-- `README.md` as the public entry point
-- `docs/blueprint.md` as the architecture core
-- `docs/roadmap.md` as the delivery plan
+## Next hardening areas
 
-Done when:
+These are candidates, not promised current behavior:
 
-- a new reader understands the purpose, target shape, and implementation status without extra context
+### Workflow evaluation fixtures
 
-## Phase 1: Optional department scaffolding
+- representative web, Apple, Flutter, debug, review, and department runs
+- measurable skill-trigger and agent-routing cases
+- handoff accuracy and done-evidence quality checks
+- regression cases for over-delegation and scope leakage
 
-Status: done
+### Durable artifact contracts
 
-Goal:
+- optional schemas for generated reports and resumable state
+- staleness markers that force re-verification against current repository state
+- clearer examples of intake, routing, contract freeze, and release handoff
 
-- add the planning artifacts that make larger multi-domain runs safe without forcing department mode on every task
+### Installer lifecycle hardening
 
-Expected contents:
+- additional Windows and Linux distribution coverage
+- compatibility fixtures for future Codex profile and configuration changes
+- explicit migration tests for every future managed-file format change
+- clearer package provenance and checksum workflows if distribution expands
 
-- packaged agent definitions under `templates/global-codex/agents/`
-- packaged skill definitions under `templates/global-codex/skills/`
-- state and report directories
-- documented `[agents]` configuration examples
+### Community evidence
 
-Done when:
+- documented real-world activation and upgrade cases
+- issue templates that capture resolved CLI, profile, and drift evidence
+- contributor examples that demonstrate safe lean and department routing
 
-- a contributor can choose lean, guided, or department mode without guessing what artifacts are required
+## Non-goals
 
-## Phase 2: Blueprint and docs alignment
+The roadmap does not currently include:
 
-Status: done
+- a scheduled local orchestration daemon
+- a hidden hook-driven auto-spawner
+- Responses API beta integration presented as local Codex behavior
+- unlimited nested or recursively autonomous subagents
+- automatic commit, push, merge, release, or deploy authority
+- a mandatory GPT-5.6 or Ultra entitlement
 
-Goal:
-
-- align the public docs with the scalable target model while keeping current runtime state separate from the future design
-
-Expected contents:
-
-- updated `README.md`
-- updated `docs/blueprint.md`
-- department model doc
-- roadmap and repo conventions aligned with the new scaling law
-
-Done when:
-
-- every step between intake and completion is documented as a deterministic Codex workflow
-
-## Phase 3: Department-aware runtime additions
-
-Status: done
-
-Goal:
-
-- add department-specific runtime pieces only after the docs and templates are stable
-
-Expected contents:
-
-- first department-oriented agent definitions
-- GitHub security and CI coverage for `.github/**` and repo-protection surfaces
-- skill refinements where procedures repeat
-- runtime rules for write scopes and bounded delegation
-
-Done when:
-
-- the runtime can scale up into department mode without replacing the existing role-centric baseline
-
-## Phase 4: Guardrails and enforcement
-
-Status: in progress
-
-Goal:
-
-- build the helpers that make the system safer and more auditable
-
-Current sprint focus:
-
-- fill `CHANGELOG.md` under `[Unreleased]` and codify the changelog law
-- add `ci_security_guardian`, baseline CI, and `CODEOWNERS`
-- codify the validation law and expand `scripts/check-local-env.sh`
-- publish `docs/agent-registry.md` and close current-state versus target-state doc drift
-- expand the GodMode skill family with dedicated debug and review companion skills
-
-Expected contents:
-
-- preflight checks
-- contract drift checks
-- report and state validation
-- write-scope enforcement helpers
-- approval and release guardrails where needed
-
-Done when:
-
-- critical install and readiness rules are not only described but can also be checked locally
-
-## Phase 5: Pilot runs and hardening
-
-Status: next
-
-Goal:
-
-- test the scalable reference against real use cases and sharpen the weak points
-
-Expected contents:
-
-- core custom agents and optional department agents
-- core workflow skills, companion lane skills, and stack skills
-- example flows for feature work, debugging, and API changes
-
-Done when:
-
-- a new user can reproduce the workflow locally
-
-## Phase 5: Validation and community hardening
-
-Goal:
-
-- test the reference against real use cases and sharpen the weak points
-
-Expected contents:
-
-- demo runs
-- discussion-driven feedback
-- refinement of unclear boundaries and gates
-- versioning of the blueprint and later of the runtime
-
-Done when:
-
-- the system is stable enough for repeated use and understandable to contributors outside the core team
-
-## After 1.1.0
-
-Likely next hardening areas:
-
-- example reports and state files that demonstrate clean handoffs
-- optional schema checks for `reports/` and `state/`
-- eval-style examples for skill trigger accuracy and workflow routing
-- broader documentation examples from real web, Apple, Flutter, review, and debug runs
-- CI checks for shell scripts, markdown links, and packaged agent or skill metadata
+Any future change to those boundaries requires explicit architecture review,
+source verification, migration design, and a new release contract.

@@ -1,5 +1,11 @@
 # GodMode Improvement Sprint — Codex Prompt
 
+> **Archived historical prompt (2026-04-16).** This file records the inputs and
+> assumptions of a completed improvement sprint. Statements about the “current”
+> branch, missing gates, or target state are not the 2.0 runtime contract. Use
+> the root `README.md`, `docs/blueprint.md`, and `docs/local-development.md` for
+> current guidance.
+
 **Branch:** `codex/plane-fachagentenorganisation`
 **Datum:** 2026-04-16
 **Zweck:** Geführter Verbesserungs-Sprint über vier klar begrenzte Baustellen.

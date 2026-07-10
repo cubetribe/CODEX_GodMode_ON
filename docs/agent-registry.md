@@ -1,39 +1,64 @@
 # Agent Registry
 
-This registry documents the packaged GodMode agents installed by `./scripts/apply-global-codex-setup.sh`.
+Updated: 2026-07-10
 
-Source files live under `templates/global-codex/agents/` so this bootstrap repository does not expose duplicate project-local agents after the same runtime is installed globally.
+This registry documents the 14 GodMode agents packaged under
+`templates/global-codex/agents/` and installed into `$CODEX_HOME/agents/`.
+The package source stays outside repo-local discovery paths so this bootstrap
+repository does not expose duplicate project and personal agents.
 
-All packaged agents pin `model = "gpt-5.5"` and `model_reasoning_effort = "high"`. That keeps the main orchestration and delegated roles on the strong model path unless a future release intentionally changes the contract.
+## Runtime contract
+
+No manifest sets `model` or `model_reasoning_effort`. Every agent inherits the
+parent session's model and reasoning level. GPT-5.6 is recommended for demanding
+orchestration when available; Ultra is an opt-in for complex multi-agent work,
+not a package requirement.
+
+Read-only agents use `sandbox_mode = "read-only"`. A writable manifest defines
+role capability, not permission to mutate arbitrary paths: the parent must still
+assign an explicit write scope through the six-field delegation envelope.
 
 ## Core agents
 
-| Agent | Source | Purpose |
+| Agent | Sandbox | Purpose |
 | --- | --- | --- |
-| `researcher` | `templates/global-codex/agents/researcher.toml` | read-only source verification, repo discovery, and problem framing |
-| `architect` | `templates/global-codex/agents/architect.toml` | read-only design, interfaces, risks, and smallest viable change plan |
-| `api_guardian` | `templates/global-codex/agents/api_guardian.toml` | read-only API, schema, CLI, config, and contract-surface review |
-| `builder` | `templates/global-codex/agents/builder.toml` | implementation-focused writer for the smallest safe change |
-| `validator` | `templates/global-codex/agents/validator.toml` | read-heavy structural, static, and consistency validation |
-| `tester` | `templates/global-codex/agents/tester.toml` | focused executable checks and runtime verification |
-| `scribe` | `templates/global-codex/agents/scribe.toml` | docs, changelog, and release-note work after quality gates pass |
-| `github_manager` | `templates/global-codex/agents/github_manager.toml` | branch, PR, release, and repository-governance framing |
+| `researcher` | read-only | source verification, repository discovery, and factual framing |
+| `architect` | read-only | design, interfaces, risks, rollback, and smallest viable plan |
+| `api_guardian` | read-only | API, schema, CLI, config, and compatibility review |
+| `builder` | workspace-write | single normal implementation writer |
+| `validator` | read-only | structural, static, contract, and consistency validation |
+| `tester` | workspace-write | executable checks and temporary test outputs |
+| `scribe` | workspace-write | documentation and release artifacts after gates pass |
+| `github_manager` | read-only | branch, PR, release, and repository-governance framing |
 
 ## Department agents
 
-| Agent | Source | Purpose |
+| Agent | Sandbox | Purpose |
 | --- | --- | --- |
-| `runtime_platform` | `templates/global-codex/agents/runtime_platform.toml` | runtime defaults, toolchains, sandboxing, and environment behavior |
-| `workflow_design` | `templates/global-codex/agents/workflow_design.toml` | workflow procedures, skill boundaries, and handoff artifacts |
-| `workspace_governance` | `templates/global-codex/agents/workspace_governance.toml` | AGENTS layering, release law, branch policy, and repo rules |
-| `quality_operations` | `templates/global-codex/agents/quality_operations.toml` | validation plans, install checks, smoke paths, and eval-oriented checks |
-| `docs_dx` | `templates/global-codex/agents/docs_dx.toml` | README, setup docs, prompts, and contributor-facing clarity |
-| `ci_security_guardian` | `templates/global-codex/agents/ci_security_guardian.toml` | GitHub Actions, CODEOWNERS, pinned actions, and repository security posture |
+| `runtime_platform` | read-only | runtime defaults, toolchains, sandbox, and environment behavior |
+| `workflow_design` | read-only | workflow procedures, skills, handoffs, prompts, reports, and state |
+| `workspace_governance` | read-only | AGENTS layering, release law, branch policy, and repo rules |
+| `quality_operations` | read-only | validation plans, installer checks, smoke paths, and eval-style checks |
+| `docs_dx` | read-only | README, setup guidance, prompts, and developer experience |
+| `ci_security_guardian` | workspace-write | GitHub Actions, CODEOWNERS, pinned actions, permissions, and repository protection |
 
-## Installed count
+Department agents are advisory by default. Even a writable role receives only a
+frozen, isolated scope when the parent workflow explicitly needs it.
 
-- Core agents: 8
-- Department agents: 6
-- Total packaged agents: 14
+## Installed count and verification
 
-Run `./scripts/check-local-env.sh` to verify the package sources and `./scripts/apply-global-codex-setup.sh --check` to verify the installed global runtime.
+- core agents: 8
+- department agents: 6
+- total packaged agents: 14
+
+The installer updates the current 14 GodMode-owned manifest paths exactly while
+leaving unrelated user-owned agent files alone. Verify the package and installed
+runtime with:
+
+```bash
+./scripts/check-local-env.sh
+./scripts/apply-global-codex-setup.sh --check
+```
+
+On Windows, use `./scripts/apply-global-codex-setup.ps1 --check` for the second
+command.

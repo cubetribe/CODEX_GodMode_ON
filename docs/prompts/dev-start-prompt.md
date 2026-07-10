@@ -1,8 +1,6 @@
 # Default Start Prompt
 
-Use this for most GodMode sessions.
-
-These prompts assume the global install has already been applied.
+Use this after the global runtime is installed and a fresh Codex task is open.
 
 ## Prompt
 
@@ -10,28 +8,36 @@ These prompts assume the global install has already been applied.
 $godmode-workflow
 
 Goal: <goal>
-Context: <repo, package, branch, or relevant background>
-Constraints: <non-goals, files to avoid, compatibility requirements>
-Done when: <commands, expected behavior, or release output>
 
 Context:
-- <relevant files, errors, constraints, or architecture notes>
+- <repo, branch, errors, architecture, or relevant files>
+
+Constraints:
+- <non-goals, files to avoid, compatibility, or authority boundaries>
 
 Done when:
-- <what finished looks like>
+- <observable behavior>
+- <focused validation command or artifact>
+- <release output, if already authorized>
 ```
 
 ## Best for
 
-- new features
-- scoped refactors
-- setup and documentation work that still needs validation
-- most repo-local work where `godmode-workflow` is enough on its own
+- features and scoped refactors
+- setup, migration, and documentation work that needs validation
+- compatibility changes involving API, schema, CLI, or config surfaces
+- release preparation with explicit GitHub authority
 
-## Optional extras
+For a long task, use `/plan` first to refine and approve the approach, then
+optionally `/goal` for persistent continuation. The GodMode gates and permission
+boundaries still apply.
 
-- target files or directories
-- required validation command such as `pnpm test`, `xcodebuild test`, or `flutter test`
-- explicit non-goals to keep scope tight
-- prepend `$web-platforms`, `$apple-platforms`, or `$flutter-dart` if stack-specific guidance should trigger immediately
-- local rules or release law that should govern the task
+## Useful additions
+
+- required validation such as `pnpm test`, `xcodebuild test`, or `flutter test`
+- explicit write scopes or protected files
+- repo-local release law and branch protection
+- `$web-platforms`, `$apple-platforms`, or `$flutter-dart` when stack guidance
+  should shape the run
+- GPT-5.6 selected in the parent session when available for demanding work;
+  Ultra only when complex multi-agent coordination justifies it

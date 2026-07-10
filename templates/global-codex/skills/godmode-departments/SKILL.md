@@ -1,37 +1,33 @@
 ---
 name: godmode-departments
-description: Activate optional department-based routing for cross-domain Codex tasks that need frozen ownership and advisory handoffs before implementation.
+description: Route cross-domain Codex work through bounded advisory specialists with frozen ownership and explicit handoffs. Use with godmode-workflow when runtime, workflow, governance, quality, documentation, or CI concerns need separate analysis.
 ---
 
 # GodMode Departments
 
-Use this skill together with `godmode-workflow` only when a task crosses multiple concerns strongly enough that one linear workflow would blur ownership.
-
-## When it fits
-
-- runtime or platform behavior is entangled with workflow design
-- repo governance or release law is part of the implementation decision
-- validation strategy or docs UX needs a dedicated advisory pass
-- a long-running task needs clearer ownership boundaries before `builder` starts
+Use this skill only when separate advisory lanes materially clarify a complex
+task. It does not replace the phases or gates in `$godmode-workflow`.
 
 ## Department map
 
-- `runtime_platform`: environment, tooling, sandbox, OS, local-vs-cloud, and runtime behavior
-- `workflow_design`: orchestration flow, prompt structure, skill boundaries, and durable state/report design
-- `workspace_governance`: `AGENTS.md`, release law, branch policy, repo contracts, and instruction layering
-- `quality_operations`: validation scope, regression gates, eval ideas, and repeatable checks
-- `docs_dx`: README, setup docs, prompts, and user-facing clarity
-- `ci_security_guardian`: GitHub Actions, CODEOWNERS, pinned actions, and repository security posture
+- `runtime_platform`: environment, toolchain, sandbox, OS, and runtime behavior
+- `workflow_design`: orchestration, prompt, skill, handoff, and state design
+- `workspace_governance`: instructions, release law, branch policy, and scope
+- `quality_operations`: regression strategy, executable gates, and evaluations
+- `docs_dx`: setup guidance, prompts, and user-facing clarity
+- `ci_security_guardian`: CI, CODEOWNERS, dependency automation, and security
 
-## Routing rules
+## Routing contract
 
-- Run governance preflight first; department mode does not skip it.
-- Codex only spawns subagents when you explicitly ask it to. Name the department agent you want.
-- Department agents are advisory and read-heavy by default.
-- Keep a single writer. `builder` or `scribe` owns edits after the advisory lanes converge.
-- Stop using department mode once ownership is clear and continue under `$godmode-workflow`, `$godmode-debug`, or `$godmode-review`.
+- Finish governance preflight before routing departments.
+- Delegate proactively only when the user, project guidance, or active skill
+  authorizes it. Keep one delegation depth.
+- Give every department an objective, inputs, required output, read-only or
+  explicitly isolated write scope, done criterion, and escalation condition.
+- Parallelize only independent lanes. Freeze interface ownership and resolve
+  conflicting advice before implementation.
+- Keep department agents advisory by default. Assign tracked implementation to
+  one `builder`; assign final documentation to `scribe` only after quality gates.
+- Stop department mode once the parent has enough evidence to freeze one plan.
 
-## Do not use when
-
-- the default workflow is already clear
-- the task is small enough that extra routing would slow it down
+Do not create departments for small tasks or use them as ceremonial reviewers.

@@ -6,6 +6,53 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-07-10
+
+### Added
+
+- four Codex `0.134.0+` profile files — `godmode-swiftui`, `godmode-web`, `godmode-flutter`, and `godmode-review` — installed as separate `$CODEX_HOME/*.config.toml` files
+- capability-aware installer preflight for Codex CLI `0.134.0` or newer, including version and `codex doctor` support checks
+- exact managed-asset verification for global agents, skills, profiles, and the managed `AGENTS.md` block
+- cross-platform installer regression suites, with Windows PowerShell 5.1 and PowerShell 7 coverage enforced in CI
+- OpenAI UI metadata for `$godmode-workflow`
+- an outcome-evidence gate that maps each done criterion to an observed command result, artifact, or user-visible behavior
+
+### Changed
+
+- rebuilt `$godmode-workflow` around governance and capability preflight, bounded parallel discovery, synthesis and contract freeze, one implementation writer, independent validation, outcome evidence, and release handoff
+- let every packaged agent inherit the parent session model and reasoning level; GPT-5.6 is recommended for demanding work when the account supports it, with Ultra as an opt-in for complex multi-agent runs
+- allowed bounded proactive read-only delegation when the user, project guidance, or an active skill authorizes it, using a six-field delegation envelope and a single normal writer
+- made `/plan` followed by optional `/goal` the documented native path for long-running work
+- required prototype mode to exercise the promised behavior end to end instead of treating file creation or process startup as completion
+- made installer backups unique per run and kept backup artifacts outside live Codex discovery roots
+
+### Fixed
+
+- preserved an existing user `config.toml` byte-for-byte instead of replacing it with package defaults, preventing loss of model, reasoning, provider, MCP, plugin, and project settings while leaving complex TOML syntax untouched
+- preserved user guidance outside exactly one ordered GodMode marker pair in global `AGENTS.md`, migrated the known v1.1 template without duplication, and rejected malformed markers before any write
+- detected and repaired exact skill-directory drift instead of checking skill names only
+- rejected conflicting managed profiles before mutation unless the user explicitly requests `--reset-config`
+- diagnosed stale or shadowed Codex executables before installation instead of reporting a misleading activation success
+
+### Removed
+
+- packaged GPT-5.5 and fixed reasoning-effort pins from the repo config, global config, profiles, and all 14 agent manifests
+- legacy inline `[profiles.*]` installation
+- stale `/plan-mode` guidance and the claim that subagents only run after a direct user request
+
+### Breaking changes
+
+- existing user config is no longer replaced by package defaults; it stays byte-for-byte unchanged unless `--reset-config` is explicitly selected
+- profile invocation changes from legacy inline names such as `web` to separate namespaced files such as `codex --profile godmode-web`
+- delegated agents no longer force GPT-5.5/high and instead inherit the parent session's selected model and reasoning level
+
+### Upgrade notes
+
+- Install Codex CLI `0.134.0` or newer, confirm the executable with `type -a codex` and `codex --version`, then rerun the platform installer.
+- The installer leaves an existing `config.toml` unchanged. Use `--reset-config` only when you intentionally want the bundled base config and managed profiles to replace conflicting managed files.
+- Start a fresh Codex task after installation so the updated global guidance, agents, skills, and profiles are reloaded.
+- Thanks to [@BSG2000](https://github.com/BSG2000) for reporting and contributing toward safe preservation of user-owned installer configuration.
+
 ## [1.1.0] - 2026-05-12
 
 ### Added
