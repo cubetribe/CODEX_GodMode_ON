@@ -111,13 +111,19 @@ function Invoke-Installer {
   ) + $ExtraArgs
 
   $previousCodexBin = $env:CODEX_BIN
+  $previousErrorActionPreference = $ErrorActionPreference
   try {
     $env:CODEX_BIN = $script:fakeCodex
+    # Windows PowerShell 5.1 promotes redirected native stderr to a
+    # NativeCommandError when the caller uses Stop. Installer warnings are
+    # expected output, so capture them and assert the child process exit code.
+    $ErrorActionPreference = 'Continue'
     $output = @(& $script:powerShellExe @arguments 2>&1)
     $exitCode = $LASTEXITCODE
   }
   finally {
     $env:CODEX_BIN = $previousCodexBin
+    $ErrorActionPreference = $previousErrorActionPreference
   }
 
   [pscustomobject]@{
