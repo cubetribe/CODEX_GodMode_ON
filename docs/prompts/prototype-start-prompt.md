@@ -1,72 +1,69 @@
 # Prototype Start Prompt
 
-Use this for rapid local spikes, proof-of-concept experiments, and fast idea
-exploration where speed matters more than production-readiness.
+Use this for a disposable local spike where production readiness is explicitly
+deferred.
 
-> ⚠️ All output from this prompt is **PROTOTYPE ONLY** — not for production.
-
-These prompts assume the global install has already been applied.
-
----
+> **PROTOTYPE ONLY — LOCAL TESTING — DO NOT DEPLOY**
 
 ## Prompt
 
 ```text
 $godmode-prototype
 
-Goal: <one sentence — what to build or explore>
+Goal: <one sentence describing what to build or learn>
+
+Local boundary:
+- <prototype/ or spike/ path>
+- no real credentials, production data, or live services
 
 Context:
-- <stack, relevant files, or constraints — keep it short>
+- <stack, fixtures, and relevant local files>
 
 Done when:
-- <one liner: what "working" looks like, e.g. "script runs and prints result">
+- <the complete user path from input to observable result>
+- <command or manual interaction that proves that outcome end to end>
 ```
 
----
+File creation, process startup, or an empty rendered shell is not enough. The
+result must exercise the behavior promised under `Done when`. If that cannot be
+shown locally, the prototype remains incomplete and the missing evidence must be
+reported.
 
 ## Best for
 
-- technical spikes to answer a specific question quickly
-- exploring a new library, API shape, or pattern locally
-- rapid proof-of-concept before committing to full implementation
-- local demos that will never ship directly
+- answering one technical question quickly
+- comparing local implementation approaches
+- a disposable proof of concept
+- a local demo that will not ship directly
 
-## What this skips
+## The fast-lane contract
 
-api_guardian, full validator and tester suites, scribe, changelog,
-github_manager, governance preflight.
+- one `builder` owns writes
+- all generated source files carry the `PROTOTYPE ONLY` watermark
+- use a `proto_` name or a `prototype/` or `spike/` directory
+- keep network access off and use mocks or local fixtures
+- return actual outcome evidence, unverified edges, and a migration checklist
+- do not commit to `main`, push, deploy, or share as production output
 
-## What this keeps
+## Promotion prompt
 
-builder, one smoke command, prototype watermarks on all generated output,
-migration checklist.
-
-## Optional extras
-
-- specify a file naming convention (`proto_` prefix or `prototype/` folder)
-- add a placeholder credential format if the task needs mock auth
-- add a specific smoke command if you already know what "working" looks like
-
----
-
-## When you are ready for production
-
-Switch to the standard dev prompt and run through `$godmode-workflow`.
-The migration checklist in the prototype output tells you exactly what still
-needs to happen before production.
+Open the real project in a fresh task and switch back to the production
+workflow:
 
 ```text
 $godmode-workflow
 
-Goal: <promote prototype to production>
+Goal: Promote the validated prototype into production-quality implementation.
 
 Context:
-- prototype output is in <path>
-- migration checklist: <paste checklist from prototype output>
+- prototype path: <path>
+- prototype evidence: <command and observed result>
+- migration checklist: <paste checklist>
 
 Done when:
-- validator and tester gates are green
-- target repository release law is followed
-- explicit approval given before push
+- repository governance and contracts are satisfied
+- prototype watermarks and temporary placement are removed
+- validator and tester gates pass
+- the production behavior is proven end to end
+- release law and explicitly authorized external actions are complete
 ```

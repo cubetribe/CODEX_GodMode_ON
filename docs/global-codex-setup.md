@@ -1,345 +1,294 @@
-# Configure Codex Globally
+# Global Codex Setup
 
-This note explains the user-level Codex setup that turns this repository into a one-time installer instead of a per-session dependency.
+Updated: 2026-07-10
 
-This page documents the `1.1.0` runtime layout.
+Runtime version: 2.0.0
 
-The goal is simple:
+This guide installs the GodMode runtime once at user level so its agents,
+skills, profiles, and guidance are available from any workspace.
 
-- install once
-- use the GodMode workflow in any workspace
-- keep a clean split between global runtime and local project capabilities
+## Requirements
 
-## Recommended layer model
+- Codex CLI `0.134.0` or newer
+- `codex help doctor` support in the resolved executable
+- Git and a local checkout of this repository
+- Bash on macOS/Linux, or Windows PowerShell 5.1/PowerShell 7 on Windows
 
-The current Codex documentation supports this structure:
+GPT-5.6 is a model family, not a Codex CLI version. Select it in the parent
+session when your account supports it and the task warrants it. Packaged agents
+inherit that selection; the installer does not hard-code model entitlements or
+reasoning effort. Ultra is an opt-in for complex multi-agent work.
 
-- personal guidance in `~/.codex/AGENTS.md`
-- personal technical defaults in `~/.codex/config.toml`
-- personal custom agents in `~/.codex/agents/*.toml`
-- personal reusable skills in `~/.agents/skills/`
-- repo rules in `AGENTS.md`
-- repo defaults in `.codex/config.toml`
-- project-specific custom agents in `.codex/agents/*.toml`
-- repo-specific reusable procedures in `.agents/skills/`
+## Diagnose Codex before installation
 
-Discovery rules that matter:
-
-- Codex reads global guidance from `AGENTS.override.md` when present, otherwise `AGENTS.md`
-- project guidance is layered from the project root down to the current working directory
-- in each project directory, `AGENTS.override.md` takes precedence over `AGENTS.md`
-- files closer to the current working directory win because they appear later in the merged instruction chain
-- `.codex/config.toml` is loaded only for trusted projects
-- same-name skills are not AGENTS-style merged; keep skill names focused and avoid accidental duplicates
-
-## Fast start by platform
-
-This repository ships a reproducible global setup under:
-
-- `templates/global-codex/AGENTS.md`
-- `templates/global-codex/config.toml`
-- `templates/global-codex/agents/`
-- `templates/global-codex/skills/`
-- `scripts/apply-global-codex-setup.sh`
-- `scripts/apply-global-codex-setup.ps1`
-
-Apply the matching installer for your platform:
-
-macOS/Linux:
+On macOS or Linux:
 
 ```bash
-./scripts/apply-global-codex-setup.sh
+type -a codex
+codex --version
+codex help doctor
+codex doctor
 ```
 
-Windows:
+`type -a` matters: an obsolete executable earlier on `PATH` can make a current
+desktop installation appear broken. The installer rejects a missing,
+incompatible, or capability-incomplete CLI before writing any target file.
+
+On Windows:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1
+Get-Command codex -All
+codex --version
+codex help doctor
+codex doctor
 ```
 
-These installers do five things:
-
-- installs `~/.codex/AGENTS.md` and `~/.codex/config.toml` from the repo templates
-- installs the GodMode agents to `~/.codex/agents/`
-- installs the GodMode skills to `~/.agents/skills/`
-- ensures `~/.codex/playwright-output/isolated` exists
-- adds the current repo path as a trusted project
-
-It also archives prior install snapshots under `~/.codex/backups/` instead of
-leaving `*.backup-*` files or directories inside the active agent and skill
-discovery roots. That matters because in-place backups can surface as duplicate
-skills or agents in Codex.
-
-It also replaces the `__CODEX_HOME__` placeholder inside the config template so the Playwright output path stays portable.
-
-To verify the result:
-
-macOS/Linux:
+Codex can update itself on supported installations:
 
 ```bash
-./scripts/apply-global-codex-setup.sh --check
+codex update
 ```
 
-Windows:
+The GodMode installer never updates Codex silently. You can point it at a
+specific compatible binary for diagnosis or installation:
+
+```bash
+CODEX_BIN=/absolute/path/to/codex ./scripts/apply-global-codex-setup.sh --check
+```
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\apply-global-codex-setup.ps1 -Check
+$env:CODEX_BIN = 'C:\absolute\path\to\codex.exe'
+.\scripts\apply-global-codex-setup.ps1 --check
 ```
 
-## Upgrade from earlier releases
+### macOS Homebrew formula shadowing
 
-Version `1.1.0` adds `$godmode-prototype` and the prototype-mode templates.
-If you are upgrading from the `0.2.x` line, the `1.0.0` runtime changes also
-apply: expanded agents and skills, pinned CI/security coverage, and the
-`gpt-5.5` default model.
-
-Use this sequence:
+Older machines may still resolve the obsolete Homebrew formula named `codex`
+instead of the current cask. If `brew list --formula codex` and `type -a codex`
+confirm that case, replace it deliberately:
 
 ```bash
-git pull --ff-only origin main
-./scripts/check-local-env.sh
+brew uninstall --formula codex
+brew install --cask codex
+hash -r
+type -a codex
+codex --version
+codex doctor
+```
+
+Do not uninstall a working package merely because these commands are shown;
+first confirm which executable your shell is actually resolving.
+
+## Install
+
+From the repository root on macOS or Linux:
+
+```bash
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
 ```
 
-On Windows, use the PowerShell installer and `-Check` command instead of the shell script.
+On Windows:
 
-The installer creates timestamped backups before replacing existing files or directories. After the upgrade, `~/.codex/agents/` should contain 14 agent manifests and `~/.agents/skills/` should contain the ten skills shipped by this repo.
-
-If you maintain hand-edited personal guidance in `~/.codex/AGENTS.md` or `~/.codex/config.toml`, inspect the generated backup files and reapply personal edits intentionally.
-
-This bootstrap repository intentionally does not keep the packaged runtime under repo-local `.codex/agents/` or `.agents/skills/`. Those are official project discovery paths; keeping the global package source there would make Codex show duplicate project and personal skills when this repository is open after installation.
-
-## Minimal global files
-
-Create the Codex home directory if needed:
-
-```bash
-mkdir -p ~/.codex
+```powershell
+.\scripts\apply-global-codex-setup.ps1
+.\scripts\apply-global-codex-setup.ps1 --check
 ```
 
-Global guidance belongs in `~/.codex/AGENTS.md`.
+Then run `codex doctor` and start a fresh Codex task. Existing tasks do not
+rebuild their global instruction and capability snapshot automatically.
 
-Example:
+## Installed layout
 
-```md
-# ~/.codex/AGENTS.md
-
-## Default working style
-- Work only inside the currently opened project.
-- Keep diffs small, safe, and buildable.
-- Do not touch unrelated files.
-
-## Execution flow
-- For non-trivial tasks: Research -> Plan -> Build -> Validate -> Release Summary.
-- Start with a governance preflight and identify the repo's release and documentation rules before editing versioned artifacts.
-- Before editing, report repo root, current branch, touched files, and expected impact.
-
-## Safety gates
-- Never commit unless I explicitly say yes.
-- Never push unless I explicitly say yes.
-- Never force-push.
-```
-
-Global technical defaults belong in `~/.codex/config.toml`.
-
-Example:
-
-```toml
-model = "gpt-5.5"
-approval_policy = "on-request"
-sandbox_mode = "workspace-write"
-web_search = "cached"
-
-[sandbox_workspace_write]
-writable_roots = []
-network_access = false
-```
-
-Why this is a good baseline:
-
-- `gpt-5.5` is the current frontier default for coding and professional work
-- `approval_policy = "on-request"` keeps risky actions interactive
-- `sandbox_mode = "workspace-write"` allows project edits without full machine access
-- `web_search = "cached"` is conservative by default
-
-Changing the model default is a release-impacting behavior change. Keep it documented in `CHANGELOG.md` and verify the installed config after applying the setup script.
-
-## Global profiles
-
-The repo templates install four user-level profiles:
-
-- `swiftui` for Apple platform work
-- `web` for React, Next.js, and Node.js work
-- `flutter` for Flutter and Dart work
-- `review` for review and audit sessions
-
-Examples:
-
-```bash
-codex --profile swiftui
-codex --profile web
-codex --profile flutter
-codex --profile review
-```
-
-These profiles are intentionally thin. The workflow itself comes from the globally installed `AGENTS.md`, custom agents, and skills.
-
-For greenfield work, the installed skills also include
-`greenfield-bootstrap` so a new repo can establish local rules before the
-rest of the workflow fans out.
-
-## Installed runtime layout
-
-After running the installer, the user-level runtime looks like this:
+The default targets are:
 
 ```text
-~/.codex/
-  AGENTS.md
-  config.toml
-  agents/
-    researcher.toml
-    architect.toml
-    api_guardian.toml
-    builder.toml
-    validator.toml
-    tester.toml
-    scribe.toml
-    github_manager.toml
-    runtime_platform.toml
-    workflow_design.toml
-    workspace_governance.toml
-    quality_operations.toml
-    docs_dx.toml
-    ci_security_guardian.toml
+$CODEX_HOME/
+|- AGENTS.md
+|- config.toml
+|- godmode-swiftui.config.toml
+|- godmode-web.config.toml
+|- godmode-flutter.config.toml
+|- godmode-review.config.toml
+|- agents/
+|  `- 14 GodMode .toml manifests
+|- playwright-output/isolated/
+`- backups/install-archives/<unique-run-id>/
 
-~/.agents/
-  skills/
-    godmode-workflow/
-    godmode-prototype/
-    godmode-debug/
-    godmode-review/
-    godmode-departments/
-    greenfield-bootstrap/
-    apple-platforms/
-    web-platforms/
-    flutter-dart/
-    release-manager/
+~/.agents/skills/
+`- 10 GodMode skill directories
 ```
 
-The first eight agents remain the role-centric baseline. The department-oriented agents are optional additions for larger multi-domain runs and do not mean every task should fan out by default. Every packaged agent pins `model = "gpt-5.5"` and `model_reasoning_effort = "high"` so delegated roles do not silently downgrade to a smaller model.
+When `CODEX_HOME` is unset, it defaults to `~/.codex`. The skills home defaults
+to `~/.agents/skills`.
 
-The matching skill split is:
+The repository package source remains under `templates/global-codex/`. It is
+not copied into project-local `.codex/agents/` or `.agents/skills/`, which would
+make Codex discover duplicate personal and project entries in this repo.
 
-- `godmode-workflow` as the primary entry skill for most runs
-- `godmode-prototype` as the local-only fast lane for throwaway spikes
-- `godmode-departments` as the explicit opt-in layer for department-mode routing
-- `godmode-debug` as the focused companion for reproduce -> isolate -> fix work
-- `godmode-review` as the focused companion for findings-first assessment work
+## Safe configuration behavior
 
-That is the important UX boundary: users do not need this repository open in every new Codex session after installation.
+### Existing `config.toml`
 
-## Runtime roles
+If `$CODEX_HOME/config.toml` already exists, installation preserves every byte
+by default. It does not parse, merge, reorder, downgrade, or add a project trust
+entry. This protects quoted keys, multiline values, model providers, MCP
+servers, plugins, projects, model selection, reasoning level, and future fields
+the package does not own.
 
-The 1.0 runtime installs these core agents:
+The installer prints a warning when the existing file lacks a trust entry for
+this repository, or contains legacy inline `[profiles.*]` tables. Add trust
+manually if desired; migrate legacy profiles deliberately. Neither warning
+authorizes a rewrite.
 
-| Agent | Purpose |
-| --- | --- |
-| `researcher` | read-only research, source verification, and repo discovery |
-| `architect` | read-only plan, boundary, and risk design |
-| `api_guardian` | read-only API, schema, CLI, config, and user-visible contract review |
-| `builder` | single normal implementation writer |
-| `validator` | read-heavy consistency, static, and structural validation |
-| `tester` | executable checks and focused runtime verification |
-| `scribe` | docs, changelog, and release-note work after gates pass |
-| `github_manager` | branch, PR, release, and governance framing |
+If no config exists, the installer renders the bundled base template, expands
+the portable Playwright output path, and adds this repository as trusted unless
+`--no-trust-project` is set.
 
-It also installs optional department agents for large cross-domain runs:
-
-| Agent | Purpose |
-| --- | --- |
-| `runtime_platform` | runtime defaults, sandboxing, tools, and environment concerns |
-| `workflow_design` | orchestration procedures, skill boundaries, and handoff artifacts |
-| `workspace_governance` | AGENTS layering, release law, and local project rules |
-| `quality_operations` | validation plans, install checks, smoke paths, and eval-oriented checks |
-| `docs_dx` | public docs, setup guidance, prompts, and developer experience |
-| `ci_security_guardian` | GitHub Actions, CODEOWNERS, pinned actions, and repository security posture |
-
-Department agents are advisory lanes. They do not replace the default `researcher` -> `architect` -> `builder` -> `validator` and `tester` route.
-
-## Runtime skills
-
-| Skill | Purpose |
-| --- | --- |
-| `godmode-workflow` | the normal non-trivial task loop |
-| `godmode-prototype` | local-only rapid prototyping with watermarks and a migration checklist |
-| `godmode-debug` | reproduce -> isolate -> fix -> re-test work |
-| `godmode-review` | findings-first review with no edits unless requested |
-| `godmode-departments` | optional routing for cross-domain work |
-| `greenfield-bootstrap` | create local governance before parallel work in empty or undocumented repos |
-| `apple-platforms` | SwiftUI, macOS, and iOS guidance |
-| `web-platforms` | React, Next.js, and Node.js guidance |
-| `flutter-dart` | Flutter and Dart guidance |
-| `release-manager` | release impact, changelog, and PR framing |
-
-## Repo layout
-
-Recommended structure:
-
-```text
-repo-root/
-  AGENTS.md
-  .codex/
-    config.toml
-    agents/
-  .agents/
-    skills/
-```
-
-Why the split matters:
-
-- `AGENTS.md` defines durable guidance
-- `.codex/config.toml` defines technical defaults
-- `.codex/agents/*.toml` defines role-specific custom agents
-- `.agents/skills/` stores reusable procedures
-- workspace-local files remain project-scoped guidance or capabilities when a project needs them
-
-In this bootstrap repository, packaged global runtime sources live under `templates/global-codex/agents/` and `templates/global-codex/skills/` instead. Downstream projects should still use `.codex/agents/` and `.agents/skills/` when they intentionally need project-local agents or skills.
-
-## Why not a giant start prompt
-
-The durable pattern is:
-
-- `~/.codex/AGENTS.md` for personal defaults
-- `~/.codex/config.toml` for personal technical defaults
-- `~/.codex/agents/*.toml` for personal custom agents
-- `~/.agents/skills/` for personal reusable workflow skills
-- repo `AGENTS.md` for team or project rules
-- repo `.codex/config.toml` for technical repo defaults
-- repo `.codex/agents/*.toml` for project roles
-- repo `.agents/skills/` for reusable procedures
-- this repo's `templates/global-codex/agents/` and `templates/global-codex/skills/` for package sources that should not be discovered as project-local duplicates
-
-This repository keeps prompts short on purpose because the real behavior belongs in those layers.
-
-`AGENTS.md` files form a layered instruction chain. Skills are discovered capabilities with progressive disclosure: Codex sees metadata first and reads the full `SKILL.md` only when it selects the skill.
-
-## Validation and smoke tests
-
-Before publishing a release or telling users to update, run:
+Use a reset only when you intentionally want to replace the whole file with the
+bundled base config:
 
 ```bash
-git diff --check
-./scripts/check-local-env.sh
-./scripts/apply-global-codex-setup.sh --check
+./scripts/apply-global-codex-setup.sh --reset-config
 ```
 
-For installer changes, verify a clean target:
+```powershell
+.\scripts\apply-global-codex-setup.ps1 --reset-config
+```
+
+The reset creates a backup first. It is a breaking, explicit choice; it is not
+a repair step to run casually.
+
+### Separate managed profiles
+
+Codex `0.134.0+` loads named profiles from separate files at the root of
+`$CODEX_HOME`. Version 2.0 installs:
+
+```bash
+codex --profile godmode-swiftui
+codex --profile godmode-web
+codex --profile godmode-flutter
+codex --profile godmode-review
+```
+
+These files do not choose a model or reasoning level. A pre-existing managed
+profile with different content is treated as a conflict and stops the installer
+before any write. Review it, then use `--reset-config` if replacing that managed
+profile is intentional. Unrelated user profile files remain untouched.
+
+Inline tables such as `[profiles.web]` are legacy for this CLI generation. The
+installer reports them in an existing config but does not silently edit them.
+
+### Global `AGENTS.md`
+
+The managed guidance is bounded by exactly one ordered pair:
+
+```text
+<!-- CODEX_GODMODE_GLOBAL_AGENTS:BEGIN -->
+...
+<!-- CODEX_GODMODE_GLOBAL_AGENTS:END -->
+```
+
+On repeat installation, only that block is replaced exactly; content outside it
+is preserved. A recognized unmarked v1.1 GodMode template is migrated without
+duplication. Any other unmarked file is retained under `Preserved User Guidance`
+after the managed block. Duplicate, reversed, or incomplete markers fail the
+preflight before any mutation.
+
+Use `--reset-agents` only to replace the complete global guidance file after a
+backup:
+
+```bash
+./scripts/apply-global-codex-setup.sh --reset-agents
+```
+
+```powershell
+.\scripts\apply-global-codex-setup.ps1 --reset-agents
+```
+
+### Agents, skills, and backups
+
+The installer makes each current GodMode-owned agent file and skill directory
+exactly match the package source. Replacing a managed skill directory removes
+stale files inside that directory. It does not delete unrelated user-owned
+agents, skills, or profiles.
+
+Changed managed targets are archived under a unique per-run directory:
+
+```text
+$CODEX_HOME/backups/install-archives/<timestamp-and-run-id>/
+```
+
+Legacy `*.backup-*` artifacts are moved out of live agent and skill discovery
+roots so they cannot appear as duplicate capabilities.
+
+## Installer options
+
+Both installers support the same long options:
+
+| Option | Meaning |
+| --- | --- |
+| `--check` | verify the installed managed runtime without applying changes |
+| `--codex-home PATH` | override the Codex home target |
+| `--user-skills-home PATH` | override the user skill target |
+| `--repo PATH` | use another checkout as package source and trust target |
+| `--no-trust-project` | do not add or require this repository's trust entry |
+| `--reset-config` | back up and replace config plus conflicting managed profiles |
+| `--reset-agents` | back up and replace the complete global `AGENTS.md` |
+| `-h`, `--help` | print usage |
+
+`--check` cannot be combined with a reset option.
+
+Exit codes are stable for automation:
+
+| Code | Meaning |
+| --- | --- |
+| `0` | success |
+| `1` | general preflight, drift, marker, source, or install failure |
+| `2` | invalid arguments or option combination |
+| `3` | missing or incompatible Codex CLI/capability |
+| `4` | conflicting managed profile without explicit reset |
+
+## Exact verification contract
+
+`--check` verifies:
+
+- the managed global `AGENTS.md` block is exact and correctly marked
+- all four managed profile files are exact
+- all 14 current packaged agent files are exact
+- every packaged skill directory is exact, including nested metadata
+- required directories and base config exist
+- live discovery roots contain no legacy `*.backup-*` artifacts
+- the selected Codex CLI meets the minimum version and capability contract
+
+The checker intentionally does not compare an existing user `config.toml` with
+the bundled template; byte-preservation is the contract for that file. A missing
+trust entry or legacy inline profile is reported without rewriting it.
+
+## Upgrade from 1.x
+
+1. Update the checkout and inspect release notes.
+2. Confirm the resolved CLI with `type -a codex`, `codex --version`, and
+   `codex doctor`.
+3. Run the normal installer without reset flags.
+4. Confirm that your existing `config.toml` hash or byte comparison is unchanged.
+5. Run the exact `--check` command.
+6. Start a fresh task and invoke `$godmode-workflow` explicitly once.
+7. Use `codex --profile godmode-web` or another namespaced profile when needed.
+
+The known v1.1 global guidance migrates automatically. Model and reasoning pins
+in installed GodMode agent manifests are replaced by the 2.0 model-inheritance
+contract. User-owned model selection in `config.toml` remains unchanged.
+
+## Test the package without touching your home
+
+On macOS or Linux:
 
 ```bash
 tmp_root="$(mktemp -d)"
 tmp_codex="$tmp_root/.codex"
 tmp_skills="$tmp_root/.agents/skills"
+
 ./scripts/apply-global-codex-setup.sh \
   --codex-home "$tmp_codex" \
   --user-skills-home "$tmp_skills" \
@@ -350,52 +299,80 @@ tmp_skills="$tmp_root/.agents/skills"
   --no-trust-project
 ```
 
-That smoke test proves a first-time install can create the full runtime without relying on this machine's existing `~/.codex` or `~/.agents` state.
+For the maintained regression matrix:
 
-## Smoke-test the install
+```bash
+./scripts/test-global-codex-setup.sh
+```
 
-After applying the installer, start Codex in any workspace and use a minimal skill-first prompt such as:
+On Windows:
+
+```powershell
+.\scripts\test-global-codex-setup.ps1
+```
+
+The GitHub workflow enforces that PowerShell fixture on Windows PowerShell 5.1
+and PowerShell 7. This documentation does not imply that both Windows runtimes
+were executed on a non-Windows developer machine.
+
+The regression suites cover clean installation and exact check, complex TOML
+preservation, profile conflict/reset behavior, v1.1 and custom guidance
+migration, malformed markers, drift repair, idempotence, and documented exit
+codes.
+
+## Activation smoke test
+
+After a successful install, open a fresh task in a representative workspace:
 
 ```text
 $godmode-workflow
 
-Goal: <goal>
-Context:
-- <files, errors, constraints>
-Done when:
-- <finish condition>
+Goal: Inspect this workspace and return a read-only governance and capability preflight.
+Done when: The response names the applicable instructions, selected model inheritance,
+and whether a bounded research subagent would materially help. Do not edit files.
 ```
 
-Add companion skills such as `$godmode-departments`, `$godmode-debug`,
-`$godmode-review`, `$greenfield-bootstrap`, or stack-specific skills only
-when the task actually needs them. Use `$godmode-prototype` instead of
-`$godmode-workflow` for local-only throwaway spikes. The prompt should not
-refer to this repository as a required runtime dependency.
+This checks skill discovery and the orchestration contract without granting a
+write or release action.
 
-## Notes about Local vs Worktree
+## Troubleshooting
 
-If you want to work directly in the checked-out repository, use `Local`.
+### “The installer says Codex is too old”
 
-Current Codex documentation makes these points explicit:
+Run `type -a codex` or `Get-Command codex -All`. Update or remove the shadowing
+installation, clear the shell command cache, and rerun `codex --version`.
 
-- new threads can be started in `Worktree`
-- threads can move between `Local` and `Worktree`
-- automations can run in either mode
-- Codex-managed worktrees live under `$CODEX_HOME/worktrees`
+### “My custom config did not receive the base defaults”
 
-I have not seen a documented global setting that forces every new session to use `Local` automatically. That is an inference from the currently reviewed docs, not an explicit negative statement from OpenAI.
+That is intentional in 2.0. Existing config is user-owned and preserved
+byte-for-byte. Copy individual settings manually, or use `--reset-config` only
+after reviewing its full replacement behavior and backup.
 
-## Sources
+### “The managed profile conflicts”
 
-- OpenAI Codex docs: [Config basics](https://developers.openai.com/codex/config-basic)
-- OpenAI Codex docs: [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md)
-- OpenAI Codex docs: [Customization](https://developers.openai.com/codex/concepts/customization)
-- OpenAI Codex docs: [Best practices](https://developers.openai.com/codex/learn/best-practices)
-- OpenAI Codex docs: [Agent Skills](https://developers.openai.com/codex/skills)
-- OpenAI Codex docs: [Subagents](https://developers.openai.com/codex/subagents)
-- OpenAI Codex docs: [Configuration reference](https://developers.openai.com/codex/config-reference)
-- OpenAI Codex docs: [Sample configuration](https://developers.openai.com/codex/config-sample)
-- OpenAI API docs: [All models](https://developers.openai.com/api/docs/models/all)
-- OpenAI Codex docs: [Worktrees](https://developers.openai.com/codex/app/worktrees)
-- OpenAI Codex docs: [Automations](https://developers.openai.com/codex/app/automations)
-- OpenAI Codex docs: [Codex app settings](https://developers.openai.com/codex/app/settings)
+The installer stopped before writes to protect the existing file. Compare it
+with `templates/global-codex/profiles/`, preserve any personal behavior under a
+different profile name, then use `--reset-config` if replacement is intended.
+
+### “My global guidance has malformed markers”
+
+Restore one BEGIN marker followed by one END marker. Alternatively, back up the
+complete malformed `AGENTS.md` outside `$CODEX_HOME`, remove the malformed
+target, and run the normal installer so it can create a clean managed file.
+`--reset-agents` does not bypass malformed-marker preflight; the installer will
+not guess around duplicate, missing, or reversed markers.
+
+### “The old task still behaves like 1.x”
+
+Start a fresh task. Global instructions, skills, profiles, and custom agent
+metadata are discovered when Codex constructs the task context.
+
+## Boundaries
+
+- installation is local and user-level; it is not a daemon or scheduled task
+- the installer does not enable Responses API beta features
+- profile and agent inheritance do not guarantee account access to GPT-5.6 or
+  Ultra
+- hooks are not required to spawn or complete the GodMode workflow
+- push, merge, release, deploy, and other external changes still require their
+  own authority

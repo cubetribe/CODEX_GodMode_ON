@@ -1,107 +1,154 @@
 # Local Development
 
-This page is for maintainers of the bootstrap repository, not for end users starting everyday Codex sessions.
+Updated: 2026-07-10
 
-This repository is developed locally on this Mac and mirrored back to GitHub without hidden setup steps.
+Current release: 2.0.0
 
-## Operating mode
+This guide is for maintainers of the bootstrap repository. End users should
+start with [Global Codex Setup](./global-codex-setup.md).
 
-This repo is now `main`-first:
+## Governance preflight
 
-- keep `main` current
-- do the work locally
-- validate locally
-- push `main` when explicitly approved
+Before editing, read the root `AGENTS.md`, `README.md`, `CONTRIBUTING.md`, the
+pull-request template, `VERSION`, and `CHANGELOG.md`. Inspect the actual branch
+and dirty state; preserve unrelated user changes.
 
-Use a different branch only if you explicitly decide to.
+The repository is `main`-first as a base and release line. Create a topic branch
+only when the user explicitly authorizes it or the remote protection rules
+require a pull request. The current GitHub protection requires PR-based delivery
+to `main`; do not bypass it or force-push shared history.
 
-## Required tools
+## Toolchain and Codex diagnostics
 
-Expected toolchain classes:
+Repository checks use Git, Bash, Python 3, Node tooling, and optional stack
+toolchains. Runtime installation additionally requires Codex CLI `0.134.0` or
+newer.
 
-- `git`
-- `python3`
-- `node`, `npm`, `pnpm`
-- `swift`, `xcodebuild`
-- `flutter`, `dart`
-- `codex`
+Start by confirming the executable that the shell resolves:
 
-## First checks
+```bash
+type -a codex
+codex --version
+codex help doctor
+codex doctor
+```
 
-From the repository root:
+Use `codex update` for an installation that supports self-update. On macOS, an
+obsolete Homebrew formula can shadow the current cask; the setup guide contains
+the deliberate formula-to-cask remediation.
+
+Run the repository contract:
 
 ```bash
 ./scripts/check-local-env.sh
 ```
 
-To apply the matching user-level Codex setup on this Mac:
+If the intended compatible executable is not first on `PATH`:
 
 ```bash
-./scripts/apply-global-codex-setup.sh
+CODEX_BIN=/absolute/path/to/codex ./scripts/check-local-env.sh
 ```
 
-Optional full check:
+`--full` also runs the slower local Flutter diagnostic:
 
 ```bash
 ./scripts/check-local-env.sh --full
 ```
 
-`--full` also runs `flutter doctor -v`, so it takes longer.
-
-The same script is also used in GitHub Actions. In CI, it switches to repo-validation mode instead of requiring the full local Mac toolchain.
-
-That repo-validation mode also enforces the GitHub security baseline for this repository:
-
-- `.github/dependabot.yml` must exist
-- `.github/workflows/*.yml` must declare explicit `permissions`
-- third-party actions must be pinned to full commit SHAs
-- `pull_request_target` is not allowed in this repo's workflows
-
-## Global profiles
-
-The example global config installs four profiles:
-
-- `swiftui`
-- `web`
-- `flutter`
-- `review`
-
-Examples:
+CI uses:
 
 ```bash
-codex --profile swiftui
-codex --profile web
-codex --profile flutter
-codex --profile review
+./scripts/check-local-env.sh --ci
 ```
 
-To verify the global setup:
+CI mode validates the package without requiring a real local Codex executable
+or every platform SDK.
+
+## Package structure
+
+| Path | Responsibility |
+| --- | --- |
+| `templates/global-codex/AGENTS.md` | managed global orchestration guidance |
+| `templates/global-codex/config.toml` | model-neutral base config for missing/reset installs |
+| `templates/global-codex/profiles/` | separate namespaced Codex `0.134.0+` profiles |
+| `templates/global-codex/agents/` | 14 packaged custom agent manifests |
+| `templates/global-codex/skills/` | 10 packaged reusable skills |
+| `templates/prototype-mode/` | local-only prototype governance and config |
+| `scripts/apply-global-codex-setup.*` | platform installers and exact installed-state checks |
+| `scripts/test-global-codex-setup.*` | installer regression fixtures |
+| `reports/`, `state/` | optional durable workflow artifacts and templates |
+
+Do not move packaged agents or skills into this repository's `.codex/agents/`
+or `.agents/skills/`. Codex would discover both project and personal copies
+after installation.
+
+## Profiles and model inheritance
+
+The package installs four root-level profile files:
 
 ```bash
-./scripts/apply-global-codex-setup.sh --check
+codex --profile godmode-swiftui
+codex --profile godmode-web
+codex --profile godmode-flutter
+codex --profile godmode-review
 ```
 
-## Release prep
+Do not add inline `[profiles.*]` tables or model/reasoning pins to packaged
+config, profiles, or agent manifests. The parent task owns model and reasoning
+selection. GPT-5.6 is recommended for demanding work when available; Ultra is
+an explicit task-level choice for complex multi-agent orchestration.
 
-Current release target: `1.1.0`.
+## Recommended implementation loop
 
-Before publishing a release:
+1. run governance and capability preflight
+2. record the intended write scope and release impact
+3. use bounded parallel read-only discovery when independent tracks help
+4. synthesize findings and freeze contracts and scopes
+5. assign one normal implementation writer
+6. run independent structural and executable gates
+7. prove every done criterion with concrete outcome evidence
+8. update docs and release artifacts only after gates pass
+9. commit, push, merge, or release only within explicit authority
 
-1. confirm `VERSION` matches the intended release
-2. move relevant `CHANGELOG.md` entries from `[Unreleased]` into the dated release section
-3. run `git diff --check`
-4. run `./scripts/check-local-env.sh`
-5. run `./scripts/apply-global-codex-setup.sh --check`
-6. run a clean-target installer smoke test when installer behavior changed
-7. inspect `git diff --stat` and confirm no unrelated files changed
-8. prepare a clear release summary and upgrade notes
+For a long session, `/plan` can refine the approach and optional `/goal` can
+continue approved work. Neither command replaces repository gates.
 
-Clean-target installer smoke test:
+## Validation matrix
+
+| Change type | Minimum validation |
+| --- | --- |
+| docs-only copy | `git diff --check`, internal path/link review, Markdown lint |
+| agent or skill metadata | `./scripts/check-local-env.sh --ci` plus frontmatter/TOML review |
+| config or profile | package check, TOML parse, no inline profiles or model pins |
+| shell installer | Bash syntax, ShellCheck, package check, shell regression suite |
+| PowerShell installer | PowerShell fixture; CI enforces Windows PowerShell 5.1 and PowerShell 7 |
+| GitHub workflow | package security check and `actionlint` |
+| release preparation | every applicable row plus version/changelog and clean diff review |
+
+The standard local release gate is:
+
+```bash
+bash -n scripts/apply-global-codex-setup.sh \
+  scripts/check-local-env.sh \
+  scripts/test-global-codex-setup.sh
+shellcheck scripts/apply-global-codex-setup.sh \
+  scripts/check-local-env.sh \
+  scripts/test-global-codex-setup.sh
+./scripts/test-global-codex-setup.sh
+./scripts/check-local-env.sh --ci
+git diff --check
+```
+
+Run the PowerShell fixture on Windows or rely on its dedicated CI matrix before
+release; do not claim local Windows coverage from a non-Windows machine.
+
+## Test an isolated installation
 
 ```bash
 tmp_root="$(mktemp -d)"
 tmp_codex="$tmp_root/.codex"
 tmp_skills="$tmp_root/.agents/skills"
+
 ./scripts/apply-global-codex-setup.sh \
   --codex-home "$tmp_codex" \
   --user-skills-home "$tmp_skills" \
@@ -112,72 +159,47 @@ tmp_skills="$tmp_root/.agents/skills"
   --no-trust-project
 ```
 
-Do not commit, tag, push, or publish a GitHub release until that action is explicitly approved.
+Installer changes must also prove complex existing config is byte-preserved,
+profile conflict/reset behavior is preflight-safe, `AGENTS.md` marker migration
+is deterministic, exact drift is repaired, and a second run is idempotent. The
+maintained regression scripts encode those cases.
 
-## Repo structure
+## Release preparation
 
-- `templates/global-codex/agents/` contains the packaged GodMode agent-role definitions
-- `templates/global-codex/skills/` contains the packaged reusable workflow and stack skills
-- `templates/global-codex/` contains the global `AGENTS.md`, `config.toml`, agent, and skill templates
-- `reports/generated/` is for local generated reports
-- `state/` is for local workflow state
+For 2.0.0 and later releases:
 
-Do not place the packaged global GodMode runtime under this repo's `.codex/agents/` or `.agents/skills/` paths. Codex discovers those as project-local capabilities, which duplicates the same entries from the personal global install while maintaining this bootstrap repo.
+1. classify impact and confirm the repository's manual `VERSION` plus
+   `CHANGELOG.md` release law
+2. keep `[Unreleased]` for future work and add a dated release section
+3. run every applicable local gate and inspect the complete diff
+4. push an authorized topic branch and open a PR against protected `main`
+5. wait for required checks, including both Windows installer runtimes
+6. merge through allowed repository policy without admin bypass
+7. wait for the exact merge commit's `main` workflows
+8. create the immutable release tag and GitHub release at that verified commit
 
-## Recommended loop
+Do not rewrite or force-move a published tag. Commit, push, merge, and release
+remain separate external actions even when earlier engineering work is approved.
 
-1. `git pull --ff-only origin main`
-2. run `./scripts/check-local-env.sh`
-3. optionally run `./scripts/apply-global-codex-setup.sh`
-4. re-run `./scripts/apply-global-codex-setup.sh` after changing global guidance, agents, or skills
-5. validate the installed setup, not just the repo files
-6. start Codex in a representative workspace
-7. start with `$godmode-workflow` and add only the extra skills the task really needs
-8. make the smallest safe change
-9. run the relevant validations only
-10. commit on `main` when you really want to keep the change
-11. push `main` when explicitly approved
+## Activation verification
 
-## Validation matrix
+After package gates pass, applying the runtime to the maintainer's real home is
+a separate intentional step:
 
-| Change type | Minimum validation |
-| --- | --- |
-| docs-only copy changes | `git diff --check` plus link/path consistency review |
-| skills or agent metadata | `./scripts/check-local-env.sh` |
-| installer or global template changes | `./scripts/apply-global-codex-setup.sh --check` and clean-target smoke test |
-| packaged runtime location changes | verify `.codex/agents` and `.agents/skills` are absent in this repo |
-| model or config defaults | docs review, changelog entry, installer check |
-| release prep | all checks above plus `VERSION` and `CHANGELOG.md` review |
+```bash
+./scripts/apply-global-codex-setup.sh
+./scripts/apply-global-codex-setup.sh --check
+codex doctor
+```
 
-## Good first skills in this repo
+The installer preserves an existing config byte-for-byte by default. Start a
+fresh task and invoke `$godmode-workflow` for a read-only preflight to verify
+skill discovery and parent model inheritance.
 
-- `godmode-workflow`
-- `godmode-prototype`
-- `godmode-debug`
-- `godmode-review`
-- `godmode-departments`
-- `greenfield-bootstrap`
-- `apple-platforms`
-- `web-platforms`
-- `flutter-dart`
-- `release-manager`
+## Out of scope
 
-## Local install testing note
-
-When you test the global install while working inside this installer repo, Codex
-must not see repo-local copies of the packaged GodMode skills or agents. Keep
-the package sources under `templates/global-codex/agents/` and
-`templates/global-codex/skills/`, not under `.codex/agents/` or
-`.agents/skills/`.
-
-Stale `*.backup-*` artifacts inside `~/.agents/skills/` or `~/.codex/agents/`
-can also surface as extra duplicate entries. The installer archives those
-backups under `~/.codex/backups/` so the live discovery roots stay clean.
-
-## Not part of this step
-
-- a dedicated GUI for the agent system
-- a fully automated runtime outside Codex
-- deployment automation or release automation beyond the repo validation CI
-
-Those can come later once the global install flow is stable.
+- a dedicated GUI for GodMode
+- a background or scheduled local orchestration daemon
+- Responses API beta integration
+- automatic deployment or release authority
+- unconditional GPT-5.6 or Ultra entitlement

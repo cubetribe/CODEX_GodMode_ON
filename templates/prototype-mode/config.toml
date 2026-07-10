@@ -4,7 +4,7 @@
 # the main Codex model user-defined.
 #
 # Usage: copy to your prototype workspace as .codex/config.toml.
-#        Then run `codex --profile prototype` from that workspace.
+#        Codex applies these top-level settings in that workspace.
 
 approval_policy = "never"       # no interruptions — maximum iteration speed
 sandbox_mode = "workspace-write"
@@ -18,18 +18,15 @@ max_depth = 1                   # single layer — no nested sub-orchestration
 writable_roots = []
 network_access = false          # local only — do not enable for prototype work
 
-# Prototype profile — activate with: codex --profile prototype
-[profiles.prototype]
-model_reasoning_effort = "high"     # keep prototype code quality high
-approval_policy = "never"
-web_search = "cached"
-
 # Notes on prototype config decisions:
 #
 # model
 #   Intentionally omitted. Prototype mode should use the user's selected
 #   model, normally a strong orchestrator model such as the global default or
 #   a CLI-provided --model value.
+#
+# model_reasoning_effort
+#   Intentionally omitted so the parent session's selected effort is inherited.
 #
 # approval_policy = "never"
 #   Removes all approval interruptions. Use it only for disposable prototype

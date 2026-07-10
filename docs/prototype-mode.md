@@ -1,171 +1,153 @@
 # Prototype Mode
 
-Updated: 2026-05-12
+Updated: 2026-07-10
 
-Prototype mode is the local-only fast lane in the GodMode runtime. It trades
-governance depth for raw iteration speed when you need to explore an idea,
-answer a technical question quickly, or validate a concept before committing
-to full implementation.
+Prototype mode is a disposable, local-only fast lane. It reduces production
+governance while keeping one writer, mandatory watermarks, and end-to-end
+evidence for the behavior the prototype promises.
 
-## The core contract
+> **PROTOTYPE ONLY — LOCAL TESTING — DO NOT DEPLOY**
 
-Prototype mode makes one explicit trade-off: **speed now, production-readiness later.**
+Use `$godmode-prototype` instead of `$godmode-workflow` for the spike. Return to
+the full workflow before the result is shared, promoted, committed to `main`, or
+connected to production.
 
-Every prototype output is watermarked `PROTOTYPE ONLY` and comes with a
-migration checklist. Nothing leaves local development without going through
-`$godmode-workflow` first.
+## Contract
 
-Prototype mode does **not** downgrade the main model. The prototype config
-leaves `model` unset so Codex uses the user's selected model, global default,
-or explicit CLI `--model` value. The profile sets reasoning effort to `high`
-because prototype code should still be good code.
+- no real credentials, production data, live services, shared branches, or
+  release paths
+- one `builder` owns all prototype writes
+- files live under `prototype/` or `spike/`, or use a `proto_` prefix
+- every generated source file carries the prototype watermark
+- the run exercises the user's actual path from input to observable result
+- output includes the command, result or observation, unverified edges, and a
+  migration checklist
 
-## When to use prototype mode
+Creating expected files, starting a process, or rendering an empty shell is not
+completion. If the promised behavior cannot be demonstrated locally, report the
+prototype as incomplete and name the missing evidence.
 
-Use `$godmode-prototype` when:
+## Model and runtime
 
-- you are exploring a new idea or architecture before investing in full implementation
-- you need to answer a specific technical question quickly (a spike)
-- you want to try multiple approaches in rapid succession
-- you are building a local demo that will never ship directly
-- `$godmode-workflow` would slow you down and the output is genuinely throwaway
+Prototype mode inherits the parent session's model and reasoning level. GPT-5.6
+can be selected for a demanding spike when available, but the package does not
+hard-pin it or Ultra.
 
-Do not use `$godmode-prototype` when:
+The lean prototype config is a project config, not a named global profile. Copy
+it to the prototype workspace:
 
-- the output will go to production, staging, or be committed to `main`
-- the task touches real credentials, production databases, live APIs, or live
-  external services
-- correctness and contract safety cannot be deferred
-- `$godmode-workflow` is feasible in the available time
+```bash
+mkdir -p .codex
+cp /path/to/CODEX_GodMode_ON-Lokal/templates/prototype-mode/config.toml \
+  .codex/config.toml
+```
 
-## What prototype mode skips and keeps
+It sets `workspace-write`, disables approval interruptions and network access,
+and limits subagents to two threads at one depth. Because
+`approval_policy = "never"` is intentionally permissive inside the workspace,
+use this config only for disposable local work. The model and reasoning effort
+remain inherited.
 
-| Gate | Prototype mode | Full `$godmode-workflow` |
-| --- | --- | --- |
-| Governance preflight | ❌ Skipped | ✅ Required |
-| `api_guardian` | ❌ Skipped | ✅ Required when contracts change |
-| `validator` | ❌ Skipped | ✅ Required |
-| `tester` | ⚡ One smoke command | ✅ Full suite required |
-| `scribe` | ❌ Skipped | ✅ Required after gates pass |
-| `github_manager` | ❌ Skipped | ✅ Required for PRs |
-| `builder` | ✅ Required | ✅ Required |
-| Prototype watermark | ✅ Required | ❌ Not applicable |
-| Migration checklist | ✅ Required | ❌ Not applicable |
+You can also copy `templates/prototype-mode/AGENTS.md` into the prototype or
+spike workspace as its minimal governance overlay.
 
-## The prototype loop
+## When to use it
+
+Use prototype mode for:
+
+- a technical spike answering one focused question
+- rapid comparison of local approaches
+- a disposable proof of concept
+- a local demo that will not ship directly
+
+Do not use it when:
+
+- the output is intended for production, staging, a shared branch, or external
+  users
+- real credentials, production databases, or live external services are needed
+- API or data-contract safety cannot be deferred
+- the production workflow is feasible and the output is not truly disposable
+
+## Fast loop
 
 ```text
-1. State the goal — one sentence
-2. 3-bullet plan — what to build, where files go, what "running" means
-3. Build — builder writes code with prototype header
-4. Smoke — one command proves the code runs
-5. Done — output includes migration checklist
+1. state goal, local boundary, three-bullet plan, file scope, and observable result
+2. assign one builder all writes
+3. add a watermark to every generated source file
+4. run the smallest end-to-end check that exercises the promised behavior
+5. record command, actual result or observation, and unverified edges
+6. return files, evidence, and migration checklist
 ```
 
-## Prototype watermark
+Prototype mode skips the full governance, contract, structural, documentation,
+and release gates. It does not skip proof that the prototype itself works.
 
-Every source file generated in prototype mode must begin with this header,
-adapted to the language:
+## Watermark
 
-**Python / Shell:**
+Adapt this block to the source language:
+
+```text
+PROTOTYPE ONLY — NOT FOR PRODUCTION
+Created in GodMode Prototype Mode for local testing.
+Do not commit to main, deploy, or use real credentials.
+Run through $godmode-workflow before production use.
+```
+
+Examples:
 
 ```python
-# ⚠️ PROTOTYPE ONLY — NOT FOR PRODUCTION
-# Created in GodMode Prototype Mode — local testing only.
-# Do NOT commit to main, deploy, or use real credentials here.
-# Run through $godmode-workflow before any production use.
+# PROTOTYPE ONLY — NOT FOR PRODUCTION
+# Created in GodMode Prototype Mode for local testing.
+# Do not commit to main, deploy, or use real credentials.
+# Run through $godmode-workflow before production use.
 ```
 
-**JavaScript / TypeScript / Swift / Dart / Go:**
-
-```javascript
-// ⚠️ PROTOTYPE ONLY — NOT FOR PRODUCTION
-// Created in GodMode Prototype Mode — local testing only.
-// Do NOT commit to main, deploy, or use real credentials here.
-// Run through $godmode-workflow before any production use.
+```typescript
+// PROTOTYPE ONLY — NOT FOR PRODUCTION
+// Created in GodMode Prototype Mode for local testing.
+// Do not commit to main, deploy, or use real credentials.
+// Run through $godmode-workflow before production use.
 ```
 
-The watermark is not optional. It is the primary signal to anyone who opens
-the file that this code is not ready for production and must not be deployed
-or committed to a shared branch.
+## Safe fixtures
 
-## File naming and placement
+Use placeholders, mocks, and disposable local resources:
 
-All prototype output must follow one of these conventions:
+- `placeholder_api_key` or `test_token`
+- `localhost` or `127.0.0.1`
+- an in-memory or disposable local database
+- deterministic fixtures instead of live API calls
 
-- **`proto_` prefix** — e.g. `proto_auth_flow.py`, `proto_api_client.ts`
-- **`prototype/` directory** — e.g. `prototype/auth_flow.py`
-- **`spike/` directory** — e.g. `spike/auth_flow.py`
+Keep network access disabled. If the experiment cannot proceed without a live
+production-like dependency, it has outgrown prototype mode.
 
-This makes prototype files visually obvious in any file tree and prevents
-accidental inclusion in production commits.
+## Promotion checklist
 
-## No real credentials
+Start a new production workspace task with `$godmode-workflow`, then:
 
-Prototype code must not contain real API keys, tokens, passwords, or
-production database connection strings. Use:
+- [ ] reassess repository governance and architecture
+- [ ] move or rename files out of prototype-only locations
+- [ ] remove every prototype watermark
+- [ ] replace placeholders through approved secret and configuration paths
+- [ ] review changed API, schema, CLI, or config contracts with `api_guardian`
+- [ ] run independent `validator` and `tester` gates
+- [ ] prove the production done criterion end to end
+- [ ] follow the target repository's release law
+- [ ] obtain explicit authority for commit, push, deploy, or another external
+      mutation
 
-- `placeholder_api_key`
-- `test_token`
-- `localhost` or `127.0.0.1` for service addresses
-- `sqlite:///:memory:` for databases
+Prototype output does not become production-ready merely by removing its
+watermark.
 
-Prototype mode is local-only. Keep network access disabled and use local mocks,
-fixtures, or disposable local services instead of live external endpoints.
-
-## Migration checklist
-
-When prototype output is validated and ready to become production code,
-open a `$godmode-workflow` session and work through this checklist:
-
-- [ ] Remove all `PROTOTYPE ONLY` header comments
-- [ ] Rename or move files (remove `proto_` prefix, move out of `prototype/` or `spike/`)
-- [ ] Replace all placeholder credentials, URLs, and config values
-- [ ] Route through `architect` for design review
-- [ ] Run `api_guardian` if any contracts, schemas, or CLI surfaces changed
-- [ ] Run `validator` + `tester` — both gates must be green
-- [ ] Follow the target repository's release law (`CHANGELOG.md`, change
-  fragments, release-please, semantic-release, or no release artifact)
-- [ ] Get explicit human approval before push or deploy
-
-## Config and templates
-
-The following files ship with prototype mode:
+## Shipped files
 
 | File | Purpose |
 | --- | --- |
-| `templates/global-codex/skills/godmode-prototype/SKILL.md` | The skill — invoke with `$godmode-prototype` |
-| `templates/prototype-mode/AGENTS.md` | Minimal governance overlay — copy into `prototype/` directories |
-| `templates/prototype-mode/config.toml` | Lean local config that keeps the model user-defined — use for prototype sessions |
-| `docs/prompts/prototype-start-prompt.md` | Copy-paste start prompt |
+| `templates/global-codex/skills/godmode-prototype/SKILL.md` | executable skill contract |
+| `templates/prototype-mode/AGENTS.md` | minimal local governance overlay |
+| `templates/prototype-mode/config.toml` | lean project-level runtime config |
+| `docs/prompts/prototype-start-prompt.md` | copy-paste task starter |
 
-## Relationship to the rest of the GodMode skill family
-
-```text
-$godmode-workflow          ← main orchestrator for production work
-  ├── $godmode-departments ← optional multi-domain routing layer
-  ├── $godmode-debug       ← focused bug-fixing lane
-  ├── $godmode-review      ← findings-first assessment lane
-  ├── $greenfield-bootstrap ← governance creation for new workspaces
-  └── $godmode-prototype   ← ⚡ local fast lane (this skill)
-                             NOT a companion to godmode-workflow
-                             REPLACES it for throwaway exploration
-```
-
-Unlike the other companion skills, `$godmode-prototype` is **not** a
-companion to `$godmode-workflow`. It **replaces** it for throwaway
-exploration. When you are ready to go to production, you switch **back**
-to `$godmode-workflow`.
-
-## Why this is not called "vibe mode"
-
-Prototype mode still has rules:
-
-- builder writes all code (not the orchestrator)
-- a smoke test is required
-- watermarks are mandatory
-- migration checklist is mandatory
-
-The goal is maximum speed within a defined boundary, not an unconstrained
-free-for-all. The boundary exists so that prototype output is always clearly
-marked and the path to production is always documented.
+Unlike debug, review, and department routing, prototype mode is not a companion
+layer inside the production workflow. It replaces that workflow temporarily for
+throwaway exploration, then hands promotion back to `$godmode-workflow`.
