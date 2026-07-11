@@ -17,6 +17,8 @@ jobs:
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
       - name: Validate local environment contract
         run: ./scripts/check-local-env.sh --ci
+      - name: Run GodMode Paperwork unit tests
+        run: python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
       - name: Run shell installer regression suite
         run: ./scripts/test-global-codex-setup.sh
 
@@ -85,5 +87,6 @@ jobs:
             CONTRIBUTING.md
             README.md
             docs/**/*.md
+            plugins/**/*.md
             templates/global-codex/skills/*/SKILL.md
             templates/**/*.md

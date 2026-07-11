@@ -1,11 +1,14 @@
 # Global Codex Setup
 
-Updated: 2026-07-10
+Updated: 2026-07-11
 
-Runtime version: 2.0.0
+Runtime version: 2.10.0
 
 This guide installs the GodMode runtime once at user level so its agents,
 skills, profiles, and guidance are available from any workspace.
+
+Version 2.10 also publishes an optional `godmode-paperwork` plugin. It is not
+part of the global core installer and must be selected explicitly.
 
 ## Requirements
 
@@ -98,6 +101,33 @@ On Windows:
 Then run `codex doctor` and start a fresh Codex task. Existing tasks do not
 rebuild their global instruction and capability snapshot automatically.
 
+## Install optional GodMode Paperwork
+
+Paperwork is distributed through the repository's Codex marketplace so that
+its sensitive-document contract does not become an implicit capability of every
+core installation.
+
+Add the released marketplace, install the plugin, and verify discovery:
+
+```bash
+codex plugin marketplace add cubetribe/CODEX_GodMode_ON --ref v2.10.0
+codex plugin list --marketplace codex-godmode-on --available --json
+codex plugin add godmode-paperwork@codex-godmode-on
+codex plugin list --json
+```
+
+Start a fresh task and invoke `$godmode-paperwork` explicitly. Its metadata
+disables implicit invocation. The plugin requires Python 3.11 or newer and can
+use locally installed Poppler (`pdfinfo`, `pdftotext`, `pdftoppm`) and Tesseract
+with the requested language data. Its `doctor` command reports capabilities but
+does not install, download, update, or upload anything.
+
+Keep case roots and exports outside Git worktrees, the repository checkout, and
+Codex plugin caches. On macOS, `/tmp` resolves through a symlink and is rejected
+by the strict path policy; use `/private/tmp` only for disposable tests, not for
+long-lived sensitive cases. See [GodMode Paperwork](./godmode-paperwork.md) for
+the complete operator contract.
+
 ## Installed layout
 
 The default targets are:
@@ -125,6 +155,10 @@ to `~/.agents/skills`.
 The repository package source remains under `templates/global-codex/`. It is
 not copied into project-local `.codex/agents/` or `.agents/skills/`, which would
 make Codex discover duplicate personal and project entries in this repo.
+
+The optional plugin remains under `plugins/godmode-paperwork/` and is exposed by
+`.agents/plugins/marketplace.json`. The core installers deliberately do not copy
+it into the global skill directory.
 
 ## Safe configuration behavior
 

@@ -1,0 +1,35 @@
+{
+  "name": "godmode-paperwork",
+  "version": "2.10.0",
+  "description": "Controlled, local-first document workflow with deterministic evidence gates and packaging for Codex.",
+  "author": {
+    "name": "cubetribe"
+  },
+  "homepage": "https://github.com/cubetribe/CODEX_GodMode_ON/blob/main/docs/godmode-paperwork.md",
+  "repository": "https://github.com/cubetribe/CODEX_GodMode_ON",
+  "keywords": [
+    "paperwork",
+    "ocr",
+    "evidence",
+    "local-first"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "GodMode Paperwork",
+    "shortDescription": "Auditable local-first document workflows",
+    "longDescription": "Build controlled document case files with immutable originals, local extraction and OCR, source-anchored claims, explicit review gates, integrity verification, and reproducible evidence archives. The plugin never installs tools, uploads files, submits forms, or replaces professional legal or tax review.",
+    "developerName": "cubetribe",
+    "category": "Productivity",
+    "capabilities": [
+      "Local document inventory",
+      "Offline OCR routing",
+      "Evidence validation",
+      "Reproducible archives"
+    ],
+    "defaultPrompt": [
+      "Create a local-first paperwork case and inventory my documents.",
+      "Extract this case and route only unresolved pages to OCR.",
+      "Validate the evidence and prepare a reproducible archive."
+    ]
+  }
+}

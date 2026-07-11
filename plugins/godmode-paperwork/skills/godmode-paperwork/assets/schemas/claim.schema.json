@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubetribe/CODEX_GodMode_ON/schemas/godmode-paperwork/claim-v1",
+  "title": "GodMode Paperwork claim record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "name", "value", "critical", "anchors"],
+  "properties": {
+    "schema": {"const": "godmode.paperwork.claim/v1"},
+    "id": {"type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?$"},
+    "name": {"type": "string", "minLength": 1},
+    "value": {"type": "string"},
+    "critical": {"type": "boolean"},
+    "anchors": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["document", "page", "quote", "artifact_sha256", "method"],
+        "properties": {
+          "document": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "page": {"type": "integer", "minimum": 1},
+          "quote": {"type": "string", "minLength": 1},
+          "artifact_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "method": {"enum": ["NATIVE", "OCR", "VISUAL"]},
+          "bbox": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "items": {"type": "string", "pattern": "^(?:0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"}
+          }
+        },
+        "allOf": [
+          {
+            "if": {"properties": {"method": {"const": "NATIVE"}}, "required": ["method"]},
+            "then": {"not": {"required": ["bbox"]}}
+          },
+          {
+            "if": {"properties": {"method": {"const": "VISUAL"}}, "required": ["method"]},
+            "then": {"required": ["bbox"]}
+          }
+        ]
+      }
+    }
+  }
+}

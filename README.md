@@ -1,7 +1,7 @@
 <div align="center">
   <h1>CODEX_GodMode_ON</h1>
   <p><em>Local Codex orchestration with bounded subagents and evidence-backed delivery.</em></p>
-  <p><strong>14 custom agents, 10 reusable skills, safe cross-platform installers,<br>and explicit quality gates for work from discovery through release.</strong></p>
+  <p><strong>14 custom agents, 10 core skills, one optional Paperwork plugin,<br>safe installers, and explicit quality gates from discovery through release.</strong></p>
   <p>
     <a href="./docs/global-codex-setup.md">Install</a>
     &middot;
@@ -10,6 +10,8 @@
     <a href="./docs/agent-registry.md">Agents</a>
     &middot;
     <a href="./docs/department-orchestration.md">Departments</a>
+    &middot;
+    <a href="./docs/godmode-paperwork.md">Paperwork</a>
     &middot;
     <a href="./docs/local-development.md">Maintain</a>
   </p>
@@ -40,29 +42,28 @@ criterion, and escalation condition.
 This is a local, skill-driven Codex workflow. It is not a scheduled-task daemon,
 an external state-machine service, or the Responses API multi-agent beta.
 
-## What's new in 2.0
+## What's new in 2.10
 
-Version 2.0 is the GPT-5.6-era orchestration release:
+Version 2.10 adds **GodMode Paperwork** as an optional Codex plugin for
+controlled, local-first document work:
 
-- all custom agents inherit the parent session model and reasoning selection;
-  no repository file hard-pins an account entitlement
-- GPT-5.6 is recommended for demanding work when available, and Ultra is an
-  opt-in for complex multi-agent runs rather than an installer default
-- Codex CLI `0.134.0` or newer is required and checked before installation
-- stack profiles are separate, namespaced `$CODEX_HOME/*.config.toml` files
-- an existing `config.toml` is preserved byte-for-byte unless you explicitly
-  request `--reset-config`
-- the managed global `AGENTS.md` block is updated exactly while guidance outside
-  its single ordered marker pair is preserved
-- agents, skills, profiles, and managed guidance are checked for exact drift
-- prototype mode must prove the promised behavior end to end
-- shell, Windows PowerShell 5.1, and PowerShell 7 installer regressions are part
-  of the repository's CI contract
+- immutable, SHA-256-addressed intake with deduplication and path redaction
+- native PDF text first, followed by page-scoped local Tesseract OCR only where
+  extraction remains unresolved
+- exact source quotes, artifact hashes, and deterministic OCR bounding boxes for
+  evidence-backed claims
+- bounded requirements and validation rules without dynamic code evaluation
+- scoped human approvals for critical claims and review-bearing archives
+- hash-chained internal audit logs, state-bound validation, reproducible
+  uncompressed tar archives, manifests, and SHA-256 sidecars
+- no silent installation, network access, upload, submission, deletion, or claim
+  of legal, tax, or compliance certainty
 
-These changes fix the common “installed but not activated” failure mode caused
-by an obsolete CLI on `PATH`, legacy inline profiles, or stale installed skills.
-See the [2.0 research record](./docs/research/codex-5.6-local-orchestration-2026-07-10.md)
-for the verified compatibility evidence.
+The 14-agent and 10-skill core runtime remains unchanged and model-neutral.
+Paperwork is separately installable so sensitive-document behavior does not
+expand every GodMode installation by default. Read the
+[Paperwork research decision](./docs/research/godmode-paperwork-local-first-2026-07-11.md)
+and the [operator guide](./docs/godmode-paperwork.md).
 
 ## Runtime at a glance
 
@@ -72,6 +73,7 @@ for the verified compatibility evidence.
 | Department agents | `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian` |
 | Workflow skills | `$godmode-workflow`, `$godmode-prototype`, `$godmode-debug`, `$godmode-review`, `$godmode-departments` |
 | Support skills | `$greenfield-bootstrap`, `$web-platforms`, `$apple-platforms`, `$flutter-dart`, `$release-manager` |
+| Optional plugin | `godmode-paperwork` with the explicitly invoked `$godmode-paperwork` skill |
 | Profiles | `godmode-swiftui`, `godmode-web`, `godmode-flutter`, `godmode-review` |
 | Durable conventions | `reports/` and `state/` for evidence and resumable project context when a run needs them |
 
@@ -111,6 +113,22 @@ the resolved binary, update Codex deliberately and rerun it. Full diagnostics,
 macOS Homebrew remediation, backup behavior, and exit codes are documented in
 [Global Codex Setup](./docs/global-codex-setup.md).
 
+### Install the optional Paperwork plugin
+
+After the 2.10 release is available, add the repository marketplace and install
+the plugin explicitly:
+
+```bash
+codex plugin marketplace add cubetribe/CODEX_GodMode_ON --ref v2.10.0
+codex plugin add godmode-paperwork@codex-godmode-on
+codex plugin list --json
+```
+
+Start a fresh Codex task, then invoke `$godmode-paperwork` explicitly. The core
+installer never installs this plugin, and the plugin never installs Poppler,
+Tesseract, or language data for you. See [GodMode Paperwork](./docs/godmode-paperwork.md)
+for capability checks, assurance levels, case storage, and review gates.
+
 ## Start a run
 
 Invoke the primary skill directly:
@@ -144,6 +162,10 @@ Use `$godmode-prototype` instead of `$godmode-workflow` for a disposable,
 local-only spike. Prototype output is watermarked, cannot use production data or
 services, and must demonstrate its actual promised outcome before it is called
 complete. Promotion returns to the full workflow.
+
+For tax, legal, compliance, audit, or administrative documents, explicitly use
+`$godmode-paperwork`. It creates controlled evidence packages; it does not make
+professional decisions, file forms, destroy originals, or certify correctness.
 
 ## Stack profiles
 
@@ -203,6 +225,8 @@ The six optional department agents are listed in the
 | `.codex/config.toml` | repo-local technical defaults, without model pins |
 | `templates/global-codex/` | source package for global guidance, config, agents, profiles, and skills |
 | `templates/prototype-mode/` | local-only prototype overlay and lean config |
+| `.agents/plugins/marketplace.json` | repository-scoped catalog for optional GodMode plugins |
+| `plugins/godmode-paperwork/` | optional local-first document workflow, schemas, CLI, and tests |
 | `scripts/apply-global-codex-setup.sh` | macOS/Linux installer and exact checker |
 | `scripts/apply-global-codex-setup.ps1` | Windows installer and exact checker |
 | `scripts/check-local-env.sh` | package and environment validation |
@@ -223,6 +247,8 @@ duplicate project and personal capabilities after installation.
   separate authority boundaries
 - project reports and state are re-verified against current repository evidence
 - local orchestration does not depend on hidden hooks or background scheduling
+- sensitive Paperwork cases stay outside Git and plugin caches; external OCR
+  binaries are recorded as a trust boundary rather than silently trusted
 
 ## Read next
 
@@ -233,6 +259,7 @@ duplicate project and personal capabilities after installation.
 | inspect every installed role | [Agent Registry](./docs/agent-registry.md) |
 | route larger multi-domain work | [Department Orchestration](./docs/department-orchestration.md) |
 | run a disposable spike | [Prototype Mode](./docs/prototype-mode.md) |
+| organize and validate sensitive documents | [GodMode Paperwork](./docs/godmode-paperwork.md) |
 | maintain or release this repository | [Local Development](./docs/local-development.md) |
 | see shipped and future work | [Roadmap](./docs/roadmap.md) |
 
@@ -243,6 +270,7 @@ duplicate project and personal capabilities after installation.
 - [Advanced configuration and profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles)
 - [Long-running work and goals](https://learn.chatgpt.com/docs/long-running-work)
 - [Build Codex skills](https://learn.chatgpt.com/docs/build-skills)
+- [Build Codex plugins](https://learn.chatgpt.com/docs/build-plugins)
 - [Codex CLI command reference](https://learn.chatgpt.com/docs/developer-commands?surface=cli)
 - [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
 

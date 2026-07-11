@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubetribe/CODEX_GodMode_ON/schemas/godmode-paperwork/page-v1",
+  "title": "GodMode Paperwork page record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "document", "page", "route", "final_artifact", "artifact_sha256"],
+  "properties": {
+    "schema": {"const": "godmode.paperwork.page/v1"},
+    "document": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "page": {"type": "integer", "minimum": 1},
+    "route": {"enum": ["NATIVE", "OCR_REQUIRED", "OCR", "VISUAL_REVIEW", "VISUAL"]},
+    "native_artifact": {"type": ["string", "null"], "pattern": "^work/[0-9a-f]{64}/native/page-[0-9]{4}\\.txt$"},
+    "native_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "native_alphanumeric": {"type": "integer", "minimum": 0},
+    "replacement_ratio": {"type": "string"},
+    "render_artifact": {"type": ["string", "null"], "pattern": "^work/[0-9a-f]{64}/render/page-[0-9]{4}\\.png$"},
+    "render_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "ocr_alphanumeric": {"type": "integer", "minimum": 0},
+    "ocr_confidence": {"type": ["string", "null"], "pattern": "^[0-9]+(?:\\.[0-9]{2})?$"},
+    "ocr_page_dimensions": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["width", "height"],
+      "properties": {
+        "width": {"type": "integer", "minimum": 1},
+        "height": {"type": "integer", "minimum": 1}
+      }
+    },
+    "ocr_artifacts": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "pattern": "^work/[0-9a-f]{64}/ocr/page-[0-9]{4}\\.(?:txt|tsv|hocr)$"},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    },
+    "final_artifact": {"type": ["string", "null"], "pattern": "^work/[0-9a-f]{64}/final/page-[0-9]{4}\\.txt$"},
+    "artifact_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "provenance": {"type": "object"},
+    "visual_resolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bbox", "declared_by", "note_sha256"],
+      "properties": {
+        "bbox": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"type": "string"}},
+        "declared_by": {"type": "string", "minLength": 1},
+        "note_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}

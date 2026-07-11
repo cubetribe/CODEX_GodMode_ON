@@ -7,10 +7,12 @@
 - Prefer current official OpenAI Codex documentation when changing setup guidance or product claims.
 - Keep repo guidance explicit, auditable, and clearly separated from future implementation work.
 - Use `AGENTS.md` for durable repo rules, `.codex/config.toml` for repo defaults, `templates/global-codex/agents/` for packaged GodMode custom agents, and `templates/global-codex/skills/` for packaged GodMode reusable procedures.
+- Use `.agents/plugins/marketplace.json` for the repository marketplace and `plugins/` for optional, separately installed GodMode extensions. Optional plugins must not be copied into `templates/global-codex/` or silently installed by the core runtime installers.
 - Do not keep the packaged global GodMode agents or skills in repo-local discovery paths such as `.codex/agents/` or `.agents/skills/`; after global installation that creates duplicate project and personal entries in Codex.
 - Do not add speculative guidance about Codex features without a source or a clear note that it is an inference.
 - If the original Claude repository is referenced, distinguish between extracted facts from the source repo and new Codex design decisions.
 - Keep `templates/global-codex/agents/`, `templates/global-codex/skills/`, installer behavior, and docs aligned when role names or workflow gates change.
+- Keep plugin manifests, bundled skills, schemas, tests, marketplace policy, and plugin documentation aligned. Sensitive-document plugins must stay local-first, fail closed on integrity errors, and require explicit human gates for high-stakes conclusions or release-bearing review states.
 
 ## Documentation rules
 
@@ -36,6 +38,7 @@
 
 - `validator` is the structural gate. It checks TOML syntax for `templates/global-codex/agents/*.toml`, Markdown consistency, internal links, and role-name consistency across `AGENTS.md`, `templates/global-codex/agents/*.toml`, and `templates/global-codex/skills/`. It does not edit source files.
 - `tester` is the executable gate. It runs `./scripts/check-local-env.sh`, verifies shell-script syntax with `bash -n`, and confirms that new skills carry `name` and `description` frontmatter.
+- For plugin changes, `validator` also runs `python3 scripts/validate-codex-plugins.py --repo-root .`; `tester` runs the plugin's focused test suite and an isolated marketplace installation check when CLI behavior changes.
 - Both gates must be explicitly recorded as pass or fail before `scribe` updates changelog text, reports, or final summary artifacts.
 
 ## Prototype mode
@@ -51,3 +54,4 @@
 
 - Docs, structure, and example-only changes are usually `none`.
 - Changes that alter recommended config behavior should be classified explicitly.
+- New optional user-facing plugins are normally `minor`; incompatible core installer or runtime changes may be `major`.

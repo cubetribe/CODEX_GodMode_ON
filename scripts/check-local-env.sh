@@ -553,6 +553,16 @@ check_workflow_security() {
   done < <(find "$repo_root/.github/workflows" -type f \( -name '*.yml' -o -name '*.yaml' \) | sort)
 }
 
+check_codex_plugins() {
+  local output=""
+  if output="$(python3 "$repo_root/scripts/validate-codex-plugins.py" --repo-root "$repo_root" 2>&1)"; then
+    printf '[ok] scripts/validate-codex-plugins.py\n'
+  else
+    printf '[invalid] scripts/validate-codex-plugins.py:\n%s\n' "$output"
+    status=1
+  fi
+}
+
 printf 'Repo root: %s\n' "$repo_root"
 printf 'Mode: %s\n' "$([[ "$ci_mode" == true ]] && echo ci || echo local)"
 
@@ -616,8 +626,10 @@ check_path "docs/blueprint.md"
 check_path "docs/agent-registry.md"
 check_path "docs/department-orchestration.md"
 check_path "docs/prototype-mode.md"
+check_path "docs/godmode-paperwork.md"
 check_path "docs/global-codex-setup.md"
 check_path "docs/local-development.md"
+check_path "docs/research/godmode-paperwork-local-first-2026-07-11.md"
 check_path "docs/prompts/dev-start-prompt.md"
 check_path "docs/prompts/debug-start-prompt.md"
 check_path "docs/prompts/greenfield-start-prompt.md"
@@ -635,6 +647,7 @@ check_path "templates/prototype-mode/config.toml"
 check_path "scripts/apply-global-codex-setup.sh"
 check_path "scripts/apply-global-codex-setup.ps1"
 check_path "scripts/check-local-env.sh"
+check_path "scripts/validate-codex-plugins.py"
 check_path "scripts/test-global-codex-setup.sh"
 check_path "scripts/test-global-codex-setup.ps1"
 check_path "reports"
@@ -643,6 +656,12 @@ check_path "reports/templates/role-report.md"
 check_path "state"
 check_path "state/README.md"
 check_path "state/templates/workflow-state.local.json"
+check_path ".agents/plugins/marketplace.json"
+check_path "plugins/godmode-paperwork/.codex-plugin/plugin.json"
+check_path "plugins/godmode-paperwork/skills/godmode-paperwork/SKILL.md"
+check_path "plugins/godmode-paperwork/skills/godmode-paperwork/agents/openai.yaml"
+check_path "plugins/godmode-paperwork/skills/godmode-paperwork/scripts/paperwork.py"
+check_path "plugins/godmode-paperwork/tests/test_paperwork.py"
 
 printf '\nRepo validation:\n'
 check_agent_contracts
@@ -655,6 +674,7 @@ check_profile_config "templates/global-codex/profiles/godmode-flutter.config.tom
 check_profile_config "templates/global-codex/profiles/godmode-review.config.toml"
 check_skill_frontmatter
 check_skill_openai_yaml
+check_codex_plugins
 check_unreleased_when_dirty
 check_version_alignment
 check_shell_syntax

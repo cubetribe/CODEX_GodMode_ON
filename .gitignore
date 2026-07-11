@@ -38,3 +38,10 @@ DerivedData/
 reports/generated/
 state/*.json
 state/*.lock
+
+# GodMode Paperwork case and export artifacts
+.paperwork-cases/
+paperwork-cases/
+*.paperwork.tar
+*.paperwork.tar.sha256
+*.paperwork.tar.receipt.json

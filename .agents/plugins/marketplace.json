@@ -1,0 +1,20 @@
+{
+  "name": "codex-godmode-on",
+  "interface": {
+    "displayName": "CODEX GodMode ON"
+  },
+  "plugins": [
+    {
+      "name": "godmode-paperwork",
+      "source": {
+        "source": "local",
+        "path": "./plugins/godmode-paperwork"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}
