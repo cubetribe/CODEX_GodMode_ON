@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubetribe/CODEX_GodMode_ON/schemas/godmode-paperwork/page-resolution-v1",
+  "title": "GodMode Paperwork visual page-resolution mutation input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "document", "page", "text", "bbox", "confirmed_by", "note"],
+  "properties": {
+    "schema": {"const": "godmode.paperwork.page-resolution/v1"},
+    "document": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "page": {"type": "integer", "minimum": 1},
+    "text": {"type": "string", "minLength": 1},
+    "bbox": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"type": "string", "pattern": "^(?:0(?:\\.[0-9]+)?|1(?:\\.0+)?)$"}
+    },
+    "confirmed_by": {"type": "string", "minLength": 1},
+    "note": {"type": "string", "minLength": 1}
+  }
+}

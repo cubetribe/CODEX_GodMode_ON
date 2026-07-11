@@ -6,6 +6,45 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [2.10.0] - 2026-07-11
+
+### Added
+
+- optional `godmode-paperwork` Codex plugin, distributed through the repository marketplace and invoked explicitly as `$godmode-paperwork`
+- offline Python 3.11+ CLI for capability inspection, immutable intake, native extraction, page-scoped OCR routing, controlled CASEWORK records, validation, verification, and reproducible packaging
+- content-addressed originals, canonical records, SHA-256 deduplication, base-name-only source aliases without absolute paths, strict case paths, case locks, and a hash-chained internal audit
+- native-first Poppler extraction and local Tesseract escalation with retained TXT, TSV, and hOCR artifacts, deterministic quality thresholds, and executable/language-data provenance
+- evidence claims with exact quotes, artifact hashes, route binding, and OCR bounding boxes derived from unique contiguous TSV word sequences
+- bounded requirements for required records, equality, exact fixed-point decimal sums, date ordering, formats, and uniqueness without dynamic evaluation
+- scoped human approvals bound to the current claim or page digest, plus a separate declared-human release gate for review-bearing archives
+- deterministic uncompressed tar packs with normalized metadata, exact manifests, canonical receipts, SHA-256 sidecars, and independent safe verification
+- operator guide, architecture decision, regulatory research notes, schemas, plugin metadata, marketplace validation, and focused CI coverage
+
+### Changed
+
+- documented the runtime as 14 core agents, 10 core skills, and one separately installed optional plugin
+- extended repository governance, CODEOWNERS, security guidance, contribution rules, local validation, and Markdown lint coverage to plugin surfaces
+- kept the global GodMode installer and core templates unchanged so Paperwork does not silently expand existing installations
+
+### Security
+
+- fail closed on linked or escaping paths, unsafe or non-normalized source aliases, unexpected case files, original or artifact tampering, audit truncation, stale validation, malformed Unicode, non-finite or overlong decimals, OCR coordinate mismatch, archive traversal, trailing archive payloads, receipt forgery, partial publication, and visual-review escalation bypass
+- roll back governed state and newly created artifacts when intake, extraction, OCR routing, casework, or validation aborts partway through
+- bind packing to the validated per-file state snapshot; verify exact canonical archive bytes and the complete materialized case through safe single-open snapshots; reject missing state, appended payloads, path replacement, and malformed review gates
+- restrict OCR outputs to mode `0600` and work directories to `0700` on the supported Unix-like runtime before recording or hashing them
+- map expected filesystem and permission failures to controlled integrity or processing exits without leaking sensitive paths
+- invalidate validation after every governed mutation and reject reused human approvals after the approved scope changes
+- perform no network access, cloud OCR, silent tool installation, document upload, form submission, original deletion, or paper-destruction action
+- record external OCR binaries and language data as an explicit trust boundary rather than treating local installation as proof of safety
+
+### Upgrade notes
+
+- Add the released marketplace with `codex plugin marketplace add cubetribe/CODEX_GodMode_ON --ref v2.10.0`, then install `godmode-paperwork@codex-godmode-on` explicitly.
+- Start a fresh Codex task and invoke `$godmode-paperwork`; implicit invocation is disabled.
+- Run `doctor` before case intake. The plugin reports missing Poppler, Tesseract, or language data but never installs them.
+- Keep every case and export outside Git worktrees and plugin caches. On macOS, use `/private/tmp` rather than `/tmp` only for disposable synthetic tests.
+- `PASS` describes a configured mechanical gate, not legal, tax, compliance, authenticity, or professional certification.
+
 ## [2.0.0] - 2026-07-10
 
 ### Added

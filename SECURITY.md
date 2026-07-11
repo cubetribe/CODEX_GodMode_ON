@@ -8,6 +8,21 @@ Dieses Repository enthaelt vor allem Dokumentation, Konfigurationsbeispiele, Ski
 - unsichere Beispiel-Konfigurationen
 - Hooks oder Skripte mit riskantem Verhalten
 - Doku, die zu unsicheren Defaults fuehren koennte
+- Pfad-, Archiv- oder Integritaetsfehler in `godmode-paperwork`
+- unbeabsichtigte Netzwerk-, Upload-, Installations-, Loesch- oder Uebermittlungsfunktionen bei sensiblen Dokumenten
+
+## GodMode Paperwork
+
+Paperwork-Faelle, Originaldokumente und Exporte gehoeren niemals in dieses
+Repository. Das Plugin verarbeitet lokal, installiert keine Werkzeuge, ruft
+keine Cloud-OCR auf und uebermittelt keine Formulare. Seine Hash-Kette und
+benannten menschlichen Freigaben belegen interne Konsistenz, sind aber keine
+digitale Signatur und kein Schutz gegen eine Person, die den gesamten Fall samt
+aller Hashes kontrolliert neu schreiben kann.
+
+Ein `PASS` bestaetigt nur die konfigurierten mechanischen Regeln. Es ersetzt
+weder Rechts- oder Steuerberatung noch eine fachliche, regulatorische oder
+gerichtsfeste Beurteilung.
 
 ## So bitte melden
 

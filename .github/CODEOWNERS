@@ -2,6 +2,9 @@
 /AGENTS.md @cubetribe
 /templates/global-codex/agents/ @cubetribe
 /templates/global-codex/skills/ @cubetribe
+/.agents/plugins/ @cubetribe
+/plugins/ @cubetribe
+/scripts/validate-codex-plugins.py @cubetribe
 /.github/workflows/ @cubetribe
 /.github/CODEOWNERS @cubetribe
 /.github/dependabot.yml @cubetribe

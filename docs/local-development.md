@@ -1,8 +1,8 @@
 # Local Development
 
-Updated: 2026-07-10
+Updated: 2026-07-11
 
-Current release: 2.0.0
+Current release: 2.10.0
 
 This guide is for maintainers of the bootstrap repository. End users should
 start with [Global Codex Setup](./global-codex-setup.md).
@@ -74,6 +74,9 @@ or every platform SDK.
 | `templates/global-codex/agents/` | 14 packaged custom agent manifests |
 | `templates/global-codex/skills/` | 10 packaged reusable skills |
 | `templates/prototype-mode/` | local-only prototype governance and config |
+| `.agents/plugins/marketplace.json` | catalog for optional, separately installed plugins |
+| `plugins/godmode-paperwork/` | Paperwork manifest, skill, schemas, offline CLI, references, and tests |
+| `scripts/validate-codex-plugins.py` | repository marketplace and plugin contract validator |
 | `scripts/apply-global-codex-setup.*` | platform installers and exact installed-state checks |
 | `scripts/test-global-codex-setup.*` | installer regression fixtures |
 | `reports/`, `state/` | optional durable workflow artifacts and templates |
@@ -81,6 +84,10 @@ or every platform SDK.
 Do not move packaged agents or skills into this repository's `.codex/agents/`
 or `.agents/skills/`. Codex would discover both project and personal copies
 after installation.
+
+Optional plugins remain in `plugins/` and are exposed through the repository
+marketplace. Do not copy them into the global template tree or add them to the
+core installer.
 
 ## Profiles and model inheritance
 
@@ -123,6 +130,7 @@ continue approved work. Neither command replaces repository gates.
 | shell installer | Bash syntax, ShellCheck, package check, shell regression suite |
 | PowerShell installer | PowerShell fixture; CI enforces Windows PowerShell 5.1 and PowerShell 7 |
 | GitHub workflow | package security check and `actionlint` |
+| Paperwork plugin | plugin validator, focused Python tests, compile check, and isolated marketplace install |
 | release preparation | every applicable row plus version/changelog and clean diff review |
 
 The standard local release gate is:
@@ -135,6 +143,9 @@ shellcheck scripts/apply-global-codex-setup.sh \
   scripts/check-local-env.sh \
   scripts/test-global-codex-setup.sh
 ./scripts/test-global-codex-setup.sh
+python3 scripts/validate-codex-plugins.py --repo-root .
+python3 -m py_compile plugins/godmode-paperwork/skills/godmode-paperwork/scripts/*.py
+python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
 ./scripts/check-local-env.sh --ci
 git diff --check
 ```
@@ -164,6 +175,25 @@ profile conflict/reset behavior is preflight-safe, `AGENTS.md` marker migration
 is deterministic, exact drift is repaired, and a second run is idempotent. The
 maintained regression scripts encode those cases.
 
+## Test the optional plugin in isolation
+
+Do not use the maintainer's real Codex home for development verification. Use a
+temporary home, add the current checkout as a local marketplace, install the
+plugin, and inspect its discovery state:
+
+```bash
+tmp_root="$(mktemp -d)"
+CODEX_HOME="$tmp_root/.codex" codex plugin marketplace add "$PWD"
+CODEX_HOME="$tmp_root/.codex" codex plugin add godmode-paperwork@codex-godmode-on
+CODEX_HOME="$tmp_root/.codex" codex plugin list --json
+```
+
+For an end-to-end runtime check, create the case under a real, non-symlinked
+temporary path outside the checkout. On macOS use `/private/tmp`, not `/tmp`.
+Run `doctor`, intake a synthetic PDF, prove native-first extraction and
+page-scoped OCR, validate, pack, and verify the archive. Never put real personal
+documents in repository fixtures.
+
 ## Release preparation
 
 For 2.0.0 and later releases:
@@ -177,6 +207,10 @@ For 2.0.0 and later releases:
 6. merge through allowed repository policy without admin bypass
 7. wait for the exact merge commit's `main` workflows
 8. create the immutable release tag and GitHub release at that verified commit
+
+For a plugin release, keep the root `VERSION`, changelog section, plugin manifest
+version, tag, and release title aligned. Verify the released tag through an
+isolated Git-backed marketplace before installing it into a real Codex home.
 
 Do not rewrite or force-move a published tag. Commit, push, merge, and release
 remain separate external actions even when earlier engineering work is approved.

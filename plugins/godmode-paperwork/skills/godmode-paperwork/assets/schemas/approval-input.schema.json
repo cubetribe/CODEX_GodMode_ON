@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cubetribe/CODEX_GodMode_ON/schemas/godmode-paperwork/approval-input-v1",
+  "title": "GodMode Paperwork approval mutation input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "id", "human", "approved_by", "scope_type", "scope_id", "decision", "note"],
+  "properties": {
+    "schema": {"const": "godmode.paperwork.approval/v1"},
+    "id": {"type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,126}[a-z0-9])?$"},
+    "human": {"const": true},
+    "approved_by": {"type": "string", "minLength": 1},
+    "scope_type": {"enum": ["claim", "page"]},
+    "scope_id": {"type": "string", "minLength": 1},
+    "decision": {"enum": ["CONFIRMED", "APPROVED_WITH_REVIEW"]},
+    "note": {"type": "string", "minLength": 1}
+  }
+}

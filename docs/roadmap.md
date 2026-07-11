@@ -1,10 +1,11 @@
 # Roadmap
 
-Updated: 2026-07-10
+Updated: 2026-07-11
 
-Current release: 2.0.0
+Current release: 2.10.0
 
-Version 2.0 completes the installable GPT-5.6-era local orchestration baseline.
+Version 2.10 extends the installable GPT-5.6-era local orchestration baseline
+with an optional, local-first document evidence workflow.
 This roadmap separates shipped behavior from future hardening so planned work is
 not mistaken for a current runtime feature.
 
@@ -20,20 +21,23 @@ not mistaken for a current runtime feature.
 | Safe cross-platform install | shipped in 2.0 | byte-preserved config, managed guidance, separate profiles, exact drift checks |
 | Model-inheritance contract | shipped in 2.0 | parent session chooses model and reasoning; custom agents do not pin entitlements |
 | Evidence-backed completion | shipped in 2.0 | user-visible done criteria mapped to concrete outcomes, including prototypes |
+| Optional Paperwork plugin | shipped in 2.10 | immutable intake, local OCR escalation, evidence anchors, validation, review gates, and reproducible archives |
 
-## 2.0 release scope
+## 2.10 release scope
 
-Version 2.0 delivers:
+Version 2.10 preserves the 2.0 core runtime and adds:
 
-- Codex CLI `0.134.0+` capability preflight and shadowed-binary diagnostics
-- separate `godmode-*.config.toml` profiles instead of inline profile tables
-- bounded proactive read-only delegation with a six-field task envelope
-- one normal implementation writer after synthesis and scope freeze
-- independent structural and executable quality gates
-- end-to-end outcome evidence before documentation or release handoff
-- exact managed agent, skill, profile, and guidance verification
-- shell and Windows installer regression fixtures, with Windows PowerShell 5.1
-  and PowerShell 7 enforced by CI
+- a repository marketplace with `godmode-paperwork` available by explicit install
+- a Python-standard-library CLI for controlled intake, extraction, routing,
+  casework, validation, verification, and packaging
+- native PDF extraction before page-scoped local OCR, with unresolved pages
+  forced through an explicit visual-review queue
+- immutable originals, canonical records, source-anchored claims, scoped human
+  approvals, a hash-chained audit, and state-bound validation
+- deterministic uncompressed tar archives with exact manifests, receipts, and
+  SHA-256 sidecars
+- adversarial regression coverage for path escape, stale validation, approval
+  replay, archive forgery, OCR coordinate mismatch, and escalation bypass
 
 ## Next hardening areas
 
@@ -51,6 +55,15 @@ These are candidates, not promised current behavior:
 - optional schemas for generated reports and resumable state
 - staleness markers that force re-verification against current repository state
 - clearer examples of intake, routing, contract freeze, and release handoff
+
+### Paperwork hardening
+
+- additional real-world fixtures for image-only PDFs and multilingual OCR
+- native Windows validation or a documented WSL support contract
+- optional signed receipts backed by a separately managed identity system
+- carefully reviewed Office and TIFF intake without weakening the fail-closed
+  path and case-integrity model
+- usability studies for review queues and qualified-professional handoff
 
 ### Installer lifecycle hardening
 

@@ -1,0 +1,6 @@
+interface:
+  display_name: "GodMode Paperwork"
+  short_description: "Auditable local-first document workflows"
+  default_prompt: "Use $godmode-paperwork to create and validate a local-first document case."
+policy:
+  allow_implicit_invocation: false
