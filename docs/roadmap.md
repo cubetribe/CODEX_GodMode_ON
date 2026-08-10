@@ -1,93 +1,51 @@
 # Roadmap
 
-Updated: 2026-07-11
+Released version: `2.10.0`
 
-Current release: 2.10.0
+Current workspace target: unreleased `3.0.0` Lean candidate. Version, tag, and
+publication change only during authorized release preparation.
 
-Version 2.10 extends the installable GPT-5.6-era local orchestration baseline
-with an optional, local-first document evidence workflow.
-This roadmap separates shipped behavior from future hardening so planned work is
-not mistaken for a current runtime feature.
+## Shipped separately in 2.10
 
-## Shipped milestones
+The optional `godmode-paperwork` plugin remains a separately installed,
+local-first document-evidence workflow. GodMode 3 changes the core orchestration
+runtime; it does not fold Paperwork into the core installer.
 
-| Milestone | Status | Outcome |
-| --- | --- | --- |
-| Architecture blueprint | shipped | native Codex layers, roles, gates, and authority boundaries documented |
-| Global runtime package | shipped | 14 agents and 10 skills installed outside repo-local discovery paths |
-| Optional department routing | shipped | lean, guided, and bounded cross-domain lanes |
-| Production companion modes | shipped | workflow, debug, review, department, and local prototype procedures |
-| Repository guardrails | shipped | governance, changelog law, validation law, CI/security baseline |
-| Safe cross-platform install | shipped in 2.0 | byte-preserved config, managed guidance, separate profiles, exact drift checks |
-| Model-inheritance contract | shipped in 2.0 | parent session chooses model and reasoning; custom agents do not pin entitlements |
-| Evidence-backed completion | shipped in 2.0 | user-visible done criteria mapped to concrete outcomes, including prototypes |
-| Optional Paperwork plugin | shipped in 2.10 | immutable intake, local OCR escalation, evidence anchors, validation, review gates, and reproducible archives |
+## 3.0 candidate gates
 
-## 2.10 release scope
+- [x] reduce global guidance below 1,500 bytes
+- [x] reduce the core workflow below 2,000 bytes
+- [x] reduce the custom roster from 14 to 7 and core skills from 10 to 9
+- [x] make workflow, debug, review, and prototype standalone primary modes
+- [x] remove `max_depth` and cap the packaged base config at two threads
+- [x] split static validation, installer tests, and capability diagnostics
+- [x] add deterministic routing fixtures
+- [x] add safe hash-matched 2.0 retirement with verified backups
+- [x] prove isolated discovery against local desktop and stable CLI binaries
+- [x] pass independent static and runtime review on the Lean diff
+- [ ] preserve the optional Paperwork package and pass its validator/unit suite
+- [ ] pass Windows PowerShell 5.1 and PowerShell 7 CI on the completed diff
+- [ ] pass live `gpt-5.6-sol` Ultra routing traces in an isolated fixture
+- [ ] prepare the dated changelog and aligned `3.0.0` distribution versions
+- [ ] pass protected-main PR and post-merge release gates on exact SHAs
 
-Version 2.10 preserves the 2.0 core runtime and adds:
+## Post-3.0 experiments
 
-- a repository marketplace with `godmode-paperwork` available by explicit install
-- a Python-standard-library CLI for controlled intake, extraction, routing,
-  casework, validation, verification, and packaging
-- native PDF extraction before page-scoped local OCR, with unresolved pages
-  forced through an explicit visual-review queue
-- immutable originals, canonical records, source-anchored claims, scoped human
-  approvals, a hash-chained audit, and state-bound validation
-- deterministic uncompressed tar archives with exact manifests, receipts, and
-  SHA-256 sidecars
-- adversarial regression coverage for path escape, stale validation, approval
-  replay, archive forgery, OCR coordinate mismatch, and escalation bypass
+These are hypotheses, not release promises:
 
-## Next hardening areas
+- compare the seven-agent package with a four-agent and built-in-only roster on
+  representative tasks;
+- compare Sol Ultra with lower reasoning settings for quality, child turns,
+  tool calls, latency, and token usage;
+- replace the compatibility `max_threads` alias once the stable supported CLI
+  accepts the current documented field;
+- expand routing evals only when a real regression demonstrates missing
+  coverage;
+- consider path-selective CI after the canonical static baseline remains
+  reliable across several releases;
+- design explicit backward compatibility before changing Paperwork's persisted
+  evidence-contract version.
 
-These are candidates, not promised current behavior:
-
-### Workflow evaluation fixtures
-
-- representative web, Apple, Flutter, debug, review, and department runs
-- measurable skill-trigger and agent-routing cases
-- handoff accuracy and done-evidence quality checks
-- regression cases for over-delegation and scope leakage
-
-### Durable artifact contracts
-
-- optional schemas for generated reports and resumable state
-- staleness markers that force re-verification against current repository state
-- clearer examples of intake, routing, contract freeze, and release handoff
-
-### Paperwork hardening
-
-- additional real-world fixtures for image-only PDFs and multilingual OCR
-- native Windows validation or a documented WSL support contract
-- optional signed receipts backed by a separately managed identity system
-- carefully reviewed Office and TIFF intake without weakening the fail-closed
-  path and case-integrity model
-- usability studies for review queues and qualified-professional handoff
-
-### Installer lifecycle hardening
-
-- additional Windows and Linux distribution coverage
-- compatibility fixtures for future Codex profile and configuration changes
-- explicit migration tests for every future managed-file format change
-- clearer package provenance and checksum workflows if distribution expands
-
-### Community evidence
-
-- documented real-world activation and upgrade cases
-- issue templates that capture resolved CLI, profile, and drift evidence
-- contributor examples that demonstrate safe lean and department routing
-
-## Non-goals
-
-The roadmap does not currently include:
-
-- a scheduled local orchestration daemon
-- a hidden hook-driven auto-spawner
-- Responses API beta integration presented as local Codex behavior
-- unlimited nested or recursively autonomous subagents
-- automatic commit, push, merge, release, or deploy authority
-- a mandatory GPT-5.6 or Ultra entitlement
-
-Any future change to those boundaries requires explicit architecture review,
-source verification, migration design, and a new release contract.
+New persistent rules or custom agents require evidence that automation, local
+governance, an existing skill, the parent, or a built-in role cannot provide the
+same function more cheaply.

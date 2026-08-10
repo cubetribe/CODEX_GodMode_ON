@@ -1,9 +1,0 @@
-{
-  "task": "short task name",
-  "phase": "research|plan|build|validate|release",
-  "branch": "current branch if relevant",
-  "governing_docs": [],
-  "touched_files": [],
-  "open_questions": [],
-  "validation": []
-}

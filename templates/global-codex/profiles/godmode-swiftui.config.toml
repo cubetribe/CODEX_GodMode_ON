@@ -1,2 +1,2 @@
-# GodMode SwiftUI profile. Model and reasoning effort inherit from the parent session.
+# GodMode SwiftUI profile. Does not pin a model or reasoning effort.
 web_search = "cached"

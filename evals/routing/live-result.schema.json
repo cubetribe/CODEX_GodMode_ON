@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["case", "primary_mode", "specialists", "writer", "gate", "verdict"],
+  "properties": {
+    "case": {
+      "type": "string"
+    },
+    "primary_mode": {
+      "enum": ["godmode-workflow", "godmode-debug", "godmode-review", "godmode-prototype"]
+    },
+    "specialists": {
+      "type": "array",
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "api_guardian",
+          "validator",
+          "tester",
+          "runtime_platform",
+          "workflow_design",
+          "docs_dx",
+          "ci_security_guardian"
+        ]
+      }
+    },
+    "writer": {
+      "enum": ["parent", "built-in-worker", "none"]
+    },
+    "gate": {
+      "enum": ["static", "runtime", "both", "none"]
+    },
+    "verdict": {
+      "type": "string",
+      "minLength": 1
+    }
+  }
+}

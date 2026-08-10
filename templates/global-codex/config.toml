@@ -4,27 +4,13 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [agents]
-max_threads = 6
-max_depth = 1
+# Compatibility alias: Codex 0.144.1 rejects the newer
+# max_concurrent_threads_per_session key, while both tested CLIs accept this.
+max_threads = 2
 
 [sandbox_workspace_write]
 writable_roots = []
 network_access = false
 
-[mcp_servers.playwright]
-args = ["@playwright/mcp@latest", "--extension", "--caps", "vision,pdf,devtools"]
-command = "npx"
-
-[mcp_servers.playwrightIsolated]
-args = [
-  "@playwright/mcp@latest",
-  "--browser", "chrome",
-  "--caps", "vision,pdf,devtools",
-  "--output-dir", "__CODEX_HOME__/playwright-output/isolated",
-  "--save-trace"
-]
-command = "npx"
-
-# Optional HTTP and GitHub MCP servers are intentionally not enabled by this
-# portable base template. Add user-specific servers in the user-owned config;
-# normal 2.0 installs preserve that existing file byte-for-byte.
+# Models, reasoning effort, MCP servers, and app integrations are intentionally
+# user-owned. This portable base controls only safe workflow defaults.

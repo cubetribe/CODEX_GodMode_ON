@@ -1,0 +1,32 @@
+[
+  {
+    "id": "small_implementation",
+    "prompt": "Use $godmode-workflow to make one small, scoped documentation change. Work without specialists unless a material unknown appears.",
+    "primary_mode": "godmode-workflow",
+    "max_specialists": 0
+  },
+  {
+    "id": "contract_migration",
+    "prompt": "Use $godmode-workflow for this config migration. Ask $api_guardian to review the frozen compatibility contract read-only if needed.",
+    "primary_mode": "godmode-workflow",
+    "max_specialists": 1
+  },
+  {
+    "id": "runtime_failure",
+    "prompt": "Use $godmode-debug to reproduce and fix this platform-specific runtime failure. $runtime_platform may investigate one named environment uncertainty read-only.",
+    "primary_mode": "godmode-debug",
+    "max_specialists": 1
+  },
+  {
+    "id": "read_only_review",
+    "prompt": "Use $godmode-review for a findings-first review. Do not edit files.",
+    "primary_mode": "godmode-review",
+    "max_specialists": 0
+  },
+  {
+    "id": "local_prototype",
+    "prompt": "Use $godmode-prototype for a disposable local-only spike with no credentials or release work.",
+    "primary_mode": "godmode-prototype",
+    "max_specialists": 0
+  }
+]

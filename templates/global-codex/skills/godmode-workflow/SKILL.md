@@ -1,113 +1,33 @@
 ---
 name: godmode-workflow
-description: Orchestrate non-trivial Codex delivery through governance and capability preflight, bounded parallel discovery, a frozen single-writer contract, independent validation, outcome evidence, and release handoff. Use for complex implementation, migration, or release work that benefits from coordinated subagents.
+description: Deliver non-trivial implementation or migration work with a frozen scope, one writer, risk-based validation, and outcome evidence.
 ---
 
 # GodMode Workflow
 
-Apply project instructions before this workflow. Use the smallest team that can
-prove the requested outcome.
+Apply repository instructions first. This is a primary mode; do not combine it
+with debug, review, or prototype mode in the same run.
 
-## Operating contract
+1. Inspect governance, workspace state, release law, and the real changed
+   surface. State goal, scope, done criteria, assumptions, and external-action
+   boundaries.
+2. Resolve only material unknowns. Default to no subagents. Use at most two
+   narrow specialists when independent work materially improves the result;
+   advisory roles are read-only, while `tester` may create only disposable
+   tool output. Never ask specialists to delegate again.
+3. Freeze the change contract: files or interfaces, compatibility decisions,
+   risks, validation, rollback, and user-visible evidence. Ask before any
+   material scope or authority expansion.
+4. Keep one tracked-file writer: the parent or one built-in worker. Stop and
+   refreeze if implementation exposes a contract gap.
+5. Run validation proportional to risk. `validator` owns static structure;
+   `tester` owns executable behavior. Use both only for migrations, security or
+   release-critical changes, or when repository law requires both.
+6. Map each done criterion to actual command output, test results, or observed
+   behavior. Report residual risk and anything not verified.
+7. Update required docs and unreleased notes before final gates. Treat commit,
+   push, merge, release, deploy, and other external mutations as separate
+   authority boundaries.
 
-- Keep the main thread as orchestrator and decision owner.
-- Let every custom agent inherit the parent session's model and reasoning level.
-- Delegate proactively only when the user, project guidance, or an active skill
-  authorizes it and parallel work materially improves speed or quality.
-- Keep delegation to one depth. Parallelize independent read-only work; keep one
-  implementation writer for tracked files.
-- Re-verify existing reports and state against current repository evidence.
-- Treat commit, push, merge, release, deploy, and external mutations as separate
-  authority boundaries unless the user already authorized them.
-
-## Delegation envelope
-
-State all six fields for every delegated task:
-
-1. objective
-2. inputs and governing instructions
-3. required output
-4. allowed write scope, or `read-only`
-5. done criterion
-6. escalation condition
-
-Do not delegate an open-ended role without this contract.
-
-## Delivery phases
-
-### 1. Governance and capability preflight
-
-- Inspect the nearest `AGENTS.md`, repository guidance, contribution rules,
-  release law, and contracts that govern the requested scope.
-- Inspect the actual workspace, branch, dirty state, tool availability, and
-  applicable local skills or agents.
-- Report assumptions, proposed write scope, and expected impact before editing
-  when they are not already obvious.
-- Bootstrap repo-local governance before parallel implementation in an empty or
-  undocumented greenfield workspace.
-
-### 2. Bounded discovery
-
-- Use `researcher` and focused read-only specialists only for unresolved facts.
-- Run independent discovery lanes in parallel when useful.
-- Require evidence, affected paths or interfaces, and open questions; do not
-  accept generic summaries as handoffs.
-
-### 3. Synthesis and contract freeze
-
-- Reconcile discovery into one plan, explicit write scope, interface decisions,
-  validation commands, rollback risks, and user-visible done criteria.
-- Use `architect` for design choices and `api_guardian` for API, schema, CLI,
-  config, or other compatibility surfaces.
-- Obtain user approval before a material plan, scope, risk, or external-state
-  change unless that exact work was already authorized.
-- Freeze the contract before implementation. Escalate instead of guessing when
-  discovery leaves a material decision unresolved.
-
-### 4. Single-writer implementation
-
-- Give one `builder` the frozen write scope and done criteria.
-- Do not run parallel writers over the same repository state.
-- Stop implementation and return to synthesis when a contract gap appears.
-
-### 5. Independent quality gates
-
-- After the writer finishes, run `validator` and `tester` in parallel when safe.
-- Keep `validator` read-only and focused on structure, contracts, and static
-  consistency.
-- Let `tester` create only necessary temporary outputs while reproducing the
-  changed behavior with focused commands.
-- Route implementation failures to `builder` and design failures to synthesis,
-  then rerun the relevant gates.
-
-### 6. Outcome-evidence gate
-
-- Map every done criterion to concrete evidence: command output, test result,
-  rendered artifact, observed UI/API behavior, or an explicitly documented
-  manual check.
-- Do not call work complete merely because files exist, a process starts, or a
-  generic smoke command exits zero.
-- State residual risks and anything not verified.
-
-### 7. Scribe and release handoff
-
-- Use `scribe` only after quality and outcome gates pass.
-- Update only the documentation and release artifacts required by the
-  repository's release law, and report checks truthfully.
-- Use `github_manager` for branch, PR, or release framing when that surface is
-  authorized.
-
-## Optional native long-run path
-
-For a long task, the user may start with `/plan`, approve the plan, and then use
-`/goal` for persistent continuation. This is optional, does not replace the
-workflow gates, and does not broaden permissions. The workflow also works in a
-normal task without `/plan` or `/goal`.
-
-## Companion skills
-
-- `$godmode-debug` for reproduce-isolate-fix work
-- `$godmode-review` for findings-first read-only assessment
-- `$godmode-departments` for cross-domain advisory routing
-- `$godmode-prototype` for explicitly local, disposable experiments
-- `$greenfield-bootstrap` when repo-local governance is missing
+Every delegation states objective, inputs, expected output, write boundary,
+done criterion, and escalation condition.

@@ -1,64 +1,44 @@
 # Agent Registry
 
-Updated: 2026-07-10
+Status: unreleased 3.0 Lean candidate. The published 2.0 roster differs.
 
-This registry documents the 14 GodMode agents packaged under
-`templates/global-codex/agents/` and installed into `$CODEX_HOME/agents/`.
-The package source stays outside repo-local discovery paths so this bootstrap
-repository does not expose duplicate project and personal agents.
+The candidate packages seven optional custom agents under
+`templates/global-codex/agents/`. The parent defaults to no custom agent and
+starts one only for a named, independent need. Specialists do not delegate.
 
-## Runtime contract
+| Agent | Sandbox | Use only for | Output boundary |
+| --- | --- | --- | --- |
+| `api_guardian` | read-only | public API, schema, CLI, config, or migration compatibility | GO/NO-GO, contract, evidence, follow-up |
+| `validator` | read-only | static syntax, structure, links, naming, and cross-file consistency | commands or inspections, pass/fail, findings |
+| `tester` | workspace-write | build, execution, reproduction, and user-visible behavior | commands, observation, pass/fail, runtime gaps |
+| `runtime_platform` | read-only | one OS, sandbox, toolchain, or environment uncertainty | evidence, confidence, narrow next step |
+| `workflow_design` | read-only | one routing, skill, prompt, handoff, or resumability question | smallest design and trade-offs |
+| `docs_dx` | read-only | substantial setup or public documentation clarity risk | concrete corrections with sources |
+| `ci_security_guardian` | read-only | CI permissions, action pins, trust boundaries, and secret handling | GO/NO-GO and smallest remediation |
 
-No manifest sets `model` or `model_reasoning_effort`. Every agent inherits the
-parent session's model and reasoning level. GPT-5.6 is recommended for demanding
-orchestration when available; Ultra is an opt-in for complex multi-agent work,
-not a package requirement.
+`tester` may write temporary tool output because builds and test frameworks can
+require it, but it never edits tracked source. `validator` does not reproduce
+runtime behavior. Both are used together only when repository law or migration,
+security, mixed-contract, or release risk justifies both.
 
-Read-only agents use `sandbox_mode = "read-only"`. A writable manifest defines
-role capability, not permission to mutate arbitrary paths: the parent must still
-assign an explicit write scope through the six-field delegation envelope.
+## Removed 2.0 roles
 
-## Core agents
+`researcher`, `architect`, `builder`, `scribe`, `github_manager`,
+`workspace_governance`, and `quality_operations` are retired by this candidate.
+Their useful work belongs to the strong parent, Codex built-ins
+(`explorer`/`worker`), the release skill, or one of the narrow agents above. The
+installer removes only hash-matched 2.0 copies and preserves verified backups.
 
-| Agent | Sandbox | Purpose |
-| --- | --- | --- |
-| `researcher` | read-only | source verification, repository discovery, and factual framing |
-| `architect` | read-only | design, interfaces, risks, rollback, and smallest viable plan |
-| `api_guardian` | read-only | API, schema, CLI, config, and compatibility review |
-| `builder` | workspace-write | single normal implementation writer |
-| `validator` | read-only | structural, static, contract, and consistency validation |
-| `tester` | workspace-write | executable checks and temporary test outputs |
-| `scribe` | workspace-write | documentation and release artifacts after gates pass |
-| `github_manager` | read-only | branch, PR, release, and repository-governance framing |
+## Model resolution
 
-## Department agents
+Manifests contain no model or reasoning-effort pins. For each setting, Codex
+resolves an explicit spawn value first, then a matching `[agents]` default, then
+the parent value. Adding a pin to a manifest changes that contract and requires
+compatibility review.
 
-| Agent | Sandbox | Purpose |
-| --- | --- | --- |
-| `runtime_platform` | read-only | runtime defaults, toolchains, sandbox, and environment behavior |
-| `workflow_design` | read-only | workflow procedures, skills, handoffs, prompts, reports, and state |
-| `workspace_governance` | read-only | AGENTS layering, release law, branch policy, and repo rules |
-| `quality_operations` | read-only | validation plans, installer checks, smoke paths, and eval-style checks |
-| `docs_dx` | read-only | README, setup guidance, prompts, and developer experience |
-| `ci_security_guardian` | workspace-write | GitHub Actions, CODEOWNERS, pinned actions, permissions, and repository protection |
+## Source of truth
 
-Department agents are advisory by default. Even a writable role receives only a
-frozen, isolated scope when the parent workflow explicitly needs it.
-
-## Installed count and verification
-
-- core agents: 8
-- department agents: 6
-- total packaged agents: 14
-
-The installer updates the current 14 GodMode-owned manifest paths exactly while
-leaving unrelated user-owned agent files alone. Verify the package and installed
-runtime with:
-
-```bash
-./scripts/check-local-env.sh
-./scripts/apply-global-codex-setup.sh --check
-```
-
-On Windows, use `./scripts/apply-global-codex-setup.ps1 --check` for the second
-command.
+- active and retired roster: `templates/global-codex/managed-assets.tsv`
+- agent behavior: each TOML manifest
+- routing: the selected primary skill
+- deterministic roster checks: `scripts/check-static.py`
