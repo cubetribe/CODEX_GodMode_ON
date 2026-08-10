@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-minimum_codex_version="0.134.0"
+minimum_codex_version="0.144.1"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 codex_home="${CODEX_HOME:-$HOME/.codex}"
 user_skills_home="${HOME}/.agents/skills"
@@ -109,15 +109,18 @@ source_config="${template_root}/config.toml"
 source_repo_agents="${template_root}/agents"
 source_repo_profiles="${template_root}/profiles"
 source_repo_skills="${template_root}/skills"
+source_inventory="${template_root}/managed-assets.tsv"
+legacy_v2_config="${repo_root}/tests/fixtures/global-codex-2.0/config.toml"
 target_agents="${codex_home}/AGENTS.md"
 target_config="${codex_home}/config.toml"
 target_agents_dir="${codex_home}/agents"
-playwright_output="${codex_home}/playwright-output/isolated"
+target_inventory="${codex_home}/godmode/managed-assets.tsv"
 timestamp="$(date +%Y-%m-%dT%H-%M-%S)"
 backup_root="${codex_home}/backups/install-archives/${timestamp}-$$"
 agents_marker_begin='<!-- CODEX_GODMODE_GLOBAL_AGENTS:BEGIN -->'
 agents_marker_end='<!-- CODEX_GODMODE_GLOBAL_AGENTS:END -->'
 legacy_v1_1_agents_sha256='b660e0f29ea87e1817b702c5a52d960fe7230f807ec8adb927c18f14ed101451'
+migrate_legacy_config=false
 profile_names=(
   godmode-swiftui.config.toml
   godmode-web.config.toml
@@ -232,6 +235,106 @@ normalized_sha256_file() {
   fi
 }
 
+validate_source_inventory() {
+  awk -F '\t' '
+    {
+      sub(/\r$/, "")
+      if ($0 == "" || substr($0, 1, 1) == "#") next
+      if (NF != 4) {
+        print "Malformed managed asset inventory row " NR ": expected four tab-separated fields" > "/dev/stderr"
+        invalid = 1
+        next
+      }
+      status = $1
+      kind = $2
+      name = $3
+      digest = $4
+      identity = kind "\t" name
+      if (status != "active" && status != "retired") {
+        print "Invalid inventory status on row " NR ": " status > "/dev/stderr"
+        invalid = 1
+      }
+      if (kind != "agent" && kind != "skill" && kind != "profile") {
+        print "Invalid inventory kind on row " NR ": " kind > "/dev/stderr"
+        invalid = 1
+      }
+      if (status == "retired" && kind != "agent" && kind != "skill") {
+        print "Retired inventory row has unsupported kind on row " NR ": " kind > "/dev/stderr"
+        invalid = 1
+      }
+      if (name !~ /^[a-z0-9][a-z0-9_.-]*$/) {
+        print "Unsafe inventory name on row " NR ": " name > "/dev/stderr"
+        invalid = 1
+      }
+      if (status == "active" && digest != "-") {
+        print "Active inventory row must use digest - on row " NR > "/dev/stderr"
+        invalid = 1
+      }
+      if (status == "retired" && (length(digest) != 64 || digest !~ /^[0-9a-f]+$/)) {
+        print "Retired inventory row has invalid SHA-256 on row " NR > "/dev/stderr"
+        invalid = 1
+      }
+      if (seen[identity]++) {
+        print "Duplicate inventory identity on row " NR ": " kind "/" name > "/dev/stderr"
+        invalid = 1
+      }
+      rows++
+    }
+    END {
+      if (rows == 0) {
+        print "Managed asset inventory has no data rows" > "/dev/stderr"
+        invalid = 1
+      }
+      exit invalid
+    }
+  ' "$source_inventory" || fail "Managed asset inventory is invalid: $source_inventory"
+}
+
+retired_asset_path() {
+  local kind="$1"
+  local name="$2"
+  case "$kind" in
+    agent) printf '%s/agents/%s.toml' "$codex_home" "$name" ;;
+    skill) printf '%s/%s' "$user_skills_home" "$name" ;;
+    *) fail "Invalid retired asset kind in inventory: $kind" ;;
+  esac
+}
+
+retired_skill_is_exact() {
+  local target_dir="$1"
+  local expected_digest="$2"
+  local entry_count=0
+  local actual_digest=""
+  [[ -d "$target_dir" && ! -L "$target_dir" ]] || return 1
+  entry_count="$(find "$target_dir" -mindepth 1 -print | wc -l | tr -d ' ')"
+  [[ "$entry_count" == "1" && -f "${target_dir}/SKILL.md" && ! -L "${target_dir}/SKILL.md" ]] || return 1
+  actual_digest="$(normalized_sha256_file "${target_dir}/SKILL.md" 2>/dev/null || true)"
+  [[ "$actual_digest" == "$expected_digest" ]]
+}
+
+preflight_retired_assets() {
+  local status="" kind="" name="" digest="" target_path="" actual_digest=""
+  while IFS=$'\t' read -r status kind name digest; do
+    digest="${digest%$'\r'}"
+    [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
+    [[ "$status" == "retired" ]] || continue
+    target_path="$(retired_asset_path "$kind" "$name")"
+    [[ ! -e "$target_path" && ! -L "$target_path" ]] && continue
+    case "$kind" in
+      agent)
+        if [[ ! -f "$target_path" || -L "$target_path" ]]; then
+          fail "Retired managed agent conflicts with a non-regular target: ${target_path}" 5
+        fi
+        actual_digest="$(normalized_sha256_file "$target_path" 2>/dev/null || true)"
+        [[ "$actual_digest" == "$digest" ]] || fail "Retired managed agent was modified; no files were changed: ${target_path}" 5
+        ;;
+      skill)
+        retired_skill_is_exact "$target_path" "$digest" || fail "Retired managed skill was modified; no files were changed: ${target_path}" 5
+        ;;
+    esac
+  done <"$source_inventory"
+}
+
 is_known_unmarked_agents() {
   local path="$1"
   local digest=""
@@ -246,6 +349,57 @@ toml_escape() {
   printf '%s' "$1" | sed 's/\\/\\\\/g; s/"/\\"/g'
 }
 
+render_config_source() {
+  local source_path="$1"
+  local output_path="$2"
+  local escaped_codex_home=""
+  escaped_codex_home="$(printf '%s' "$(toml_escape "$codex_home")" | sed 's/[&#]/\\&/g')"
+  sed "s#__CODEX_HOME__#${escaped_codex_home}#g" "$source_path" >"$output_path"
+}
+
+is_known_legacy_v2_config() {
+  local path="$1"
+  local work_dir=""
+  local rendered=""
+  local managed_normalized=""
+  local target_normalized=""
+  local suffix=""
+  local expected_suffix=""
+  local managed_bytes=0
+  local target_bytes=0
+  local matches=false
+
+  [[ -f "$path" && ! -L "$path" ]] || return 1
+  work_dir="$(mktemp -d "${TMPDIR:-/tmp}/godmode-v2-config.XXXXXX")" || return 1
+  rendered="${work_dir}/rendered"
+  managed_normalized="${work_dir}/managed"
+  target_normalized="${work_dir}/target"
+  suffix="${work_dir}/suffix"
+  expected_suffix="${work_dir}/expected-suffix"
+  render_config_source "$legacy_v2_config" "$rendered"
+  sed $'s/\r$//' "$rendered" >"$managed_normalized"
+  sed $'s/\r$//' "$path" >"$target_normalized"
+
+  if cmp -s "$managed_normalized" "$target_normalized"; then
+    matches=true
+  else
+    managed_bytes="$(wc -c <"$managed_normalized" | tr -d ' ')"
+    target_bytes="$(wc -c <"$target_normalized" | tr -d ' ')"
+    if ((target_bytes > managed_bytes)) &&
+      dd if="$target_normalized" bs=1 count="$managed_bytes" 2>/dev/null | cmp -s "$managed_normalized" -; then
+      dd if="$target_normalized" bs=1 skip="$managed_bytes" 2>/dev/null >"$suffix"
+      printf '\n%s\ntrust_level = "trusted"\n' "$(project_trust_header)" >"$expected_suffix"
+      if cmp -s "$expected_suffix" "$suffix"; then
+        matches=true
+      fi
+    fi
+  fi
+
+  rm -f "$rendered" "$managed_normalized" "$target_normalized" "$suffix" "$expected_suffix"
+  rmdir "$work_dir"
+  [[ "$matches" == true ]]
+}
+
 project_trust_header() {
   printf '[projects."%s"]' "$(toml_escape "$repo_root")"
 }
@@ -258,7 +412,7 @@ has_project_trust() {
 warn_legacy_inline_profiles() {
   local config_path="$1"
   if grep -Eq '^[[:space:]]*\[profiles\.' "$config_path" 2>/dev/null; then
-    printf '[warn] %s contains legacy inline [profiles.*] tables; Codex >= 0.134.0 loads separate NAME.config.toml files instead.\n' "$config_path" >&2
+    printf '[warn] %s contains legacy inline [profiles.*] tables; this package uses separate NAME.config.toml files.\n' "$config_path" >&2
   fi
 }
 
@@ -266,13 +420,17 @@ preflight_sources_and_targets() {
   local profile_name=""
   local source_profile=""
   local target_profile=""
+  local inventory_dir=""
   local marker_status=0
 
   require_file "$source_agents"
   require_file "$source_config"
+  require_file "$source_inventory"
+  require_file "$legacy_v2_config"
   require_dir "$source_repo_agents"
   require_dir "$source_repo_profiles"
   require_dir "$source_repo_skills"
+  validate_source_inventory
   for profile_name in "${profile_names[@]}"; do
     require_file "${source_repo_profiles}/${profile_name}"
   done
@@ -281,8 +439,15 @@ preflight_sources_and_targets() {
     fail "Packaged AGENTS.md must contain exactly one ordered managed marker pair: $source_agents"
   fi
 
-  [[ ! -e "$target_config" || -f "$target_config" ]] || fail "Target config is not a regular file: $target_config"
+  [[ (! -e "$target_config" && ! -L "$target_config") || (-f "$target_config" && ! -L "$target_config") ]] || fail "Target config is not a regular file: $target_config"
   [[ ! -e "$target_agents" || -f "$target_agents" ]] || fail "Target AGENTS is not a regular file: $target_agents"
+  inventory_dir="$(dirname "$target_inventory")"
+  [[ (! -e "$inventory_dir" && ! -L "$inventory_dir") || (-d "$inventory_dir" && ! -L "$inventory_dir") ]] || fail "Target managed inventory directory is not a regular directory: $inventory_dir" 5
+  [[ (! -e "$target_inventory" && ! -L "$target_inventory") || (-f "$target_inventory" && ! -L "$target_inventory") ]] || fail "Target managed inventory is not a regular file: $target_inventory" 5
+
+  if [[ -f "$target_config" && "$reset_config" != true ]] && is_known_legacy_v2_config "$target_config"; then
+    migrate_legacy_config=true
+  fi
 
   if [[ -f "$target_agents" ]]; then
     if agents_marker_state "$target_agents"; then
@@ -371,11 +536,34 @@ archive_legacy_discovery_conflicts() {
   fi
 }
 
+archive_retired_assets() {
+  local status="" kind="" name="" digest="" target_path="" archived_path="" archived_digest=""
+  while IFS=$'\t' read -r status kind name digest; do
+    digest="${digest%$'\r'}"
+    [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
+    [[ "$status" == "retired" ]] || continue
+    target_path="$(retired_asset_path "$kind" "$name")"
+    [[ -e "$target_path" || -L "$target_path" ]] || continue
+    case "$kind" in
+      agent) archived_path="${backup_root}/retired/agents/${name}.toml" ;;
+      skill) archived_path="${backup_root}/retired/skills/${name}" ;;
+    esac
+    mkdir -p "$(dirname "$archived_path")"
+    cp -R "$target_path" "$archived_path"
+    if [[ "$kind" == "agent" ]]; then
+      archived_digest="$(normalized_sha256_file "$archived_path" 2>/dev/null || true)"
+      [[ "$archived_digest" == "$digest" ]] || fail "Retired agent backup verification failed: ${archived_path}" 5
+    else
+      retired_skill_is_exact "$archived_path" "$digest" || fail "Retired skill backup verification failed: ${archived_path}" 5
+    fi
+    rm -rf "$target_path"
+    printf 'Archived retired managed %s %s -> %s\n' "$kind" "$target_path" "$archived_path"
+  done <"$source_inventory"
+}
+
 render_config_template() {
   local output_path="$1"
-  local escaped_codex_home=""
-  escaped_codex_home="$(printf '%s' "$(toml_escape "$codex_home")" | sed 's/[&#]/\\&/g')"
-  sed "s#__CODEX_HOME__#${escaped_codex_home}#g" "$source_config" >"$output_path"
+  render_config_source "$source_config" "$output_path"
 }
 
 append_project_trust() {
@@ -390,7 +578,7 @@ append_project_trust() {
 install_config() {
   local temp_path=""
 
-  if [[ -f "$target_config" && "$reset_config" != true ]]; then
+  if [[ -f "$target_config" && "$reset_config" != true && "$migrate_legacy_config" != true ]]; then
     printf 'Preserved existing config byte-for-byte: %s\n' "$target_config"
     if [[ "$trust_project" == true ]] && ! has_project_trust "$target_config"; then
       printf '[warn] Existing config is unchanged and has no trust entry for %s. Add it manually or use --reset-config.\n' "$repo_root" >&2
@@ -409,7 +597,9 @@ install_config() {
   fi
   chmod 0644 "$temp_path"
   mv -f "$temp_path" "$target_config"
-  if [[ "$reset_config" == true ]]; then
+  if [[ "$migrate_legacy_config" == true ]]; then
+    printf 'Migrated exact GodMode 2.0 config to Lean base: %s\n' "$target_config"
+  elif [[ "$reset_config" == true ]]; then
     printf 'Reset global config from template: %s\n' "$target_config"
   else
     printf 'Installed global config from template: %s\n' "$target_config"
@@ -509,6 +699,22 @@ install_profiles() {
   done
 }
 
+install_inventory() {
+  local inventory_dir=""
+  local archived_path="${backup_root}/inventory/managed-assets.tsv"
+  if [[ -f "$target_inventory" ]] && cmp -s "$source_inventory" "$target_inventory"; then
+    return 0
+  fi
+  inventory_dir="$(dirname "$target_inventory")"
+  mkdir -p "$inventory_dir"
+  if [[ -e "$target_inventory" || -L "$target_inventory" ]]; then
+    mkdir -p "$(dirname "$archived_path")"
+    cp "$target_inventory" "$archived_path"
+    printf 'Backed up %s -> %s\n' "$target_inventory" "$archived_path"
+  fi
+  atomic_install_file "$source_inventory" "$target_inventory"
+}
+
 install_agent_files() {
   local source_path=""
   local target_path=""
@@ -537,7 +743,7 @@ install_skill_dirs() {
   local target_dir=""
   local stage_dir=""
   for source_dir in "${source_repo_skills}"/*; do
-    [[ -d "$source_dir" ]] || continue
+    [[ -d "$source_dir" && -f "${source_dir}/SKILL.md" ]] || continue
     target_dir="${user_skills_home}/$(basename "$source_dir")"
     if skill_dirs_exact "$source_dir" "$target_dir"; then
       continue
@@ -603,6 +809,22 @@ check_no_legacy_discovery_conflicts() {
   printf '[ok] %s clean\n' "$label"
 }
 
+check_retired_assets_absent() {
+  local status="" kind="" name="" digest="" target_path="" result=0
+  while IFS=$'\t' read -r status kind name digest; do
+    digest="${digest%$'\r'}"
+    [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
+    [[ "$status" == "retired" ]] || continue
+    target_path="$(retired_asset_path "$kind" "$name")"
+    if [[ -e "$target_path" || -L "$target_path" ]]; then
+      printf '[stale] Retired managed %s remains: %s\n' "$kind" "$target_path"
+      result=1
+    fi
+  done <"$source_inventory"
+  [[ "$result" -eq 0 ]] && printf '[ok] Retired managed assets absent\n'
+  return "$result"
+}
+
 run_check() {
   local status=0
   local source_path=""
@@ -615,7 +837,8 @@ run_check() {
   check_path "$target_config" "Global config" || status=1
   check_path "$target_agents_dir" "Global agents dir" || status=1
   check_path "$user_skills_home" "User skills home" || status=1
-  check_path "$playwright_output" "Playwright output" || status=1
+  check_exact_file "$source_inventory" "$target_inventory" "Managed asset inventory" || status=1
+  check_retired_assets_absent || status=1
   check_no_legacy_discovery_conflicts "$target_agents_dir" "Global agents dir" || status=1
   check_no_legacy_discovery_conflicts "$user_skills_home" "User skills home" || status=1
 
@@ -635,12 +858,17 @@ run_check() {
   fi
 
   if [[ -f "$target_config" ]]; then
-    warn_legacy_inline_profiles "$target_config"
-    if [[ "$trust_project" == true ]]; then
-      if has_project_trust "$target_config"; then
-        printf '[ok] trusted project entry\n'
-      else
-        printf '[warn] Existing config has no trust entry for %s and remains unchanged.\n' "$repo_root" >&2
+    if is_known_legacy_v2_config "$target_config"; then
+      printf '[drift] Exact GodMode 2.0 config still needs Lean migration\n'
+      status=1
+    else
+      warn_legacy_inline_profiles "$target_config"
+      if [[ "$trust_project" == true ]]; then
+        if has_project_trust "$target_config"; then
+          printf '[ok] trusted project entry\n'
+        else
+          printf '[warn] Existing config has no trust entry for %s and remains unchanged.\n' "$repo_root" >&2
+        fi
       fi
     fi
   fi
@@ -656,7 +884,7 @@ run_check() {
   done
 
   for source_dir in "${source_repo_skills}"/*; do
-    [[ -d "$source_dir" ]] || continue
+    [[ -d "$source_dir" && -f "${source_dir}/SKILL.md" ]] || continue
     check_exact_skill "$source_dir" "${user_skills_home}/$(basename "$source_dir")" "Global skill $(basename "$source_dir")" || status=1
   done
 
@@ -676,17 +904,19 @@ if [[ "$check_only" == true ]]; then
   exit $?
 fi
 
-mkdir -p "$codex_home" "$user_skills_home" "$playwright_output" "$target_agents_dir"
+preflight_retired_assets
+mkdir -p "$codex_home" "$user_skills_home" "$target_agents_dir" "$(dirname "$target_inventory")"
 archive_legacy_discovery_conflicts
+archive_retired_assets
 install_agents_template
 install_config
 install_profiles
 install_agent_files
 install_skill_dirs
+install_inventory
 
 printf '\nInstalled global Codex setup to %s\n' "$codex_home"
 printf 'Installed global agents to %s\n' "$target_agents_dir"
 printf 'Installed user skill root at %s\n' "$user_skills_home"
-printf 'Prepared Playwright output directory at %s\n' "$playwright_output"
 
 run_check

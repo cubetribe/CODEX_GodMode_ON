@@ -1,5 +1,9 @@
 # GPT-5.6-Era Codex Local Orchestration Research
 
+> Historical GodMode 2.0 decision record. It contains superseded roster,
+> configuration, and workflow choices and is not current 3.0 guidance. See
+> [GodMode 3 Lean research](godmode-3-lean-architecture-2026-08-09.md).
+
 Date: 2026-07-10
 
 Status: implemented for 2.0.0; local shell gates passed, Windows CI is a release gate

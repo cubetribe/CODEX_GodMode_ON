@@ -1,20 +1,19 @@
 {
   "task_id": "<task-id>",
-  "date": "<YYYY-MM-DD>",
-  "mode": "lean",
-  "phase": "intake",
-  "orchestrator": "main-thread",
-  "active_staff_offices": [],
-  "active_departments": [],
-  "gates": {
-    "architecture": "pending",
-    "contract": "pending",
-    "validation": "pending",
-    "test": "pending",
-    "release": "pending"
+  "updated_at": "<ISO-8601>",
+  "source_revision": "<git-sha-or-n/a>",
+  "primary_mode": "workflow|debug|review|prototype",
+  "phase": "discover|freeze|build|validate|handoff",
+  "authority": ["<authorized action>"],
+  "sole_writer": "parent|<worker-id>|none",
+  "write_scope": ["<path-or-none>"],
+  "done_criteria": ["<observable outcome>"],
+  "evidence": ["<command or observation>"],
+  "validation": {
+    "static": "not-needed|pending|pass|fail",
+    "runtime": "not-needed|pending|pass|fail"
   },
-  "write_scope_version": 1,
   "blockers": [],
   "assumptions": [],
-  "next_step": "<describe next action>"
+  "next_action": "<one concrete action>"
 }

@@ -3,8 +3,7 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [agents]
-max_threads = 6
-max_depth = 1
+max_threads = 2
 
 [sandbox_workspace_write]
 writable_roots = []

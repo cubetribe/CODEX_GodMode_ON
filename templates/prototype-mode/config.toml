@@ -11,8 +11,7 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [agents]
-max_threads = 2                 # lean — prototype runs do not need full fan-out
-max_depth = 1                   # single layer — no nested sub-orchestration
+max_threads = 2
 
 [sandbox_workspace_write]
 writable_roots = []
@@ -40,5 +39,5 @@ network_access = false          # local only — do not enable for prototype wor
 # When to upgrade to the full config:
 #   Switch back to templates/global-codex/config.toml as soon as:
 #   - the prototype is validated and ready for migration
-#   - you need multi-agent department routing
-#   - you need the full validator + tester gates
+#   - you need risk-based specialist review
+#   - you need production validation and release evidence

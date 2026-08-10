@@ -15,11 +15,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
-      - name: Validate local environment contract
-        run: ./scripts/check-local-env.sh --ci
+      - name: Validate deterministic package contract
+        run: ./scripts/check-static.sh
       - name: Run GodMode Paperwork unit tests
         run: python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
-      - name: Run shell installer regression suite
+      - name: Run Unix installer regression suite once
         run: ./scripts/test-global-codex-setup.sh
 
   windows-installer:

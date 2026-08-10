@@ -1,57 +1,72 @@
 # AGENTS.md
 
-## Project rules
+## Repository contract
 
-- This repository documents and packages the globally installable GodMode runtime for Codex.
-- This repository is `main`-first. Do not create or switch to feature branches unless the user explicitly asks for one.
-- Prefer current official OpenAI Codex documentation when changing setup guidance or product claims.
-- Keep repo guidance explicit, auditable, and clearly separated from future implementation work.
-- Use `AGENTS.md` for durable repo rules, `.codex/config.toml` for repo defaults, `templates/global-codex/agents/` for packaged GodMode custom agents, and `templates/global-codex/skills/` for packaged GodMode reusable procedures.
-- Use `.agents/plugins/marketplace.json` for the repository marketplace and `plugins/` for optional, separately installed GodMode extensions. Optional plugins must not be copied into `templates/global-codex/` or silently installed by the core runtime installers.
-- Do not keep the packaged global GodMode agents or skills in repo-local discovery paths such as `.codex/agents/` or `.agents/skills/`; after global installation that creates duplicate project and personal entries in Codex.
-- Do not add speculative guidance about Codex features without a source or a clear note that it is an inference.
-- If the original Claude repository is referenced, distinguish between extracted facts from the source repo and new Codex design decisions.
-- Keep `templates/global-codex/agents/`, `templates/global-codex/skills/`, installer behavior, and docs aligned when role names or workflow gates change.
-- Keep plugin manifests, bundled skills, schemas, tests, marketplace policy, and plugin documentation aligned. Sensitive-document plugins must stay local-first, fail closed on integrity errors, and require explicit human gates for high-stakes conclusions or release-bearing review states.
+- This repository packages the global GodMode runtime for Codex.
+- Work on the current branch; create or switch branches only when the user asks.
+- Preserve unrelated work and keep diffs scoped.
+- Use official OpenAI docs for version-sensitive claims; label inference.
+- Package agents only under `templates/global-codex/agents/` and skills only
+  under `templates/global-codex/skills/`; never duplicate them in repo-local
+  discovery paths.
+- Use `.agents/plugins/marketplace.json` and `plugins/` for optional, separately
+  installed extensions. Core installers must never install them silently.
+- Keep plugin manifests, bundled skills, schemas, tests, marketplace policy, and
+  docs aligned. Sensitive-document plugins stay local-first, fail closed on
+  integrity errors, and require explicit human gates for high-stakes conclusions.
 
-## Documentation rules
+## Source of truth
 
-- Favor concise explanations, but do not collapse away the core orchestration logic.
-- Call out when the official docs are explicit and when a conclusion is an inference from those docs.
-- Keep the "current repo state" separate from the "target architecture" so readers do not confuse the blueprint with an implemented system.
-- If OpenAI changes a path or feature name, update examples to match the current docs.
+- This file governs repository implementation.
+- `CHANGELOG.md` and `VERSION` govern release state.
+- Deterministic scripts define what named checks prove.
+- Agent TOML and skill files define their runtime behavior.
+- Other docs are descriptive; conflicts with these sources are defects.
+
+## Change contract
+
+- Use one writer for overlapping tracked files, including required docs and
+  `[Unreleased]`. Finish those edits before final gates; a later tracked edit
+  invalidates affected evidence.
+- Default to zero subagents; use only useful bounded specialists. Advisory
+  roles are read-only; `tester` may create disposable output but not edit
+  tracked source.
+- Keep current, future, and historical behavior clearly separated in docs.
+- Keep agents, skills, inventory, installers, checks, and public docs aligned
+  when a runtime contract changes.
 
 ## Validation
 
-- For docs-only changes, verify paths, links, structural consistency, and that role names stay consistent across files.
-- For new example skills, keep metadata concise and descriptions triggerable.
-- For runtime-scaffolding changes, run `./scripts/check-local-env.sh`.
+- Static docs/config/metadata/contracts: `./scripts/check-static.sh`.
+- Installer/runtime behavior: run the focused executable fixture.
+- Plugin changes: run `python3 scripts/validate-codex-plugins.py --repo-root .`
+  and the plugin's focused test suite; test isolated marketplace installation
+  when CLI behavior changes.
+- Migration, security, mixed contract/runtime, or release-critical work: run
+  both static and executable gates.
+- `./scripts/check-capabilities.sh` diagnoses the workstation; it is not a
+  package gate.
+- Windows PowerShell behavior is proven by Windows CI, not macOS.
 
-## Changelog law
+## Release law
 
-- `CHANGELOG.md` under `[Unreleased]` is the only durable home for unreleased, user-relevant changes in this repo, including changes to prompts, skills, agents, templates, scripts, and setup guidance.
-- `reports/generated/` is only for analysis artifacts such as discovery notes, orchestration plans, and other generated reports. It is not a release ledger and must not replace the changelog.
-- `state/` is only for in-flight workflow state such as phase status, gate status, and resumable execution records. It must not be used as the human release summary.
-- `scribe` writes only after the required gates pass. If a run needs both changelog text and generated reports, `CHANGELOG.md` must be updated first before any new report artifact is created.
+- Put every unreleased user-relevant prompt, skill, agent, template, script,
+  config, or setup change under `CHANGELOG.md` `[Unreleased]`.
+- `reports/generated/` is analysis and `state/` is resumable working memory;
+  neither replaces the changelog.
+- Classify impact as major, minor, patch, or none. Change `VERSION` or create a
+  dated release section only during explicitly authorized release preparation.
+- Commit, push, tag, publication, and deployment remain separate boundaries.
 
-## Validation law
+## Prototype package
 
-- `validator` is the structural gate. It checks TOML syntax for `templates/global-codex/agents/*.toml`, Markdown consistency, internal links, and role-name consistency across `AGENTS.md`, `templates/global-codex/agents/*.toml`, and `templates/global-codex/skills/`. It does not edit source files.
-- `tester` is the executable gate. It runs `./scripts/check-local-env.sh`, verifies shell-script syntax with `bash -n`, and confirms that new skills carry `name` and `description` frontmatter.
-- For plugin changes, `validator` also runs `python3 scripts/validate-codex-plugins.py --repo-root .`; `tester` runs the plugin's focused test suite and an isolated marketplace installation check when CLI behavior changes.
-- Both gates must be explicitly recorded as pass or fail before `scribe` updates changelog text, reports, or final summary artifacts.
-
-## Prototype mode
-
-- `$godmode-prototype` is a local-only fast lane. It is **not** a companion to `$godmode-workflow` — it replaces it for throwaway exploration.
-- Prototype output must never be committed to `main` or deployed directly. The migration checklist in the skill output is the documented path to production.
-- All generated source files in prototype mode must carry the `PROTOTYPE ONLY` header comment. This is non-negotiable.
-- No real credentials, production database connections, or live service endpoints may appear in prototype output.
-- The prototype skill ships under `templates/global-codex/skills/godmode-prototype/`. The governance overlay and lean config ship under `templates/prototype-mode/`.
-- When a prototype is promoted to production, route it through `$godmode-workflow` with the full `validator` + `tester` gate. The prototype watermarks must be removed before that run completes.
+- `$godmode-prototype` is an exclusive local-only mode.
+- Keep its skill, overlay, docs, prompts, and checks aligned.
+- Prototype output cannot ship directly; promotion starts a new production
+  contract with risk-appropriate gates.
 
 ## Release impact
 
 - Docs, structure, and example-only changes are usually `none`.
-- Changes that alter recommended config behavior should be classified explicitly.
-- New optional user-facing plugins are normally `minor`; incompatible core installer or runtime changes may be `major`.
+- New optional user-facing plugins are normally `minor`.
+- Incompatible core installer or runtime changes are `major`.

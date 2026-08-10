@@ -6,6 +6,8 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 installer="${repo_root}/scripts/apply-global-codex-setup.sh"
 source_agents="${repo_root}/templates/global-codex/AGENTS.md"
 source_profiles="${repo_root}/templates/global-codex/profiles"
+legacy_fixture="${repo_root}/tests/fixtures/global-codex-2.0"
+legacy_v1_agents="${repo_root}/tests/fixtures/global-codex-1.1/AGENTS.md"
 temp_root="$(mktemp -d "${TMPDIR:-/tmp}/godmode-installer-tests.XXXXXX")"
 fake_codex="${temp_root}/bin/codex"
 fake_date="${temp_root}/bin/date"
@@ -85,21 +87,26 @@ run_installer() {
     "$@"
 }
 
+run_installer_from_repo() {
+  local source_repo="$1"
+  shift
+  PATH="$(dirname "$fake_codex"):$PATH" CODEX_BIN="$fake_codex" "$installer" \
+    --repo "$source_repo" \
+    --codex-home "$case_home" \
+    --user-skills-home "$case_skills" \
+    "$@"
+}
+
+render_legacy_v2_config() {
+  local output="$1"
+  local escaped_home=""
+  escaped_home="$(printf '%s' "$case_home" | sed 's/\\/\\\\/g; s/"/\\"/g; s/[&#]/\\&/g')"
+  sed "s#__CODEX_HOME__#${escaped_home}#g" "$legacy_fixture/config.toml" >"$output"
+}
+
 write_unmarked_v1_1_agents() {
   local output="$1"
-  # The backticks below are literal Markdown delimiters, not shell expansion.
-  # shellcheck disable=SC2016
-  sed \
-    -e '/CODEX_GODMODE_GLOBAL_AGENTS:BEGIN/d' \
-    -e '/CODEX_GODMODE_GLOBAL_AGENTS:END/d' \
-    -e '/Use bounded proactive subagents/d' \
-    -e '/Parallelize independent read-only discovery/d' \
-    -e '/Let custom agents inherit the parent session/d' \
-    -e 's/^- `godmode-swiftui`:/- `swiftui`:/' \
-    -e 's/^- `godmode-web`:/- `web`:/' \
-    -e 's/^- `godmode-flutter`:/- `flutter`:/' \
-    -e 's/^- `godmode-review`:/- `review`:/' \
-    "$source_agents" >"$output"
+  cp "$legacy_v1_agents" "$output"
 }
 
 managed_manifest() {
@@ -107,7 +114,7 @@ managed_manifest() {
   local skills="$2"
   (
     cd "$home"
-    find AGENTS.md config.toml agents playwright-output \
+    find AGENTS.md config.toml agents godmode \
       -type f -exec cksum {} \; 2>/dev/null | sort
     find . -maxdepth 1 -type f -name 'godmode-*.config.toml' \
       -exec cksum {} \; | sort
@@ -144,12 +151,110 @@ run_installer >/dev/null
 assert_file "$case_home/config.toml"
 assert_file "$case_home/AGENTS.md"
 assert_file "$case_home/godmode-swiftui.config.toml"
+assert_file "$case_home/godmode/managed-assets.tsv"
 assert_file "$case_skills/godmode-workflow/agents/openai.yaml"
+agent_count="$(find "$case_home/agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')"
+skill_count="$(find "$case_skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
+[[ "$agent_count" == "7" ]] || fail_test "expected 7 managed agents, got ${agent_count}"
+[[ "$skill_count" == "9" ]] || fail_test "expected 9 managed skills, got ${skill_count}"
+assert_absent "$case_home/agents/researcher.toml"
+assert_absent "$case_skills/godmode-departments"
 assert_contains "$case_home/config.toml" "[projects.\"${repo_root}\"]"
 assert_not_contains "$case_home/config.toml" 'model = '
 assert_not_contains "$case_home/config.toml" 'model_reasoning_effort = '
 run_installer --check >/dev/null
 pass_test "clean install and exact check"
+
+# An exact 2.0 runtime is recoverably pruned. Normalized CRLF content is still
+# recognized, unrelated custom assets survive, and each retired asset is backed up.
+new_case upgrade-v2
+mkdir -p "$case_home/agents" "$case_skills"
+cp "$legacy_fixture/agents/"*.toml "$case_home/agents/"
+cp -R "$legacy_fixture/skills/godmode-departments" "$case_skills/"
+render_legacy_v2_config "$case_home/config.toml"
+printf '\n[projects."%s"]\ntrust_level = "trusted"\n' "$repo_root" >>"$case_home/config.toml"
+cp "$case_home/config.toml" "$case_root/config.before"
+awk '{ printf "%s\r\n", $0 }' "$legacy_fixture/agents/researcher.toml" >"$case_home/agents/researcher.toml"
+printf '%s\n' 'name = "custom"' >"$case_home/agents/custom.toml"
+mkdir -p "$case_skills/custom-skill"
+printf '%s\n' 'custom' >"$case_skills/custom-skill/keep.txt"
+run_installer >/dev/null
+for retired in architect builder github_manager quality_operations researcher scribe workspace_governance; do
+  assert_absent "$case_home/agents/${retired}.toml"
+  find "$case_home/backups/install-archives" -type f -path "*/retired/agents/${retired}.toml" | grep -q . || fail_test "retired agent backup missing: ${retired}"
+done
+assert_absent "$case_skills/godmode-departments"
+find "$case_home/backups/install-archives" -type f -path '*/retired/skills/godmode-departments/SKILL.md' | grep -q . || fail_test "retired skill backup missing"
+assert_file "$case_home/agents/custom.toml"
+assert_file "$case_skills/custom-skill/keep.txt"
+assert_contains "$case_home/config.toml" 'max_threads = 2'
+assert_not_contains "$case_home/config.toml" 'max_depth'
+assert_not_contains "$case_home/config.toml" '[mcp_servers.playwright]'
+legacy_config_backup="$(find "$case_home/backups/install-archives" -type f -path '*/root/config.toml' | head -n 1)"
+[[ -n "$legacy_config_backup" ]] || fail_test "legacy 2.0 config backup missing"
+cmp -s "$case_root/config.before" "$legacy_config_backup" || fail_test "legacy 2.0 config backup changed"
+run_installer --check >/dev/null
+pass_test "exact 2.0 retirement and Lean config migration with backup"
+
+# Modified or structurally unknown retired assets fail before any write.
+new_case modified-retired
+mkdir -p "$case_home/agents"
+cp "$legacy_fixture/agents/researcher.toml" "$case_home/agents/researcher.toml"
+printf '%s\n' '# user modification' >>"$case_home/agents/researcher.toml"
+expect_status 5 run_installer
+assert_absent "$case_home/AGENTS.md"
+assert_absent "$case_home/config.toml"
+assert_absent "$case_skills"
+assert_contains "$case_home/agents/researcher.toml" '# user modification'
+pass_test "modified retired asset no-write conflict"
+
+# Unsafe retired paths and an unusable inventory parent all fail before writes.
+new_case modified-retired-skill
+mkdir -p "$case_skills"
+cp -R "$legacy_fixture/skills/godmode-departments" "$case_skills/"
+printf '%s\n' 'user content' >"$case_skills/godmode-departments/extra.txt"
+expect_status 5 run_installer
+assert_absent "$case_home"
+assert_file "$case_skills/godmode-departments/extra.txt"
+
+new_case retired-wrong-type
+mkdir -p "$case_home/agents/researcher.toml"
+expect_status 5 run_installer
+assert_absent "$case_home/AGENTS.md"
+assert_absent "$case_home/config.toml"
+
+new_case retired-dangling-link
+mkdir -p "$case_home/agents"
+ln -s "$case_root/missing-researcher" "$case_home/agents/researcher.toml"
+expect_status 5 run_installer
+[[ -L "$case_home/agents/researcher.toml" ]] || fail_test "dangling retired link was changed"
+assert_absent "$case_home/AGENTS.md"
+assert_absent "$case_home/config.toml"
+
+new_case inventory-parent-conflict
+mkdir -p "$case_home"
+printf '%s\n' 'not a directory' >"$case_home/godmode"
+expect_status 5 run_installer
+assert_contains "$case_home/godmode" 'not a directory'
+assert_absent "$case_home/AGENTS.md"
+assert_absent "$case_home/config.toml"
+assert_absent "$case_home/agents"
+assert_absent "$case_skills"
+pass_test "unsafe migration targets fail before writes"
+
+# A CRLF checkout of the managed inventory remains a valid migration source.
+new_case crlf-source-inventory
+case_repo="$case_root/source-repo"
+mkdir -p "$case_repo/tests/fixtures"
+cp -R "$repo_root/templates" "$case_repo/"
+cp -R "$legacy_fixture" "$case_repo/tests/fixtures/global-codex-2.0"
+awk '{ printf "%s\r\n", $0 }' "$repo_root/templates/global-codex/managed-assets.tsv" >"$case_repo/templates/global-codex/managed-assets.tsv"
+mkdir -p "$case_home/agents"
+cp "$legacy_fixture/agents/researcher.toml" "$case_home/agents/researcher.toml"
+run_installer_from_repo "$case_repo" >/dev/null
+assert_absent "$case_home/agents/researcher.toml"
+run_installer_from_repo "$case_repo" --check >/dev/null
+pass_test "CRLF managed inventory migration"
 
 # Existing config stays byte-for-byte identical, including TOML forms that a
 # line-oriented merger would corrupt.
@@ -172,6 +277,18 @@ run_installer >/dev/null 2>&1
 cmp -s "$case_root/config.before" "$case_home/config.toml" || fail_test "existing config changed"
 run_installer --check >/dev/null 2>&1
 pass_test "existing config byte preservation"
+
+# A 2.0-looking config with any user modification remains user-owned and exact.
+new_case modified-v2-config
+mkdir -p "$case_home"
+render_legacy_v2_config "$case_home/config.toml"
+printf '\n[projects."/manually/changed/source"]\ntrust_level = "trusted"\n' >>"$case_home/config.toml"
+cp "$case_home/config.toml" "$case_root/config.before"
+run_installer >/dev/null 2>&1
+cmp -s "$case_root/config.before" "$case_home/config.toml" || fail_test "modified 2.0 config changed"
+assert_contains "$case_home/config.toml" 'max_threads = 6'
+run_installer --check >/dev/null 2>&1
+pass_test "modified 2.0 config preservation"
 
 # A conflicting managed profile blocks all writes until explicit reset.
 new_case profile-conflict
@@ -280,14 +397,14 @@ pass_test "malformed AGENTS marker rejection"
 # a normal apply replaces those managed assets without touching unrelated ones.
 new_case exact-drift
 run_installer >/dev/null
-printf '%s\n' '# drift' >>"$case_home/agents/researcher.toml"
+printf '%s\n' '# drift' >>"$case_home/agents/api_guardian.toml"
 printf '%s\n' 'stale' >"$case_skills/godmode-workflow/stale.txt"
 mkdir -p "$case_home/agents" "$case_skills/custom-skill"
 printf '%s\n' 'name = "custom"' >"$case_home/agents/custom.toml"
 printf '%s\n' 'custom' >"$case_skills/custom-skill/keep.txt"
 expect_status 1 run_installer --check
 run_installer >/dev/null
-cmp -s "$repo_root/templates/global-codex/agents/researcher.toml" "$case_home/agents/researcher.toml" || fail_test "agent drift was not repaired"
+cmp -s "$repo_root/templates/global-codex/agents/api_guardian.toml" "$case_home/agents/api_guardian.toml" || fail_test "agent drift was not repaired"
 assert_absent "$case_skills/godmode-workflow/stale.txt"
 assert_file "$case_home/agents/custom.toml"
 assert_file "$case_skills/custom-skill/keep.txt"
@@ -306,7 +423,13 @@ pass_test "idempotent repeated install"
 # Stable exit codes for invalid invocation and incompatible Codex.
 new_case exit-codes
 expect_status 2 env CODEX_BIN="$fake_codex" "$installer" --unknown
+expect_status 2 env CODEX_BIN="$fake_codex" "$installer" --codex-home
 expect_status 3 env CODEX_BIN="${temp_root}/missing-codex" "$installer" \
+  --repo "$repo_root" --codex-home "$case_home" --user-skills-home "$case_skills"
+old_fake_codex="${temp_root}/bin/codex-old"
+sed 's/0\.144\.1/0.143.9/' "$fake_codex" >"$old_fake_codex"
+chmod +x "$old_fake_codex"
+expect_status 3 env CODEX_BIN="$old_fake_codex" "$installer" \
   --repo "$repo_root" --codex-home "$case_home" --user-skills-home "$case_skills"
 assert_absent "$case_home"
 pass_test "argument and Codex preflight exit codes"

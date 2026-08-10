@@ -6,6 +6,48 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Added
+
+- a managed asset inventory and immutable 1.1/2.0 fixtures for recoverable runtime migrations
+- safe retirement of exact legacy GodMode assets with normalized SHA-256 verification, unique backups, no-write conflict exit `5`, CRLF coverage, and preservation of unrelated custom agents and skills
+- deterministic `check-static`, separate capability diagnostics, five routing fixtures, and a multi-binary-capable isolated discovery/profile test that never touches the real user home
+- a tracked research decision record covering official OpenAI guidance, empirical AGENTS.md studies, community signals, and local compatibility evidence
+
+### Changed
+
+- rebuilt the runtime as the major-impact GodMode 3 Lean candidate: zero subagents by default, at most two selected specialists, a packaged-base thread cap of two, no recursive specialist delegation, and parent or one built-in worker as the sole tracked-file writer
+- reduced the packaged roster from 14 custom agents to seven narrow optional specialists and made every specialist except the runtime-only `tester` read-only
+- separated `validator` ownership of static structure from `tester` ownership of executable behavior and made gate selection proportional to scope and risk
+- made workflow, debug, review, and prototype independent primary modes instead of companion chains
+- kept the managed global `AGENTS.md` below 1,500 bytes and the core workflow skill below 2,000 bytes, moving stack detail and specialized procedures into progressively loaded skills
+- split the old aggregate environment check into a compatibility dispatcher, a deterministic package gate, explicit installer suites, and workstation-only diagnostics
+- raised the installer minimum to the locally verified Codex CLI `0.144.1` and retained the compatible `max_threads = 2` alias because stable `0.144.1` rejects the newer documented field while both locally tested CLIs accept the alias
+- made exact rendered GodMode 2.0 configs without trust or with the current source repository's generated trust entry recoverably migrate to the Lean base while preserving every modified or custom config byte-for-byte
+- rewrote the README, architecture, registry, setup, development, prototype, roadmap, prompts, reports, and state guidance around one normative Lean contract
+- limited workflow state to long, paused, or handed-off runs and expanded its template with revision, authority, writer, scope, done criteria, and evidence
+
+### Removed
+
+- custom agents `researcher`, `architect`, `builder`, `scribe`, `github_manager`, `workspace_governance`, and `quality_operations`
+- the `godmode-departments` skill, department orchestration guide, historical improvement-sprint prompt, and department/report handoff templates
+- undocumented `agents.max_depth`, bundled Playwright MCP servers, and the managed Playwright output directory from the portable base config
+- mandatory validator/tester double gates and the post-validation writing Scribe phase
+
+### Breaking changes
+
+- a normal upgrade removes hash-matched GodMode 2.0 retired agents and `godmode-departments` from live discovery after verified backup; modified or structurally unknown copies must be resolved manually
+- automation and documentation that reference the seven retired agent names, the department skill, mandatory double gates, or Playwright MCP defaults must migrate to the Lean routing contract
+- Codex CLI versions older than `0.144.1` are no longer supported by the installers
+
+### Upgrade notes
+
+- Run the platform installer normally. Do not use reset flags unless replacement of user-owned config or the full managed AGENTS file is intentional.
+- An exact rendered 2.0 package config is backed up and migrated automatically; any modified or custom config remains user-owned and unchanged.
+- If installation exits `5`, inspect the named legacy path. The installer has not changed package targets; preserve or rename user-modified content before retrying.
+- Backups are stored under `$CODEX_HOME/backups/install-archives/<run-id>/`, with retired files under `retired/agents/` and `retired/skills/`.
+- Start a fresh Codex task after a successful install, then run `--check`. The repository's isolated runtime script can verify discovery without modifying the real home.
+- `VERSION` remains `2.10.0`; a dated `3.0.0` section, version bump, tag, and publication require a separate authorized release-preparation step after all final gates pass.
+
 ## [2.10.0] - 2026-07-11
 
 ### Added

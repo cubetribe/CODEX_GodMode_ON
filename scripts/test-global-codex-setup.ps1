@@ -6,6 +6,9 @@ $script:installer = Join-Path $PSScriptRoot 'apply-global-codex-setup.ps1'
 $script:sourceAgents = Join-Path $script:repoRoot 'templates/global-codex/AGENTS.md'
 $script:sourceProfiles = Join-Path $script:repoRoot 'templates/global-codex/profiles'
 $script:sourceAgentsDir = Join-Path $script:repoRoot 'templates/global-codex/agents'
+$script:sourceInventory = Join-Path $script:repoRoot 'templates/global-codex/managed-assets.tsv'
+$script:legacyV1Agents = Join-Path $script:repoRoot 'tests/fixtures/global-codex-1.1/AGENTS.md'
+$script:legacyV2 = Join-Path $script:repoRoot 'tests/fixtures/global-codex-2.0'
 $script:tempRoot = Join-Path ([System.IO.Path]::GetTempPath()) ('godmode-powershell-installer-tests-' + [guid]::NewGuid().ToString('N'))
 $script:fakeCodex = Join-Path (Join-Path $script:tempRoot 'bin') 'codex.cmd'
 $script:testCount = 0
@@ -166,22 +169,14 @@ function Get-ManagedManifest {
 }
 
 function Get-UnmarkedV11AgentsContent {
-  $result = @()
-  foreach ($line in [System.IO.File]::ReadAllLines($script:sourceAgents)) {
-    if ($line -eq '<!-- CODEX_GODMODE_GLOBAL_AGENTS:BEGIN -->' -or
-        $line -eq '<!-- CODEX_GODMODE_GLOBAL_AGENTS:END -->' -or
-        $line.Contains('Use bounded proactive subagents') -or
-        $line.Contains('Parallelize independent read-only discovery') -or
-        $line.Contains('Let custom agents inherit the parent session')) {
-      continue
-    }
-    $updatedLine = $line.Replace('`godmode-swiftui`:', '`swiftui`:')
-    $updatedLine = $updatedLine.Replace('`godmode-web`:', '`web`:')
-    $updatedLine = $updatedLine.Replace('`godmode-flutter`:', '`flutter`:')
-    $updatedLine = $updatedLine.Replace('`godmode-review`:', '`review`:')
-    $result += $updatedLine
-  }
-  ($result -join "`n") + "`n"
+  [System.IO.File]::ReadAllText($script:legacyV1Agents)
+}
+
+function Get-LegacyV2ConfigContent {
+  param([string]$CodexHome)
+
+  $tomlHome = (($CodexHome -replace '\\', '/') -replace '"', '\"')
+  [System.IO.File]::ReadAllText((Join-Path $script:legacyV2 'config.toml')).Replace('__CODEX_HOME__', $tomlHome)
 }
 
 New-Item -ItemType Directory -Force -Path (Split-Path -Parent $script:fakeCodex) | Out-Null
@@ -205,10 +200,111 @@ try {
   Assert-File (Join-Path $case.CodexHome 'config.toml')
   Assert-File (Join-Path $case.CodexHome 'AGENTS.md')
   Assert-File (Join-Path $case.CodexHome 'godmode-web.config.toml')
+  Assert-FilesEqual $script:sourceInventory (Join-Path (Join-Path $case.CodexHome 'godmode') 'managed-assets.tsv') 'managed inventory was not installed exactly'
   Assert-File (Join-Path (Join-Path (Join-Path $case.SkillsHome 'godmode-workflow') 'agents') 'openai.yaml')
+  $agentCount = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'agents') -Filter '*.toml' -File).Count
+  $skillCount = @(Get-ChildItem -LiteralPath $case.SkillsHome -Directory).Count
+  Assert-True ($agentCount -eq 7) "expected 7 managed agents, got $agentCount"
+  Assert-True ($skillCount -eq 9) "expected 9 managed skills, got $skillCount"
+  Assert-Absent (Join-Path (Join-Path $case.CodexHome 'agents') 'researcher.toml')
+  Assert-Absent (Join-Path $case.SkillsHome 'godmode-departments')
   Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'clean -Check'
   Assert-InstallerExit (Invoke-Installer $case @('--check')) 0 'clean --check'
   Pass-Test 'clean install and exact checks'
+
+  # Exact 2.0 assets are backed up and retired; normalized CRLF is accepted and
+  # custom agents or skills are left alone.
+  $case = New-TestCase 'upgrade-v2'
+  $targetAgents = Join-Path $case.CodexHome 'agents'
+  New-Item -ItemType Directory -Force -Path $targetAgents | Out-Null
+  New-Item -ItemType Directory -Force -Path $case.SkillsHome | Out-Null
+  foreach ($legacyAgent in @(Get-ChildItem -LiteralPath (Join-Path $script:legacyV2 'agents') -Filter '*.toml' -File)) {
+    Copy-Item -LiteralPath $legacyAgent.FullName -Destination $targetAgents
+  }
+  Copy-Item -LiteralPath (Join-Path (Join-Path $script:legacyV2 'skills') 'godmode-departments') -Destination $case.SkillsHome -Recurse
+  $legacyConfigPath = Join-Path $case.CodexHome 'config.toml'
+  $repoTrustPath = (($script:repoRoot -replace '\\', '/') -replace '"', '\"')
+  $legacyConfigContent = (Get-LegacyV2ConfigContent $case.CodexHome) + "`n[projects.""$repoTrustPath""]`ntrust_level = ""trusted""`n"
+  Write-Utf8File -Path $legacyConfigPath -Content $legacyConfigContent
+  $legacyConfigHash = (Get-FileHash -LiteralPath $legacyConfigPath -Algorithm SHA256).Hash
+  $researcherFixture = Join-Path (Join-Path $script:legacyV2 'agents') 'researcher.toml'
+  $researcherTarget = Join-Path $targetAgents 'researcher.toml'
+  $crlfResearcher = ([System.IO.File]::ReadAllText($researcherFixture) -replace "(?<!`r)`n", "`r`n")
+  Write-Utf8File -Path $researcherTarget -Content $crlfResearcher
+  Write-Utf8File -Path (Join-Path $targetAgents 'custom.toml') -Content "name = ""custom""`n"
+  $customSkill = Join-Path $case.SkillsHome 'custom-skill'
+  New-Item -ItemType Directory -Force -Path $customSkill | Out-Null
+  Write-Utf8File -Path (Join-Path $customSkill 'keep.txt') -Content "custom`n"
+  Assert-InstallerExit (Invoke-Installer $case) 0 'exact 2.0 upgrade'
+  foreach ($retired in @('architect', 'builder', 'github_manager', 'quality_operations', 'researcher', 'scribe', 'workspace_governance')) {
+    Assert-Absent (Join-Path $targetAgents ($retired + '.toml'))
+    $backups = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'backups') -File -Recurse | Where-Object { $_.Name -eq ($retired + '.toml') })
+    Assert-True ($backups.Count -gt 0) "retired agent backup missing: $retired"
+  }
+  Assert-Absent (Join-Path $case.SkillsHome 'godmode-departments')
+  Assert-File (Join-Path $targetAgents 'custom.toml')
+  Assert-File (Join-Path $customSkill 'keep.txt')
+  $migratedConfig = [System.IO.File]::ReadAllText($legacyConfigPath)
+  Assert-True ($migratedConfig.Contains('max_threads = 2')) 'legacy config did not receive the Lean thread cap'
+  Assert-True (-not $migratedConfig.Contains('max_depth')) 'legacy max_depth survived migration'
+  Assert-True (-not $migratedConfig.Contains('[mcp_servers.playwright]')) 'legacy Playwright MCP survived migration'
+  $configBackups = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'backups') -File -Recurse | Where-Object { $_.Name -eq 'config.toml' })
+  Assert-True ($configBackups.Count -eq 1) 'legacy 2.0 config backup is missing or ambiguous'
+  Assert-True ((Get-FileHash -LiteralPath $configBackups[0].FullName -Algorithm SHA256).Hash -eq $legacyConfigHash) 'legacy 2.0 config backup changed'
+  Assert-InstallerExit (Invoke-Installer $case @('--check')) 0 'exact 2.0 upgrade check'
+  Pass-Test 'exact 2.0 retirement and Lean config migration with backup'
+
+  # A modified retired asset conflicts before any package write.
+  $case = New-TestCase 'modified-retired'
+  $targetAgents = Join-Path $case.CodexHome 'agents'
+  New-Item -ItemType Directory -Force -Path $targetAgents | Out-Null
+  $researcherTarget = Join-Path $targetAgents 'researcher.toml'
+  Copy-Item -LiteralPath $researcherFixture -Destination $researcherTarget
+  [System.IO.File]::AppendAllText($researcherTarget, "# user modification`n")
+  Assert-InstallerExit (Invoke-Installer $case) 5 'modified retired conflict'
+  Assert-Absent (Join-Path $case.CodexHome 'AGENTS.md')
+  Assert-Absent (Join-Path $case.CodexHome 'config.toml')
+  Assert-Absent $case.SkillsHome
+  Assert-True ([System.IO.File]::ReadAllText($researcherTarget).Contains('# user modification')) 'modified retired agent was changed'
+  Pass-Test 'modified retired asset no-write conflict'
+
+  # Unsafe retired paths and an unusable inventory parent all fail before writes.
+  $case = New-TestCase 'modified-retired-skill'
+  New-Item -ItemType Directory -Force -Path $case.SkillsHome | Out-Null
+  $retiredSkill = Join-Path $case.SkillsHome 'godmode-departments'
+  Copy-Item -LiteralPath (Join-Path (Join-Path $script:legacyV2 'skills') 'godmode-departments') -Destination $retiredSkill -Recurse
+  Write-Utf8File -Path (Join-Path $retiredSkill 'extra.txt') -Content "user content`n"
+  Assert-InstallerExit (Invoke-Installer $case) 5 'modified retired skill conflict'
+  Assert-Absent $case.CodexHome
+  Assert-File (Join-Path $retiredSkill 'extra.txt')
+
+  $case = New-TestCase 'retired-wrong-type'
+  $wrongType = Join-Path (Join-Path $case.CodexHome 'agents') 'researcher.toml'
+  New-Item -ItemType Directory -Force -Path $wrongType | Out-Null
+  Assert-InstallerExit (Invoke-Installer $case) 5 'retired wrong-type conflict'
+  Assert-Absent (Join-Path $case.CodexHome 'AGENTS.md')
+  Assert-Absent (Join-Path $case.CodexHome 'config.toml')
+
+  $case = New-TestCase 'retired-dangling-link'
+  $targetAgents = Join-Path $case.CodexHome 'agents'
+  New-Item -ItemType Directory -Force -Path $targetAgents | Out-Null
+  $danglingLink = Join-Path $targetAgents 'researcher.toml'
+  New-Item -ItemType SymbolicLink -Path $danglingLink -Target (Join-Path $case.Root 'missing-researcher') -Force | Out-Null
+  Assert-InstallerExit (Invoke-Installer $case) 5 'retired dangling-link conflict'
+  $linkItems = @(Get-ChildItem -LiteralPath $targetAgents -Force | Where-Object { $_.Name -ceq 'researcher.toml' })
+  Assert-True ($linkItems.Count -eq 1 -and ($linkItems[0].Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) 'dangling retired link was changed'
+  Assert-Absent (Join-Path $case.CodexHome 'AGENTS.md')
+  Assert-Absent (Join-Path $case.CodexHome 'config.toml')
+
+  $case = New-TestCase 'inventory-parent-conflict'
+  New-Item -ItemType Directory -Force -Path $case.CodexHome | Out-Null
+  Write-Utf8File -Path (Join-Path $case.CodexHome 'godmode') -Content "not a directory`n"
+  Assert-InstallerExit (Invoke-Installer $case) 5 'inventory parent conflict'
+  Assert-Absent (Join-Path $case.CodexHome 'AGENTS.md')
+  Assert-Absent (Join-Path $case.CodexHome 'config.toml')
+  Assert-Absent (Join-Path $case.CodexHome 'agents')
+  Assert-Absent $case.SkillsHome
+  Pass-Test 'unsafe migration targets fail before writes'
 
   # Existing config must survive byte-for-byte, including syntax forms that
   # cannot be preserved safely by a line-oriented TOML merger.
@@ -236,6 +332,19 @@ value = "untouched"
   Assert-True ($beforeHash -eq $afterHash -and $beforeLength -eq $afterLength) 'existing config changed'
   Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'existing config check'
   Pass-Test 'existing config byte preservation'
+
+  # A 2.0-looking config with any user modification remains user-owned and exact.
+  $case = New-TestCase 'modified-v2-config'
+  New-Item -ItemType Directory -Force -Path $case.CodexHome | Out-Null
+  $configPath = Join-Path $case.CodexHome 'config.toml'
+  $modifiedLegacyConfig = (Get-LegacyV2ConfigContent $case.CodexHome) + "`n[projects.""C:/manually/changed/source""]`ntrust_level = ""trusted""`n"
+  Write-Utf8File -Path $configPath -Content $modifiedLegacyConfig
+  $beforeHash = (Get-FileHash -LiteralPath $configPath -Algorithm SHA256).Hash
+  $beforeLength = (Get-Item -LiteralPath $configPath).Length
+  Assert-InstallerExit (Invoke-Installer $case) 0 'modified 2.0 config install'
+  Assert-True ((Get-FileHash -LiteralPath $configPath -Algorithm SHA256).Hash -eq $beforeHash -and (Get-Item -LiteralPath $configPath).Length -eq $beforeLength) 'modified 2.0 config changed'
+  Assert-InstallerExit (Invoke-Installer $case @('--check')) 0 'modified 2.0 config check'
+  Pass-Test 'modified 2.0 config preservation'
 
   # The known v1.1 guidance must migrate without duplication even when it was
   # written by a Windows checkout with CRLF line endings.
@@ -330,16 +439,26 @@ value = "untouched"
   # must restore exact package content without relying on substring checks.
   $case = New-TestCase 'exact-drift'
   Assert-InstallerExit (Invoke-Installer $case) 0 'drift baseline install'
-  $targetAgent = Join-Path (Join-Path $case.CodexHome 'agents') 'researcher.toml'
+  $targetAgent = Join-Path (Join-Path $case.CodexHome 'agents') 'api_guardian.toml'
   [System.IO.File]::AppendAllText($targetAgent, "# drift`n")
   $staleSkillFile = Join-Path (Join-Path $case.SkillsHome 'godmode-workflow') 'stale.txt'
   Write-Utf8File -Path $staleSkillFile -Content "stale`n"
   Assert-InstallerExit (Invoke-Installer $case @('-Check')) 1 'exact drift check'
   Assert-InstallerExit (Invoke-Installer $case) 0 'exact drift repair'
-  Assert-FilesEqual (Join-Path $script:sourceAgentsDir 'researcher.toml') $targetAgent 'agent drift was not repaired'
+  Assert-FilesEqual (Join-Path $script:sourceAgentsDir 'api_guardian.toml') $targetAgent 'agent drift was not repaired'
   Assert-Absent $staleSkillFile
   Assert-InstallerExit (Invoke-Installer $case @('--check')) 0 'repaired exact check'
   Pass-Test 'exact drift detection and repair'
+
+  # Invalid arguments and an incompatible CLI fail with stable preflight codes.
+  $case = New-TestCase 'cli-preflight'
+  Assert-InstallerExit (Invoke-Installer $case @('--unknown-option')) 2 'unknown argument preflight'
+  Assert-InstallerExit (Invoke-Installer $case @('--codex-home')) 2 'missing argument value preflight'
+  $oldFakeCodexContent = $fakeCodexContent -replace '0\.144\.1', '0.143.9'
+  Write-Utf8File -Path $script:fakeCodex -Content $oldFakeCodexContent
+  Assert-InstallerExit (Invoke-Installer $case) 3 'incompatible CLI preflight'
+  Write-Utf8File -Path $script:fakeCodex -Content $fakeCodexContent
+  Pass-Test 'argument and CLI preflight exit codes'
 
   # A repeated apply with no source or target drift must leave all managed file
   # bytes unchanged.

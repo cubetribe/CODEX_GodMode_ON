@@ -1,122 +1,67 @@
-<div align="center">
-  <h1>CODEX_GodMode_ON</h1>
-  <p><em>Local Codex orchestration with bounded subagents and evidence-backed delivery.</em></p>
-  <p><strong>14 custom agents, 10 core skills, one optional Paperwork plugin,<br>safe installers, and explicit quality gates from discovery through release.</strong></p>
-  <p>
-    <a href="./docs/global-codex-setup.md">Install</a>
-    &middot;
-    <a href="./docs/blueprint.md">Blueprint</a>
-    &middot;
-    <a href="./docs/agent-registry.md">Agents</a>
-    &middot;
-    <a href="./docs/department-orchestration.md">Departments</a>
-    &middot;
-    <a href="./docs/godmode-paperwork.md">Paperwork</a>
-    &middot;
-    <a href="./docs/local-development.md">Maintain</a>
-  </p>
-</div>
+# Codex GodMode
 
----
+GodMode is a small, globally installable orchestration layer for Codex. It
+protects authority, worktree safety, one-writer delivery, and observable
+validation without prescribing every reasoning step.
 
-## What this is
+The repository release is `2.10.0`. The current `[Unreleased]` work is a
+breaking **3.0 Lean candidate** and is not a published release yet.
 
-CODEX_GodMode_ON is a globally installable orchestration runtime for Codex. It
-turns a non-trivial engineering request into a controlled delivery loop:
+## What changes in GodMode 3 Lean
 
-```text
-governance and capability preflight
-  -> bounded parallel discovery
-  -> synthesis and frozen contract
-  -> one implementation writer
-  -> independent validator and tester
-  -> user-visible outcome evidence
-  -> documentation and release handoff
-```
+- 7 optional custom agents instead of 14
+- 9 independently triggered core skills instead of companion chains
+- zero subagents by default, at most two selected specialists, and a packaged
+  base-config thread cap of two
+- parent or one built-in worker as the only tracked-file writer
+- separate static `validator` and executable `tester` responsibilities
+- risk-based gates instead of mandatory double validation
+- safe retirement of exact GodMode 2.0 assets with verified backups
+- separate package checks, installer tests, capability diagnostics, and routing
+  evals
 
-The main task remains the orchestrator and decision owner. Independent reads can
-run in parallel; tracked-file implementation has one normal writer. Every
-delegation carries an objective, inputs, required output, write scope, done
-criterion, and escalation condition.
+Models and reasoning effort are not pinned. GPT-5.6 Sol is the intended strong
+orchestrator, with Ultra useful for genuinely complex work, but the package
+remains model-neutral.
 
-This is a local, skill-driven Codex workflow. It is not a scheduled-task daemon,
-an external state-machine service, or the Responses API multi-agent beta.
+## Optional Paperwork plugin
 
-## What's new in 2.10
+GodMode Paperwork, released separately in 2.10, remains an explicit opt-in
+plugin for controlled local document work. It provides immutable intake,
+native-first PDF extraction, page-scoped local OCR, evidence anchors, bounded
+validation, human review gates, and reproducible archives. It performs no
+network upload, silent dependency installation, form submission, original
+deletion, or professional certification.
 
-Version 2.10 adds **GodMode Paperwork** as an optional Codex plugin for
-controlled, local-first document work:
+The Lean core installers never install Paperwork. Read the
+[operator guide](./docs/godmode-paperwork.md) and
+[research decision](./docs/research/godmode-paperwork-local-first-2026-07-11.md).
 
-- immutable, SHA-256-addressed intake with deduplication and path redaction
-- native PDF text first, followed by page-scoped local Tesseract OCR only where
-  extraction remains unresolved
-- exact source quotes, artifact hashes, and deterministic OCR bounding boxes for
-  evidence-backed claims
-- bounded requirements and validation rules without dynamic code evaluation
-- scoped human approvals for critical claims and review-bearing archives
-- hash-chained internal audit logs, state-bound validation, reproducible
-  uncompressed tar archives, manifests, and SHA-256 sidecars
-- no silent installation, network access, upload, submission, deletion, or claim
-  of legal, tax, or compliance certainty
+## Install locally
 
-The 14-agent and 10-skill core runtime remains unchanged and model-neutral.
-Paperwork is separately installable so sensitive-document behavior does not
-expand every GodMode installation by default. Read the
-[Paperwork research decision](./docs/research/godmode-paperwork-local-first-2026-07-11.md)
-and the [operator guide](./docs/godmode-paperwork.md).
-
-## Runtime at a glance
-
-| Layer | Installed runtime |
-| --- | --- |
-| Core agents | `researcher`, `architect`, `api_guardian`, `builder`, `validator`, `tester`, `scribe`, `github_manager` |
-| Department agents | `runtime_platform`, `workflow_design`, `workspace_governance`, `quality_operations`, `docs_dx`, `ci_security_guardian` |
-| Workflow skills | `$godmode-workflow`, `$godmode-prototype`, `$godmode-debug`, `$godmode-review`, `$godmode-departments` |
-| Support skills | `$greenfield-bootstrap`, `$web-platforms`, `$apple-platforms`, `$flutter-dart`, `$release-manager` |
-| Optional plugin | `godmode-paperwork` with the explicitly invoked `$godmode-paperwork` skill |
-| Profiles | `godmode-swiftui`, `godmode-web`, `godmode-flutter`, `godmode-review` |
-| Durable conventions | `reports/` and `state/` for evidence and resumable project context when a run needs them |
-
-Every packaged agent inherits the parent session model and reasoning level.
-Select GPT-5.6 in the parent task when it is available and the work warrants it;
-use Ultra selectively when coordinated subagents add real value.
-
-## Install and activate
-
-First confirm that the terminal resolves a current Codex CLI:
-
-```bash
-type -a codex
-codex --version
-codex help doctor
-```
-
-Then install and verify on macOS or Linux:
+Requirements: Codex CLI `0.144.1+` and Bash on macOS/Linux or PowerShell 5.1+/7
+on Windows. Repository validation additionally needs Git and Python 3.11+.
 
 ```bash
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
-codex doctor
 ```
 
-On Windows:
+Windows:
 
 ```powershell
 .\scripts\apply-global-codex-setup.ps1
-.\scripts\apply-global-codex-setup.ps1 --check
-codex doctor
+.\scripts\apply-global-codex-setup.ps1 -Check
 ```
 
-Start a fresh Codex task after installation so global guidance and capabilities
-are reloaded. The installer never updates Codex itself. If the preflight rejects
-the resolved binary, update Codex deliberately and rerun it. Full diagnostics,
-macOS Homebrew remediation, backup behavior, and exit codes are documented in
-[Global Codex Setup](./docs/global-codex-setup.md).
+The installers preserve custom or modified `$CODEX_HOME/config.toml` files
+byte-for-byte. An exact rendered GodMode 2.0 base config is backed up and
+migrated to the Lean base; use reset flags only for intentional replacement of
+other user-owned config. Exact retired 2.0 assets are backed up and removed.
+Modified or structurally unknown legacy assets stop the upgrade before any
+package write with exit `5`.
 
-### Install the optional Paperwork plugin
-
-After the 2.10 release is available, add the repository marketplace and install
-the plugin explicitly:
+### Install Paperwork explicitly
 
 ```bash
 codex plugin marketplace add cubetribe/CODEX_GodMode_ON --ref v2.10.0
@@ -124,159 +69,103 @@ codex plugin add godmode-paperwork@codex-godmode-on
 codex plugin list --json
 ```
 
-Start a fresh Codex task, then invoke `$godmode-paperwork` explicitly. The core
-installer never installs this plugin, and the plugin never installs Poppler,
-Tesseract, or language data for you. See [GodMode Paperwork](./docs/godmode-paperwork.md)
-for capability checks, assurance levels, case storage, and review gates.
+Start a fresh Codex task, then invoke `$godmode-paperwork` explicitly. The plugin
+reports missing Poppler, Tesseract, or language data but never installs them.
 
 ## Start a run
 
-Invoke the primary skill directly:
+Start a fresh Codex task after core installation, then invoke one primary mode:
 
 ```text
-$godmode-workflow
-
-Goal: <goal>
-Context: <repo, constraints, errors, or relevant architecture>
-Done when: <observable behavior, validation command, or release result>
+Use $godmode-workflow to implement <goal>.
+Done when: <observable result>.
+Constraints: <material boundaries>.
 ```
 
-For a long task, you can use `/plan` to refine and approve the approach, then
-optionally `/goal` for persistent continuation. Those commands do not replace
-GodMode's gates or broaden permissions.
+Primary modes are exclusive:
 
-Use a companion skill only when the task shape calls for it:
-
-| Skill | Use it for |
+| Mode | Use for |
 | --- | --- |
-| `$godmode-debug` | reproduce, isolate, fix, and re-test a defect |
-| `$godmode-review` | findings-first, read-heavy review with no edits unless requested |
-| `$godmode-departments` | bounded advisory lanes for genuinely cross-domain work |
-| `$greenfield-bootstrap` | repo-local governance for an empty or undocumented workspace |
-| `$web-platforms` | React, Next.js, and Node.js guidance |
-| `$apple-platforms` | SwiftUI, macOS, and iOS guidance |
-| `$flutter-dart` | Flutter and Dart guidance |
-| `$release-manager` | release impact, changelog law, and release copy |
+| `$godmode-workflow` | non-trivial implementation and migration |
+| `$godmode-debug` | reproduce, isolate, fix, and re-test |
+| `$godmode-review` | read-only findings-first assessment |
+| `$godmode-prototype` | disposable local-only exploration |
 
-Use `$godmode-prototype` instead of `$godmode-workflow` for a disposable,
-local-only spike. Prototype output is watermarked, cannot use production data or
-services, and must demonstrate its actual promised outcome before it is called
-complete. Promotion returns to the full workflow.
+Support skills add only relevant knowledge: `greenfield-bootstrap`,
+`release-manager`, `apple-platforms`, `web-platforms`, and `flutter-dart`.
+Use `$godmode-paperwork` explicitly for its separate document workflow.
 
-For tax, legal, compliance, audit, or administrative documents, explicitly use
-`$godmode-paperwork`. It creates controlled evidence packages; it does not make
-professional decisions, file forms, destroy originals, or certify correctness.
+## Runtime model
 
-## Stack profiles
+The seven custom agents are narrow and optional:
 
-Codex `0.134.0+` loads profiles from separate files in `$CODEX_HOME`. The
-installer publishes these exact names:
+| Agent | Boundary |
+| --- | --- |
+| `api_guardian` | compatibility contracts |
+| `validator` | static structure and consistency |
+| `tester` | executable behavior |
+| `runtime_platform` | OS, sandbox, and toolchain uncertainty |
+| `workflow_design` | orchestration and skill contracts |
+| `docs_dx` | substantial public documentation |
+| `ci_security_guardian` | CI and repository security review |
+
+Default routing is no custom agent. Use at most two specialists for named
+independent uncertainties. Advisory roles are read-only; `tester` may create
+disposable output but never edit tracked source. Specialists do not delegate
+again. The parent or one built-in worker writes.
+
+## Validate this repository
 
 ```bash
-codex --profile godmode-swiftui
-codex --profile godmode-web
-codex --profile godmode-flutter
-codex --profile godmode-review
+./scripts/check-static.sh
+./scripts/test-global-codex-setup.sh
+./scripts/test-isolated-codex-runtime.sh
+python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
+./scripts/check-capabilities.sh --full
 ```
 
-Profiles add focused runtime behavior such as web-search or review-output
-settings. They do not select a model or reasoning level. Existing inline
-`[profiles.*]` tables are reported as legacy and are not rewritten silently.
+`check-static` validates the core package and plugin manifests. Installer suites
+prove migration behavior. The isolated runtime test installs into a temporary
+home and verifies discovery plus profile parsing without touching the real user
+setup. Paperwork has a focused offline unit suite. `check-capabilities` only
+diagnoses the workstation.
 
-## How the team scales
+## Configuration compatibility
 
-**Lean lane:** the orchestrator assigns one `builder`, then `validator` and
-`tester` close the quality gate.
-
-**Guided lane:** add `researcher`, `architect`, or `api_guardian` when source
-uncertainty, design risk, or a public contract needs independent attention.
-
-**Department lane:** activate bounded runtime, workflow, governance, quality,
-docs, or CI/security tracks only when ownership genuinely crosses domains.
-Parallel department work is read-only by default; any write scope must be
-isolated and explicit.
-
-The orchestrator freezes scope and contracts before implementation. Completion
-requires evidence for every done criterion, not merely new files, a started
-process, or a generic smoke command.
-
-## Agent roles
-
-| Agent | Responsibility |
-| --- | --- |
-| `researcher` | source verification, repository discovery, and factual framing |
-| `architect` | design choices, interfaces, risks, and smallest viable plan |
-| `api_guardian` | API, schema, CLI, config, and compatibility review |
-| `builder` | single normal implementation writer |
-| `validator` | read-heavy structural and static consistency gate |
-| `tester` | focused executable and runtime verification |
-| `scribe` | documentation and release notes after gates pass |
-| `github_manager` | branch, PR, and release framing within granted authority |
-
-The six optional department agents are listed in the
-[Agent Registry](./docs/agent-registry.md) and routed by the
-[Department Model](./docs/department-orchestration.md).
+The current Codex reference names
+`agents.max_concurrent_threads_per_session`; `max_threads` is its legacy alias.
+The package intentionally uses `max_threads = 2` because the desktop CLI
+`0.147.0-alpha.1.2` accepts the new name while stable Homebrew Codex `0.144.1`
+rejects it; both tested binaries accept the alias. The undocumented `max_depth`
+setting has been removed. No-recursive delegation is a prompt contract, not a
+platform guarantee. Deterministic fixtures lint routing; live model traces are
+separate release evidence.
 
 ## Repository map
 
 | Path | Purpose |
 | --- | --- |
-| `AGENTS.md` | repository governance for this package |
-| `.codex/config.toml` | repo-local technical defaults, without model pins |
-| `templates/global-codex/` | source package for global guidance, config, agents, profiles, and skills |
-| `templates/prototype-mode/` | local-only prototype overlay and lean config |
-| `.agents/plugins/marketplace.json` | repository-scoped catalog for optional GodMode plugins |
-| `plugins/godmode-paperwork/` | optional local-first document workflow, schemas, CLI, and tests |
-| `scripts/apply-global-codex-setup.sh` | macOS/Linux installer and exact checker |
-| `scripts/apply-global-codex-setup.ps1` | Windows installer and exact checker |
-| `scripts/check-local-env.sh` | package and environment validation |
-| `scripts/test-global-codex-setup.*` | cross-platform installer regression fixtures |
+| `AGENTS.md` | repository governance |
+| `.codex/config.toml` | repo-local defaults without model pins |
+| `templates/global-codex/` | global core guidance, config, agents, profiles, and skills |
+| `templates/prototype-mode/` | disposable prototype overlay |
+| `.agents/plugins/marketplace.json` | catalog for optional plugins |
+| `plugins/godmode-paperwork/` | optional local-first document plugin and tests |
+| `scripts/check-static.sh` | deterministic core and plugin contract gate |
+| `scripts/test-global-codex-setup.*` | cross-platform installer regressions |
 | `docs/` | architecture, setup, operation, prompts, and research |
-| `reports/` and `state/` | optional durable run artifacts and templates |
+| `reports/` and `state/` | optional analysis and resumable state |
 
-The packaged global runtime deliberately lives under `templates/`. Placing it
-under repo-local `.codex/agents/` or `.agents/skills/` would make Codex discover
-duplicate project and personal capabilities after installation.
+## Documentation
 
-## Safety boundaries
+- [Architecture](docs/blueprint.md)
+- [Agent registry](docs/agent-registry.md)
+- [Global setup and recovery](docs/global-codex-setup.md)
+- [Paperwork operator guide](docs/godmode-paperwork.md)
+- [Local development](docs/local-development.md)
+- [Prototype mode](docs/prototype-mode.md)
+- [Lean research rationale](docs/research/godmode-3-lean-architecture-2026-08-09.md)
+- [Roadmap](docs/roadmap.md)
 
-- repository governance is inspected before non-trivial work
-- `api_guardian` reviews API, schema, CLI, config, and other contract changes
-- implementation uses one normal writer; independent validation follows
-- commit, push, merge, release, deploy, and other external mutations remain
-  separate authority boundaries
-- project reports and state are re-verified against current repository evidence
-- local orchestration does not depend on hidden hooks or background scheduling
-- sensitive Paperwork cases stay outside Git and plugin caches; external OCR
-  binaries are recorded as a trust boundary rather than silently trusted
-
-## Read next
-
-| Need | Document |
-| --- | --- |
-| install, upgrade, or diagnose activation | [Global Codex Setup](./docs/global-codex-setup.md) |
-| understand the orchestration contract | [Blueprint](./docs/blueprint.md) |
-| inspect every installed role | [Agent Registry](./docs/agent-registry.md) |
-| route larger multi-domain work | [Department Orchestration](./docs/department-orchestration.md) |
-| run a disposable spike | [Prototype Mode](./docs/prototype-mode.md) |
-| organize and validate sensitive documents | [GodMode Paperwork](./docs/godmode-paperwork.md) |
-| maintain or release this repository | [Local Development](./docs/local-development.md) |
-| see shipped and future work | [Roadmap](./docs/roadmap.md) |
-
-## Primary sources
-
-- [Codex subagents](https://learn.chatgpt.com/docs/agent-configuration/subagents)
-- [Codex models](https://learn.chatgpt.com/docs/models)
-- [Advanced configuration and profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles)
-- [Long-running work and goals](https://learn.chatgpt.com/docs/long-running-work)
-- [Build Codex skills](https://learn.chatgpt.com/docs/build-skills)
-- [Build Codex plugins](https://learn.chatgpt.com/docs/build-plugins)
-- [Codex CLI command reference](https://learn.chatgpt.com/docs/developer-commands?surface=cli)
-- [Custom instructions with AGENTS.md](https://developers.openai.com/codex/guides/agents-md/)
-
-## Contributing
-
-Keep the public contract truthful, keep installers safe for user-owned
-configuration, and keep agents, skills, profiles, docs, and checks aligned.
-Follow [CONTRIBUTING.md](./CONTRIBUTING.md) and the repository's `AGENTS.md`
-before changing a governed surface.
+`VERSION` changes only during explicitly authorized release preparation.
+Commit, push, merge, tag, and publication are separate boundaries.

@@ -47,7 +47,7 @@ Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Be
 - ist der Diff klein genug, um schnell reviewt zu werden?
 - wurden Doku oder Beispiele aktualisiert, falls sich Verhalten aendert?
 - wurde der Release Impact als `none`, `patch`, `minor` oder `major` eingeordnet?
-- wurden `./scripts/check-local-env.sh` und bei Installer-Aenderungen `./scripts/apply-global-codex-setup.sh --check` ausgefuehrt?
+- wurde `./scripts/check-static.sh` ausgefuehrt und bei Installer-Aenderungen die passende Regression unter `scripts/test-global-codex-setup.*`?
 - wurden bei Plugin-Aenderungen `python3 scripts/validate-codex-plugins.py --repo-root .` und die fokussierten Plugin-Tests ausgefuehrt?
 - bleiben Dokumentfaelle, Originale und Exporte sicher ausserhalb des Git-Repositories?
 

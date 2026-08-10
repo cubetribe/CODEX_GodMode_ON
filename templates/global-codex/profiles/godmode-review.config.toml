@@ -1,4 +1,4 @@
-# GodMode review profile. Model and reasoning effort inherit from the parent session.
+# GodMode review profile. Does not pin a model or reasoning effort.
 model_reasoning_summary = "concise"
 model_verbosity = "low"
 web_search = "cached"

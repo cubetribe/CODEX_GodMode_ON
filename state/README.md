@@ -1,29 +1,19 @@
 # State
 
-This directory is for local workflow state that should not live only in chat history.
+This directory is for resumable state on long, paused, or handed-off work only.
 
-## Recommended use
+## Use it when
 
-- local state files such as `workflow-state.local.json`
+- work will span sessions, pause, or move to another owner
+- the next session needs an explicit authority and write-scope handoff
+
+Do not create state for ordinary single-session work. When state is justified:
+
 - no sensitive secrets
-- no automatic assumption that state files should be versioned
-- keep state small enough that a future Codex turn can re-read it quickly
-- prefer explicit statuses over long prose
+- copy `templates/orchestration-state.template.json` into an ignored local JSON
+- keep it compact and let the parent session own updates
+- record source revision, authority, sole writer, scope, done criteria, evidence,
+  blockers, and next action
 
-The actual JSON state files are ignored by default through `.gitignore`.
-
-## Suggested state fields
-
-```json
-{
-  "task": "short task name",
-  "phase": "research|plan|build|validate|release",
-  "branch": "current branch if relevant",
-  "governing_docs": ["AGENTS.md", "README.md"],
-  "touched_files": [],
-  "open_questions": [],
-  "validation": []
-}
-```
-
-Treat state files as working memory, not as proof. Re-check repo files and validation evidence before relying on old state.
+State is working memory, never proof. Re-check repository files and commands
+before relying on an older record.

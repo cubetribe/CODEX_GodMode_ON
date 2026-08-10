@@ -1,2 +1,2 @@
-# GodMode web profile. Model and reasoning effort inherit from the parent session.
+# GodMode web profile. Does not pin a model or reasoning effort.
 web_search = "live"

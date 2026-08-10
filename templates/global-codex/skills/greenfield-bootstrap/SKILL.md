@@ -5,7 +5,8 @@ description: Bootstrap repo-local governance before parallel Codex implementatio
 
 # Greenfield Bootstrap
 
-Use this skill with `godmode-workflow` when the current workspace is empty, newly initialized, or missing the local governance needed for safe multi-step implementation.
+Use this support skill when the current workspace is empty, newly initialized,
+or missing the local governance needed for multi-step implementation.
 
 ## Required outcome
 
@@ -23,7 +24,7 @@ Use this skill with `godmode-workflow` when the current workspace is empty, newl
    - where config belongs
    - where agents belong
    - where project or user skills belong
-4. only after that, continue under `$godmode-workflow`, `$godmode-debug`, or `$godmode-review`
+4. only after that, continue with the selected primary mode
 
 ## Core rules
 
