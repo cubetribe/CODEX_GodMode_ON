@@ -13,7 +13,6 @@
     "specialists": {
       "type": "array",
       "maxItems": 2,
-      "uniqueItems": true,
       "items": {
         "enum": [
           "api_guardian",

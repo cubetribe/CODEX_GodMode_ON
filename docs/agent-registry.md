@@ -1,10 +1,12 @@
 # Agent Registry
 
-Status: unreleased 3.0 Lean candidate. The published 2.0 roster differs.
+Status: current GodMode `3.0.0` core roster.
 
-The candidate packages seven optional custom agents under
+The core packages seven optional custom agents under
 `templates/global-codex/agents/`. The parent defaults to no custom agent and
 starts one only for a named, independent need. Specialists do not delegate.
+The parent must pass the matching `agent_type`; `task_name` alone does not load
+the selected manifest.
 
 | Agent | Sandbox | Use only for | Output boundary |
 | --- | --- | --- | --- |
@@ -24,7 +26,7 @@ security, mixed-contract, or release risk justifies both.
 ## Removed 2.0 roles
 
 `researcher`, `architect`, `builder`, `scribe`, `github_manager`,
-`workspace_governance`, and `quality_operations` are retired by this candidate.
+`workspace_governance`, and `quality_operations` were retired in 3.0.
 Their useful work belongs to the strong parent, Codex built-ins
 (`explorer`/`worker`), the release skill, or one of the narrow agents above. The
 installer removes only hash-matched 2.0 copies and preserves verified backups.

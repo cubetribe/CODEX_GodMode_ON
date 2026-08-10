@@ -38,7 +38,10 @@ def check_packaged_contract(failures: list[str]) -> None:
         (schema_modes == PRIMARY, "live schema primary-mode enum matches the package"),
         (schema_specialists == SPECIALISTS, "live schema specialist enum matches the package"),
         (specialist_schema.get("maxItems") == 2, "live schema caps specialists at two"),
-        (specialist_schema.get("uniqueItems") is True, "live schema rejects duplicate specialists"),
+        (
+            "uniqueItems" not in specialist_schema,
+            "live schema stays within the Codex structured-output subset",
+        ),
     ]
     for passed, label in schema_checks:
         if not passed:
@@ -49,6 +52,10 @@ def check_packaged_contract(failures: list[str]) -> None:
     global_checks = [
         ("Default to working without subagents" in global_contract, "global prompt defaults to no subagents"),
         ("delegated agents must not delegate again" in global_contract, "global prompt forbids recursive delegation"),
+        (
+            "matching `agent_type`" in global_contract and "`task_name` alone" in global_contract,
+            "global prompt distinguishes role selection from task naming",
+        ),
         ("sole tracked-file writer" in global_contract, "global prompt has one tracked-file writer"),
         ("`tester` may create disposable tool output" in global_contract, "global prompt states the tester write exception"),
     ]

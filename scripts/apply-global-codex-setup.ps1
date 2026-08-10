@@ -899,7 +899,7 @@ function Run-Check {
   Write-Output 'Global Codex setup check passed.'
 }
 
-$script:minimumCodexVersion = '0.144.1'
+$script:minimumCodexVersion = '0.147.0'
 $script:repoRoot = Resolve-AbsolutePath (Join-Path $PSScriptRoot '..')
 $defaultCodexHome = if ([string]::IsNullOrWhiteSpace($env:CODEX_HOME)) { Join-Path $HOME '.codex' } else { $env:CODEX_HOME }
 $script:codexHome = Resolve-AbsolutePath $defaultCodexHome

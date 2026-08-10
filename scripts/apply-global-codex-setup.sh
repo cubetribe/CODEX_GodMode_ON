@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-minimum_codex_version="0.144.1"
+minimum_codex_version="0.147.0"
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd -P)"
 codex_home="${CODEX_HOME:-$HOME/.codex}"
 user_skills_home="${HOME}/.agents/skills"

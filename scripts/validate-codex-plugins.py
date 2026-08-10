@@ -42,10 +42,6 @@ class Validator:
     def __init__(self, root: Path):
         self.root = root.resolve()
         self.errors: list[str] = []
-        try:
-            self.release_version = (self.root / "VERSION").read_text(encoding="utf-8").strip()
-        except (OSError, UnicodeError):
-            self.release_version = ""
 
     def error(self, message: str) -> None:
         self.errors.append(message)
@@ -136,6 +132,12 @@ class Validator:
         manifest = self.load_json(manifest_path)
         if not isinstance(manifest, dict):
             return
+        version_path = plugin_root / "VERSION"
+        try:
+            plugin_version = version_path.read_text(encoding="utf-8").strip()
+        except (OSError, UnicodeError) as exc:
+            self.error(f"missing or unreadable plugin VERSION for {expected_name}: {exc}")
+            plugin_version = ""
         if "[TODO:" in manifest_path.read_text(encoding="utf-8"):
             self.error(f"plugin manifest contains a TODO placeholder: {manifest_path.relative_to(self.root)}")
         unknown = set(manifest) - ALLOWED_MANIFEST_FIELDS
@@ -145,9 +147,11 @@ class Validator:
             self.error(f"plugin name, folder, and marketplace entry differ: {expected_name}")
         if not isinstance(manifest.get("version"), str) or not SEMVER.fullmatch(manifest["version"]):
             self.error(f"plugin version is not strict semver: {expected_name}")
-        elif manifest["version"] != self.release_version:
+        if not SEMVER.fullmatch(plugin_version):
+            self.error(f"plugin VERSION is not strict semver: {expected_name}")
+        elif manifest.get("version") != plugin_version:
             self.error(
-                f"plugin version {manifest['version']} differs from repository release {self.release_version}: {expected_name}"
+                f"plugin manifest version {manifest.get('version')!r} differs from plugin VERSION {plugin_version}: {expected_name}"
             )
         if not isinstance(manifest.get("description"), str) or not manifest["description"].strip():
             self.error(f"plugin description is missing: {expected_name}")

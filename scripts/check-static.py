@@ -195,14 +195,17 @@ def check_configs() -> None:
     forbidden = {
         "model",
         "model_reasoning_effort",
-        "max_concurrent_threads_per_session",
+        "max_threads",
         "max_depth",
         "mcp_servers",
     }
     for path, approval in config_specs:
         data = load_toml(path)
         agents = data.get("agents", {})
-        require(agents.get("max_threads") == 2, f"agent cap is 2: {path.relative_to(ROOT)}")
+        require(
+            agents.get("max_concurrent_threads_per_session") == 2,
+            f"agent cap is 2: {path.relative_to(ROOT)}",
+        )
         require(data.get("approval_policy") == approval, f"approval policy is correct: {path.relative_to(ROOT)}")
         require(data.get("sandbox_mode") == "workspace-write", f"sandbox is workspace-write: {path.relative_to(ROOT)}")
         for key in forbidden:
@@ -348,7 +351,9 @@ def check_required_paths() -> None:
         "README.md",
         "CHANGELOG.md",
         "VERSION",
+        "docs/releases/3.0.0.md",
         ".agents/plugins/marketplace.json",
+        "plugins/godmode-paperwork/VERSION",
         "plugins/godmode-paperwork/.codex-plugin/plugin.json",
         "plugins/godmode-paperwork/skills/godmode-paperwork/SKILL.md",
         "templates/global-codex/AGENTS.md",

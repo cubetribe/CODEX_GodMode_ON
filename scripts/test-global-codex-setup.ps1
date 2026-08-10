@@ -183,7 +183,7 @@ New-Item -ItemType Directory -Force -Path (Split-Path -Parent $script:fakeCodex)
 $fakeCodexContent = @'
 @echo off
 if "%~1"=="--version" (
-  echo codex-cli 0.144.1
+  echo codex-cli 0.147.0
   exit /b 0
 )
 if "%~1"=="help" if "%~2"=="doctor" exit /b 0
@@ -245,7 +245,7 @@ try {
   Assert-File (Join-Path $targetAgents 'custom.toml')
   Assert-File (Join-Path $customSkill 'keep.txt')
   $migratedConfig = [System.IO.File]::ReadAllText($legacyConfigPath)
-  Assert-True ($migratedConfig.Contains('max_threads = 2')) 'legacy config did not receive the Lean thread cap'
+  Assert-True ($migratedConfig.Contains('max_concurrent_threads_per_session = 2')) 'legacy config did not receive the Lean thread cap'
   Assert-True (-not $migratedConfig.Contains('max_depth')) 'legacy max_depth survived migration'
   Assert-True (-not $migratedConfig.Contains('[mcp_servers.playwright]')) 'legacy Playwright MCP survived migration'
   $configBackups = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'backups') -File -Recurse | Where-Object { $_.Name -eq 'config.toml' })
@@ -457,7 +457,7 @@ value = "untouched"
   $case = New-TestCase 'cli-preflight'
   Assert-InstallerExit (Invoke-Installer $case @('--unknown-option')) 2 'unknown argument preflight'
   Assert-InstallerExit (Invoke-Installer $case @('--codex-home')) 2 'missing argument value preflight'
-  $oldFakeCodexContent = $fakeCodexContent -replace '0\.144\.1', '0.143.9'
+  $oldFakeCodexContent = $fakeCodexContent -replace '0\.147\.0', '0.146.9'
   Write-Utf8File -Path $script:fakeCodex -Content $oldFakeCodexContent
   Assert-InstallerExit (Invoke-Installer $case) 3 'incompatible CLI preflight'
   Write-Utf8File -Path $script:fakeCodex -Content $fakeCodexContent

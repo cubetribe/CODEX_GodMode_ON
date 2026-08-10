@@ -11,11 +11,13 @@ compliance, file a form, destroy an original, or promise error-free OCR.
 
 The core GodMode runtime is a general engineering orchestrator. Paperwork needs
 stricter storage, privacy, review, and integrity rules. It therefore ships in the
-same governed repository and release, but through a separate Codex marketplace
-entry with explicit installation and invocation.
+same governed repository, but through an independently versioned Codex
+marketplace entry with explicit installation and invocation.
 
-The core installers continue to publish 14 agents and 10 skills. They do not
-copy or activate Paperwork.
+GodMode 3 installs seven core agents and nine core skills. Neither the 2.10 nor
+3.0 core installer copies or activates Paperwork. Root core releases do not
+change the Paperwork evidence contract; the plugin remains `2.10.0` until a
+separate backward-compatible Paperwork release is designed and tested.
 
 ## Install
 

@@ -1,8 +1,9 @@
 # Local Development
 
-The released version is `2.10.0`; the current implementation is an unreleased,
-major-impact 3.0 Lean candidate. Protected `main` delivery uses a pull request.
-Commit, push, merge, tag, and publication remain separate authority boundaries.
+The released core version is `3.0.0`. Protected `main` delivery uses a pull
+request. Commit, push, merge, tag, and publication remain separate authority
+boundaries. GodMode Paperwork is an independently versioned optional plugin,
+currently `2.10.0`.
 
 ## Preflight
 
@@ -63,7 +64,7 @@ PowerShell changes require the Windows CI matrix:
 .\scripts\test-global-codex-setup.ps1
 ```
 
-For Paperwork changes or a repository release containing the plugin:
+For changes to Paperwork itself:
 
 ```bash
 python3 scripts/validate-codex-plugins.py --repo-root .
@@ -114,21 +115,36 @@ parent or built-in `explorer`/`worker` already cover.
 temporary output, and does not edit tracked source. Update their descriptions,
 docs, and routing evals together if that boundary changes.
 
+When selecting a packaged role, the parent must pass the matching `agent_type`.
+`task_name` is only a task label. The routing contract and deterministic check
+must change together if Codex changes that tool interface.
+
 ## Release preparation
 
-Normal development updates only `[Unreleased]`. `VERSION` must match the latest
-dated changelog release. A repository release that contains Paperwork must also
-align the plugin manifest, Paperwork internal version, CLI version output, tag,
-and release title.
+Normal development updates only `[Unreleased]`. Root `VERSION` must match the
+latest dated core changelog release. Each optional plugin owns a local
+`plugins/<name>/VERSION`; its manifest must match that file.
 
-For an authorized major release:
+A core-only release does not bump Paperwork. When Paperwork itself changes,
+align its local version, manifest, CLI output, documentation, and compatibility
+tests. Its persisted evidence and validator versions must not change without an
+explicit backward-compatibility design and frozen cross-version fixtures.
+
+For an authorized release:
 
 1. reconcile current `origin/main` and run final static, Bash installer,
-   isolated runtime, Paperwork, live-routing, and Windows CI evidence;
+   isolated runtime, affected-plugin, live-routing, and Windows CI evidence;
 2. resolve every release-critical finding;
-3. move `[Unreleased]` into a dated `3.0.0` section and align all versions;
+3. move `[Unreleased]` into a dated section, update root `VERSION`, and write
+   the official release document before final gates;
 4. rerun affected local gates after those tracked edits;
 5. deliver through a protected-main pull request and wait for every required
    check on the exact head SHA;
 6. squash-merge, then wait for push CI on the resulting `main` SHA;
 7. tag that exact SHA and publish the GitHub release without moving the tag.
+
+Stable CLI `0.147.0` multi-agent release traces must use a persistent isolated
+Codex home. `--ephemeral` cannot reliably materialize Child threads, and the
+public JSONL stream omits part of their lifecycle. Verify named `agent_type`,
+Child commands, exit status, and unchanged fixtures from the persisted session
+graph and rollouts; a final model-written `PASS` is insufficient.

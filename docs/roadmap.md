@@ -1,9 +1,8 @@
 # Roadmap
 
-Released version: `2.10.0`
+Current core release: `3.0.0`
 
-Current workspace target: unreleased `3.0.0` Lean candidate. Version, tag, and
-publication change only during authorized release preparation.
+Optional GodMode Paperwork release: `2.10.0`
 
 ## Shipped separately in 2.10
 
@@ -11,7 +10,7 @@ The optional `godmode-paperwork` plugin remains a separately installed,
 local-first document-evidence workflow. GodMode 3 changes the core orchestration
 runtime; it does not fold Paperwork into the core installer.
 
-## 3.0 candidate gates
+## GodMode 3.0 delivery record
 
 - [x] reduce global guidance below 1,500 bytes
 - [x] reduce the core workflow below 2,000 bytes
@@ -23,11 +22,16 @@ runtime; it does not fold Paperwork into the core installer.
 - [x] add safe hash-matched 2.0 retirement with verified backups
 - [x] prove isolated discovery against local desktop and stable CLI binaries
 - [x] pass independent static and runtime review on the Lean diff
-- [ ] preserve the optional Paperwork package and pass its validator/unit suite
-- [ ] pass Windows PowerShell 5.1 and PowerShell 7 CI on the completed diff
-- [ ] pass live `gpt-5.6-sol` Ultra routing traces in an isolated fixture
-- [ ] prepare the dated changelog and aligned `3.0.0` distribution versions
-- [ ] pass protected-main PR and post-merge release gates on exact SHAs
+- [x] preserve the optional Paperwork package and pass its validator/unit suite
+- [x] decouple the 3.0 core version from Paperwork's persisted 2.10 contract
+- [x] pass Windows PowerShell 5.1 and PowerShell 7 CI on the integrated runtime
+- [x] pass the final fixed `gpt-5.6-sol` Ultra custom-role trace in an isolated fixture
+- [x] prepare the dated changelog, root `3.0.0` version, README, and official release document
+
+Protected-main, post-merge, annotated-tag, and publication evidence is recorded
+in the GitHub Release because those steps occur after the immutable release
+source is created. Publication is allowed only when those checks pass on their
+exact SHAs.
 
 ## Post-3.0 experiments
 
@@ -37,8 +41,8 @@ These are hypotheses, not release promises:
   representative tasks;
 - compare Sol Ultra with lower reasoning settings for quality, child turns,
   tool calls, latency, and token usage;
-- replace the compatibility `max_threads` alias once the stable supported CLI
-  accepts the current documented field;
+- monitor future Codex spawn-contract changes and keep named-role traces in the
+  release gate when the supported CLI floor changes;
 - expand routing evals only when a real regression demonstrates missing
   coverage;
 - consider path-selective CI after the canonical static baseline remains
