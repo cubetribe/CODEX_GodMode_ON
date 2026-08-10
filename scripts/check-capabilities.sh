@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-minimum_codex_version="0.144.1"
+minimum_codex_version="0.147.0"
 full=false
 if (($# > 1)); then
   printf 'Usage: %s [--full]\n' "$0" >&2

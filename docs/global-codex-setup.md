@@ -1,11 +1,13 @@
 # Global Codex Setup
 
-Published repository version: `2.10.0`. The working tree contains the unreleased
-3.0 Lean migration described under `CHANGELOG.md` `[Unreleased]`.
+Published core version: `3.0.0`. See the
+[official release document](./releases/3.0.0.md) for the full rationale,
+breaking changes, migration contract, rollback, and evidence boundaries.
+GodMode Paperwork remains separately versioned at `2.10.0`.
 
 ## Requirements
 
-- Codex CLI `0.144.1` or newer
+- Codex CLI `0.147.0` or newer
 - Bash on macOS/Linux, or Windows PowerShell 5.1/PowerShell 7
 - Git and Python 3.11+ for repository validation
 
@@ -20,6 +22,13 @@ The installer checks the resolved binary and `codex help doctor` before any
 target write. Override it with `CODEX_BIN=/absolute/path/to/codex` when needed.
 
 ## Install the Lean core
+
+For a released installation, check out the immutable tag first:
+
+```bash
+git fetch origin --tags
+git checkout v3.0.0
+```
 
 macOS/Linux:
 
@@ -61,7 +70,9 @@ codex plugin list --json
 Start a fresh task and invoke `$godmode-paperwork` explicitly. Run its `doctor`
 command before case intake. It reports missing Poppler, Tesseract, or language
 data but never installs them. Keep cases and exports outside Git worktrees and
-plugin caches. See [GodMode Paperwork](./godmode-paperwork.md).
+plugin caches. Its manifest is governed by
+`plugins/godmode-paperwork/VERSION`, not the root core version. See
+[GodMode Paperwork](./godmode-paperwork.md).
 
 ## Existing user configuration
 
@@ -122,11 +133,18 @@ The base config sets workspace-write sandboxing, approval on request, cached web
 search, no sandbox network, and an agent concurrency cap of two. It does not pin
 a model, effort, MCP server, plugin, or integration.
 
-`max_threads = 2` is deliberate compatibility glue. Stable Codex `0.144.1`
-rejects the newer documented `max_concurrent_threads_per_session` field, while
-the tested desktop `0.147.0-alpha.1.2` accepts it. Both accept the alias. The
-package removed `max_depth`; recursive delegation is prohibited by the routing
-contract but not claimed as a config-enforced guarantee.
+When a parent selects one of the seven packaged specialists, it must pass the
+matching `agent_type`. A matching `task_name` alone creates a generic child and
+does not load the custom manifest.
+
+The package uses the current documented
+`max_concurrent_threads_per_session = 2` field. The stable supported floor is
+Codex CLI `0.147.0`: its GPT-5.6 Sol V2 spawn contract exposes `agent_type`, so
+the parent can select a packaged custom agent. The tested `0.144.x` contract
+omitted that field; a matching `task_name` only named a generic Child and did
+not load the role manifest. The package removed `max_depth`; recursive
+delegation is prohibited by the routing contract but not claimed as a
+config-enforced guarantee.
 
 Profiles are separate `$CODEX_HOME/NAME.config.toml` files:
 
@@ -161,8 +179,14 @@ the retired skill, and parses the review profile. It does not mutate the real
 user setup or call a model. The static gate also validates the optional plugin
 manifest; Paperwork behavior is covered by its focused offline unit suite.
 
-PowerShell 5.1 and 7 jobs are configured in Windows CI. Their green run on the
-completed candidate is a release gate; a macOS run does not claim that coverage.
+PowerShell 5.1 and 7 jobs are configured in Windows CI and are required on the
+exact release pull-request head. A macOS run does not claim Windows coverage.
+
+Live multi-agent release traces against stable CLI `0.147.0` use a persistent,
+isolated temporary Codex home rather than `--ephemeral`. The public JSONL stream
+is not treated as the sole Child-lifecycle record, so role selection and
+commands are verified from the persisted parent/child session graph and Child
+rollout. Final self-report text alone is never a pass condition.
 
 ## Exit codes
 

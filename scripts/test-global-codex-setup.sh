@@ -129,7 +129,7 @@ mkdir -p "$(dirname "$fake_codex")"
 cat >"$fake_codex" <<'EOF'
 #!/usr/bin/env bash
 if [[ "${1:-}" == "--version" ]]; then
-  printf '%s\n' "codex-cli 0.144.1"
+  printf '%s\n' "codex-cli 0.147.0"
   exit 0
 fi
 if [[ "${1:-}" == "help" && "${2:-}" == "doctor" ]]; then
@@ -187,7 +187,7 @@ assert_absent "$case_skills/godmode-departments"
 find "$case_home/backups/install-archives" -type f -path '*/retired/skills/godmode-departments/SKILL.md' | grep -q . || fail_test "retired skill backup missing"
 assert_file "$case_home/agents/custom.toml"
 assert_file "$case_skills/custom-skill/keep.txt"
-assert_contains "$case_home/config.toml" 'max_threads = 2'
+assert_contains "$case_home/config.toml" 'max_concurrent_threads_per_session = 2'
 assert_not_contains "$case_home/config.toml" 'max_depth'
 assert_not_contains "$case_home/config.toml" '[mcp_servers.playwright]'
 legacy_config_backup="$(find "$case_home/backups/install-archives" -type f -path '*/root/config.toml' | head -n 1)"
@@ -427,7 +427,7 @@ expect_status 2 env CODEX_BIN="$fake_codex" "$installer" --codex-home
 expect_status 3 env CODEX_BIN="${temp_root}/missing-codex" "$installer" \
   --repo "$repo_root" --codex-home "$case_home" --user-skills-home "$case_skills"
 old_fake_codex="${temp_root}/bin/codex-old"
-sed 's/0\.144\.1/0.143.9/' "$fake_codex" >"$old_fake_codex"
+sed 's/0\.147\.0/0.146.9/' "$fake_codex" >"$old_fake_codex"
 chmod +x "$old_fake_codex"
 expect_status 3 env CODEX_BIN="$old_fake_codex" "$installer" \
   --repo "$repo_root" --codex-home "$case_home" --user-skills-home "$case_skills"

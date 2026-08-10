@@ -1,13 +1,18 @@
 # Codex GodMode
 
-GodMode is a small, globally installable orchestration layer for Codex. It
-protects authority, worktree safety, one-writer delivery, and observable
-validation without prescribing every reasoning step.
+GodMode is a lean, globally installable orchestration layer for Codex. It keeps
+authority, worktree safety, one-writer delivery, recoverable migration, and
+observable validation explicit without prescribing every reasoning step.
 
-The repository release is `2.10.0`. The current `[Unreleased]` work is a
-breaking **3.0 Lean candidate** and is not a published release yet.
+The current core release is **GodMode `3.0.0`**. It is a major rebuild for
+strong parent models such as GPT-5.6 Sol: less standing context, fewer generic
+roles, deliberate specialist selection, and more deterministic verification.
+Read the comprehensive
+[GodMode 3.0 release document](docs/releases/3.0.0.md) for the rationale,
+breaking changes, measured package reductions, migration contract, rollback,
+and release evidence.
 
-## What changes in GodMode 3 Lean
+## What changed in GodMode 3
 
 - 7 optional custom agents instead of 14
 - 9 independently triggered core skills instead of companion chains
@@ -20,29 +25,68 @@ breaking **3.0 Lean candidate** and is not a published release yet.
 - separate package checks, installer tests, capability diagnostics, and routing
   evals
 
+The most important behavioral change is the default: the parent works alone.
+It delegates only a bounded, independent uncertainty that materially improves
+the result, and uses at most two specialists. A packaged specialist is selected
+with its registered `agent_type`; a matching task name alone does not activate
+the role.
+
+### Why the system became smaller
+
+GodMode 2.x protected useful invariants, but repeated them through 14 custom
+agents, ten skills, a large workflow prompt, mandatory double validation, and a
+post-gate Scribe. With a stronger orchestrator, those layers could duplicate
+discovery, planning, implementation, and review while filling context and
+multiplying child turns.
+
+GodMode 3 keeps the rules that are hard or unsafe to infer—authority, one
+writer, external-action boundaries, role selection, safe retirement, and
+outcome evidence—and moves syntax, inventory, links, metadata, and migration
+contracts into deterministic checks. Stack detail and special procedures load
+only when their skills are relevant.
+
+| Checked-in surface | 2.10 core | 3.0 core |
+| --- | ---: | ---: |
+| Custom agents | 14 | 7 |
+| Agent-manifest source | 7,771 bytes | 3,400 bytes |
+| Core skills | 10 | 9 |
+| Global GodMode guidance | 4,502 bytes | 1,254 bytes |
+| Core workflow skill | 4,824 bytes | 1,766 bytes |
+| Packaged base concurrency cap | 6 | 2 |
+
+These are UTF-8 source and inventory measurements, not tokenizer, quota,
+latency, cost, or quality measurements. Real-world savings remain dependent on
+the task, selected model, reasoning effort, tools, and whether delegation is
+actually useful.
+
 Models and reasoning effort are not pinned. GPT-5.6 Sol is the intended strong
-orchestrator, with Ultra useful for genuinely complex work, but the package
-remains model-neutral.
+orchestrator for demanding work, with Ultra useful when complexity justifies
+its latency and token cost, but the package remains model-neutral.
 
 ## Optional Paperwork plugin
 
-GodMode Paperwork, released separately in 2.10, remains an explicit opt-in
-plugin for controlled local document work. It provides immutable intake,
-native-first PDF extraction, page-scoped local OCR, evidence anchors, bounded
-validation, human review gates, and reproducible archives. It performs no
-network upload, silent dependency installation, form submission, original
-deletion, or professional certification.
+GodMode Paperwork remains an explicit opt-in plugin at its independent version
+`2.10.0`. It provides immutable intake, native-first PDF extraction,
+page-scoped local OCR, evidence anchors, bounded validation, human review gates,
+and reproducible archives. It performs no network upload, silent dependency
+installation, form submission, original deletion, or professional
+certification.
 
-The Lean core installers never install Paperwork. Read the
+The 3.0 core installers never install Paperwork, and existing Paperwork 2.10
+cases require no 3.0 migration. Read the
 [operator guide](./docs/godmode-paperwork.md) and
 [research decision](./docs/research/godmode-paperwork-local-first-2026-07-11.md).
 
 ## Install locally
 
-Requirements: Codex CLI `0.144.1+` and Bash on macOS/Linux or PowerShell 5.1+/7
+Requirements: Codex CLI `0.147.0+` and Bash on macOS/Linux or PowerShell 5.1+/7
 on Windows. Repository validation additionally needs Git and Python 3.11+.
 
+Use the immutable release tag for installation:
+
 ```bash
+git fetch origin --tags
+git checkout v3.0.0
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
 ```
@@ -50,6 +94,8 @@ on Windows. Repository validation additionally needs Git and Python 3.11+.
 Windows:
 
 ```powershell
+git fetch origin --tags
+git checkout v3.0.0
 .\scripts\apply-global-codex-setup.ps1
 .\scripts\apply-global-codex-setup.ps1 -Check
 ```
@@ -132,14 +178,15 @@ diagnoses the workstation.
 
 ## Configuration compatibility
 
-The current Codex reference names
-`agents.max_concurrent_threads_per_session`; `max_threads` is its legacy alias.
-The package intentionally uses `max_threads = 2` because the desktop CLI
-`0.147.0-alpha.1.2` accepts the new name while stable Homebrew Codex `0.144.1`
-rejects it; both tested binaries accept the alias. The undocumented `max_depth`
-setting has been removed. No-recursive delegation is a prompt contract, not a
-platform guarantee. Deterministic fixtures lint routing; live model traces are
-separate release evidence.
+The package uses the current documented
+`agents.max_concurrent_threads_per_session = 2` field. Codex CLI `0.147.0` is
+the supported floor because its GPT-5.6 Sol spawn surface exposes the
+`agent_type` needed to bind a packaged specialist; `0.144.x` can create a
+generic Child with the requested task name instead. The exact compatibility
+evidence lives in the [setup guide](docs/global-codex-setup.md). The
+undocumented `max_depth` setting has been removed. No-recursive delegation is
+a prompt contract, not a platform guarantee. Deterministic fixtures lint
+routing; live model traces are separate release evidence.
 
 ## Repository map
 
@@ -150,7 +197,7 @@ separate release evidence.
 | `templates/global-codex/` | global core guidance, config, agents, profiles, and skills |
 | `templates/prototype-mode/` | disposable prototype overlay |
 | `.agents/plugins/marketplace.json` | catalog for optional plugins |
-| `plugins/godmode-paperwork/` | optional local-first document plugin and tests |
+| `plugins/godmode-paperwork/` | independently versioned optional local-first document plugin and tests |
 | `scripts/check-static.sh` | deterministic core and plugin contract gate |
 | `scripts/test-global-codex-setup.*` | cross-platform installer regressions |
 | `docs/` | architecture, setup, operation, prompts, and research |
@@ -158,6 +205,7 @@ separate release evidence.
 
 ## Documentation
 
+- [GodMode 3.0 official release document](docs/releases/3.0.0.md)
 - [Architecture](docs/blueprint.md)
 - [Agent registry](docs/agent-registry.md)
 - [Global setup and recovery](docs/global-codex-setup.md)
@@ -167,5 +215,6 @@ separate release evidence.
 - [Lean research rationale](docs/research/godmode-3-lean-architecture-2026-08-09.md)
 - [Roadmap](docs/roadmap.md)
 
-`VERSION` changes only during explicitly authorized release preparation.
-Commit, push, merge, tag, and publication are separate boundaries.
+Root `VERSION` tracks the core release. Optional plugins carry their own local
+version contract. Commit, push, merge, tag, and publication remain separate
+authority boundaries during development.

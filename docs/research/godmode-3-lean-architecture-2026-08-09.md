@@ -2,8 +2,8 @@
 
 Date: 2026-08-09
 
-Status: decision record for the unreleased 3.0 candidate. Social-media sources
-are anecdotal signals, not architectural authority.
+Status: decision record that led to the GodMode `3.0.0` release. Social-media
+sources are anecdotal signals, not architectural authority.
 
 ## Question
 
@@ -43,11 +43,18 @@ automatic chain of companion skills.
 The [configuration reference](https://learn.chatgpt.com/docs/config-file/config-reference)
 names `agents.max_concurrent_threads_per_session` as the current field and
 `max_threads` as a legacy alias. It does not document `max_depth` as a current
-agent limit. The 3.0 package therefore removes depth claims. A local
-compatibility test found that desktop Codex `0.147.0-alpha.1.2` accepts the new
-field, while stable Homebrew Codex `0.144.1` rejects it and accepts the alias.
-The package temporarily uses `max_threads = 2` and records that as an empirical
-compatibility exception.
+agent limit. The 3.0 package therefore removes depth claims.
+
+A release-gate follow-up on 2026-08-10 changed the compatibility decision. In
+stable CLI `0.144.1`, GPT-5.6 Sol exposed a V2 `spawn_agent` surface without
+`agent_type`; the persisted Child consequently had no custom role even though
+the prompt requested `validator`. Stable CLI `0.147.0` restores `agent_type` in
+the V2 schema, as shown by the
+[0.147.0 source](https://github.com/openai/codex/blob/rust-v0.147.0/codex-rs/core/src/tools/handlers/multi_agents_spec.rs),
+and accepts the documented concurrency field. GodMode 3 therefore requires
+`0.147.0+` and uses `max_concurrent_threads_per_session = 2` rather than
+preserving an obsolete alias for a runtime that cannot fulfill the role
+contract.
 
 ## Empirical studies
 
@@ -105,7 +112,7 @@ The useful invariants were much smaller:
 
 ## Decision
 
-The 3.0 candidate keeps those invariants and adopts:
+GodMode 3.0 keeps those invariants and adopts:
 
 - zero-subagent default, at most two selected specialists, packaged-base
   concurrency two, no recursive delegation;
@@ -118,5 +125,7 @@ The 3.0 candidate keeps those invariants and adopts:
 - hash-matched, recoverable removal of retired 2.0 assets.
 
 This is a justified architecture change, not proof that every lean run is
-better. Final release readiness still requires repository-specific installer,
-discovery, routing, Windows, and live model evidence.
+better. Release readiness remains tied to repository-specific installer,
+discovery, routing, Windows, live model, protected-main, and publication
+evidence documented in the
+[3.0 release record](../releases/3.0.0.md).

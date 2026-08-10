@@ -1,7 +1,7 @@
 # GodMode 3 Lean Architecture
 
-Status: implemented in `[Unreleased]`, not yet released. `VERSION` remains
-`2.10.0` until separately authorized major-release preparation.
+Status: released as GodMode `3.0.0` on 2026-08-10. The complete release and
+migration record is [GodMode 3.0.0](./releases/3.0.0.md).
 
 ## Design objective
 
@@ -46,6 +46,8 @@ evidence against each done criterion + residual risk
 The default is zero specialists. Custom specialists never delegate again.
 There is one tracked-file writer for overlapping scope. Commit, push, release,
 deploy, and other external mutations remain separate authority boundaries.
+A packaged role is selected with its matching `agent_type`; `task_name` labels
+the work but does not load a custom agent manifest.
 
 ## Primary modes
 
@@ -97,13 +99,14 @@ Any later tracked edit invalidates the affected evidence.
 
 ## Configuration
 
-The packaged base config caps concurrency at two. It currently uses the
-compatible `max_threads = 2` alias because stable Codex `0.144.1` rejects the
-newer documented key while the tested desktop build accepts both. `max_depth`
-was removed because it is not a documented current contract. No-recursive
-delegation is declared in prompts, not enforced as a technical sandbox boundary.
-Deterministic fixtures lint that contract; live model behavior needs a separate
-trace.
+The packaged base config caps concurrency at two with the documented
+`max_concurrent_threads_per_session = 2` field. Codex CLI `0.147.0` is the
+supported floor because its GPT-5.6 Sol V2 spawn surface exposes `agent_type`;
+the tested `0.144.x` surface omitted it and therefore could not bind packaged
+specialists. `max_depth` was removed because it is not a documented current
+contract. No-recursive delegation is declared in prompts, not enforced as a
+technical sandbox boundary. Deterministic fixtures lint that contract; live
+model behavior needs a separate trace.
 
 Models, reasoning effort, MCP servers, plugins, and integrations remain
 user-owned. The installer migrates only an exact rendered 2.0 package config
@@ -125,7 +128,10 @@ retirement ledger. A normal upgrade:
 
 Unrelated custom agents, skills, and optional plugins remain untouched.
 Paperwork is distributed through `.agents/plugins/marketplace.json`; its cases
-and exports stay outside Git worktrees and plugin caches.
+and exports stay outside Git worktrees and plugin caches. Root `VERSION` tracks
+the core distribution; `plugins/godmode-paperwork/VERSION` tracks the optional
+plugin independently so a core-only release does not invalidate its persisted
+evidence contract.
 
 ## State and reports
 

@@ -4,9 +4,7 @@ sandbox_mode = "workspace-write"
 web_search = "cached"
 
 [agents]
-# Compatibility alias: Codex 0.144.1 rejects the newer
-# max_concurrent_threads_per_session key, while both tested CLIs accept this.
-max_threads = 2
+max_concurrent_threads_per_session = 2
 
 [sandbox_workspace_write]
 writable_roots = []
