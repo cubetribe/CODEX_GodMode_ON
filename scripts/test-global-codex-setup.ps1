@@ -289,7 +289,10 @@ try {
   $targetAgents = Join-Path $case.CodexHome 'agents'
   New-Item -ItemType Directory -Force -Path $targetAgents | Out-Null
   $danglingLink = Join-Path $targetAgents 'researcher.toml'
-  New-Item -ItemType SymbolicLink -Path $danglingLink -Target (Join-Path $case.Root 'missing-researcher') -Force | Out-Null
+  $missingTarget = Join-Path $case.Root 'missing-researcher'
+  Write-Utf8File -Path $missingTarget -Content "temporary target`n"
+  New-Item -ItemType SymbolicLink -Path $danglingLink -Target $missingTarget -Force | Out-Null
+  Remove-Item -LiteralPath $missingTarget -Force
   Assert-InstallerExit (Invoke-Installer $case) 5 'retired dangling-link conflict'
   $linkItems = @(Get-ChildItem -LiteralPath $targetAgents -Force | Where-Object { $_.Name -ceq 'researcher.toml' })
   Assert-True ($linkItems.Count -eq 1 -and ($linkItems[0].Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) 'dangling retired link was changed'

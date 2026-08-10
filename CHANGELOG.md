@@ -26,6 +26,10 @@ The format is based on Keep a Changelog.
 - rewrote the README, architecture, registry, setup, development, prototype, roadmap, prompts, reports, and state guidance around one normative Lean contract
 - limited workflow state to long, paused, or handed-off runs and expanded its template with revision, authority, writer, scope, done criteria, and evidence
 
+### Fixed
+
+- made the Windows dangling-link regression create and then remove its temporary target so Windows PowerShell 5.1 reaches the intended installer no-write assertion
+
 ### Removed
 
 - custom agents `researcher`, `architect`, `builder`, `scribe`, `github_manager`, `workspace_governance`, and `quality_operations`
