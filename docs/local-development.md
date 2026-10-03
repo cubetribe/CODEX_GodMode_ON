@@ -1,7 +1,7 @@
 # Local Development
 
-The released core version is `3.0.0`. Protected `main` delivery uses a pull
-request. Commit, push, merge, tag, and publication remain separate authority
+The current package is `3.1.0`. Protected `main` delivery uses a pull request.
+Commit, push, merge, tag, and publication remain separate authority
 boundaries. GodMode Paperwork is an independently versioned optional plugin,
 currently `2.10.0`.
 
@@ -50,6 +50,7 @@ For Bash installer, migration, inventory, or installed-runtime changes:
 
 ```bash
 ./scripts/test-global-codex-setup.sh
+python3 tests/test_godmode_audit.py -v
 ./scripts/test-isolated-codex-runtime.sh
 ```
 

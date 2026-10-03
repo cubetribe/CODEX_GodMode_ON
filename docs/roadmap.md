@@ -1,6 +1,6 @@
 # Roadmap
 
-Current core release: `3.0.0`
+Core release: `3.1.0`.
 
 Optional GodMode Paperwork release: `2.10.0`
 
@@ -33,7 +33,15 @@ in the GitHub Release because those steps occur after the immutable release
 source is created. Publication is allowed only when those checks pass on their
 exact SHAs.
 
-## Post-3.0 experiments
+## GodMode 3.1 delivery record
+
+The [3.1 release](releases/3.1.0.md) adds usage help, an editable visual,
+clear picker metadata, and a deterministic global update diagnosis. It retains
+seven agents. Current Astra/Sol 6.1 design guidance is recorded separately from
+historical 5.6 evidence. Exact-head CI and publication evidence belong in the
+GitHub Release; no fresh model performance benchmark is claimed.
+
+## Future experiments
 
 These are hypotheses, not release promises:
 

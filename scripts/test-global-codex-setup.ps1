@@ -205,12 +205,89 @@ try {
   $agentCount = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'agents') -Filter '*.toml' -File).Count
   $skillCount = @(Get-ChildItem -LiteralPath $case.SkillsHome -Directory).Count
   Assert-True ($agentCount -eq 7) "expected 7 managed agents, got $agentCount"
-  Assert-True ($skillCount -eq 9) "expected 9 managed skills, got $skillCount"
+  Assert-True ($skillCount -eq 11) "expected 11 managed skills, got $skillCount"
   Assert-Absent (Join-Path (Join-Path $case.CodexHome 'agents') 'researcher.toml')
   Assert-Absent (Join-Path $case.SkillsHome 'godmode-departments')
   Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'clean -Check'
   Assert-InstallerExit (Invoke-Installer $case @('--check')) 0 'clean --check'
   Pass-Test 'clean install and exact checks'
+
+  Assert-FilesEqual (Join-Path $script:repoRoot 'VERSION') (Join-Path (Join-Path $case.CodexHome 'godmode') 'VERSION') 'installed version differs'
+  foreach ($release in @('1.0', '1.1')) {
+    $case = New-TestCase ('upgrade-v' + $release)
+    $targetAgents = Join-Path $case.CodexHome 'agents'
+    New-Item -ItemType Directory -Force -Path $targetAgents | Out-Null
+    $fixture = Join-Path (Join-Path $script:repoRoot 'tests/fixtures') ('global-codex-' + $release)
+    Copy-Item -Path (Join-Path $fixture 'agents/*.toml') -Destination $targetAgents -Force
+    Assert-InstallerExit (Invoke-Installer $case) 0 ('immutable ' + $release + ' retirement')
+    Assert-Absent (Join-Path $targetAgents 'researcher.toml')
+    Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'historical exact check'
+    Pass-Test ('immutable ' + $release + ' retirement')
+  }
+
+  $case = New-TestCase 'alternate-retired'
+  $alternate = Join-Path $case.CodexHome 'skills'
+  New-Item -ItemType Directory -Force -Path $alternate | Out-Null
+  New-Item -ItemType Directory -Force -Path $case.SkillsHome | Out-Null
+  $department = Join-Path $script:legacyV2 'skills/godmode-departments'
+  Copy-Item -LiteralPath $department -Destination $alternate -Recurse
+  Copy-Item -LiteralPath $department -Destination $case.SkillsHome -Recurse
+  Assert-InstallerExit (Invoke-Installer $case) 0 'both roots retirement'
+  Assert-Absent (Join-Path $alternate 'godmode-departments')
+  Assert-Absent (Join-Path $case.SkillsHome 'godmode-departments')
+  $archives = @(Get-ChildItem -LiteralPath (Join-Path $case.CodexHome 'backups') -Recurse -File | Where-Object { $_.Name -eq 'SKILL.md' })
+  Assert-True ($archives.Count -eq 2) 'both roots need separate archives'
+  Pass-Test 'both retired skill roots archived separately'
+
+  foreach ($variant in @('active', 'modified-retired')) {
+    $case = New-TestCase ('alternate-' + $variant)
+    $alternate = Join-Path $case.CodexHome 'skills'
+    New-Item -ItemType Directory -Force -Path $alternate | Out-Null
+    if ($variant -eq 'active') {
+      Copy-Item -LiteralPath (Join-Path $script:repoRoot 'templates/global-codex/skills/godmode-workflow') -Destination $alternate -Recurse
+    }
+    else {
+      Copy-Item -LiteralPath $department -Destination $alternate -Recurse
+      [System.IO.File]::AppendAllText((Join-Path $alternate 'godmode-departments/SKILL.md'), "custom`n")
+    }
+    Assert-InstallerExit (Invoke-Installer $case) 5 'alternate conflict'
+    Assert-Absent (Join-Path $case.CodexHome 'AGENTS.md')
+    Assert-Absent (Join-Path $case.CodexHome 'backups')
+    Assert-Absent $case.SkillsHome
+    Pass-Test ('alternate-root ' + $variant + ' blocks before writes')
+  }
+
+  $case = New-TestCase 'custom-backups'
+  $agents = Join-Path $case.CodexHome 'agents'
+  $custom = Join-Path $case.SkillsHome 'custom.backup-user'
+  New-Item -ItemType Directory -Force -Path $agents | Out-Null
+  New-Item -ItemType Directory -Force -Path $custom | Out-Null
+  Write-Utf8File -Path (Join-Path $agents 'custom.toml.backup-user') -Content "custom`n"
+  Write-Utf8File -Path (Join-Path $custom 'keep.txt') -Content "custom`n"
+  Assert-InstallerExit (Invoke-Installer $case) 0 'custom backups'
+  Assert-File (Join-Path $agents 'custom.toml.backup-user')
+  Assert-File (Join-Path $custom 'keep.txt')
+  Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'custom backup check'
+  Pass-Test 'unrelated custom backups preserved'
+
+  $case = New-TestCase 'alternate-backups'
+  $alternate = Join-Path $case.CodexHome 'skills'
+  New-Item -ItemType Directory -Force -Path (Join-Path $alternate 'godmode-departments.backup-old') | Out-Null
+  New-Item -ItemType Directory -Force -Path (Join-Path $alternate 'custom.backup-user') | Out-Null
+  Assert-InstallerExit (Invoke-Installer $case) 0 'alternate backups'
+  Assert-Absent (Join-Path $alternate 'godmode-departments.backup-old')
+  Assert-True (Test-Path -LiteralPath (Join-Path $alternate 'custom.backup-user') -PathType Container) 'custom alternate backup removed'
+  Assert-InstallerExit (Invoke-Installer $case @('-Check')) 0 'alternate backup check'
+  Pass-Test 'known alternate backups archived; custom names preserved'
+
+  $case = New-TestCase 'forgotten-roster'
+  Assert-InstallerExit (Invoke-Installer $case) 0 'initial forgotten-roster fixture'
+  $record = Join-Path (Join-Path $case.CodexHome 'godmode') 'managed-assets.tsv'
+  [System.IO.File]::AppendAllText($record, "active`tagent`tforgotten_role`t-`n")
+  $before = (Get-FileHash -LiteralPath $record -Algorithm SHA256).Hash
+  Assert-InstallerExit (Invoke-Installer $case) 5 'forgotten managed identity'
+  Assert-True ((Get-FileHash -LiteralPath $record -Algorithm SHA256).Hash -eq $before) 'forgotten identity changed before conflict'
+  Pass-Test 'previous managed identities require retirement entries'
 
   # Exact 2.0 assets are backed up and retired; normalized CRLF is accepted and
   # custom agents or skills are left alone.

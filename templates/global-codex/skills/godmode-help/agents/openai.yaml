@@ -1,0 +1,4 @@
+interface:
+  display_name: "GodMode Help"
+  short_description: "Understand skills, agents, and how to start"
+  default_prompt: "Use $godmode-help to explain GodMode and help me choose a mode."

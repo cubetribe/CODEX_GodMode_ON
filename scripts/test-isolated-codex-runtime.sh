@@ -31,6 +31,7 @@ done
 if ((${#codex_bins[@]} == 0)); then
   command -v codex >/dev/null 2>&1 && codex_bins+=("$(command -v codex)")
   [[ ! -x /Applications/ChatGPT.app/Contents/Resources/codex ]] || codex_bins+=("/Applications/ChatGPT.app/Contents/Resources/codex")
+  [[ ! -x /Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex ]] || codex_bins+=("/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex")
 fi
 ((${#codex_bins[@]} > 0)) || { printf 'No Codex executable found.\n' >&2; exit 1; }
 
@@ -61,7 +62,7 @@ HOME="$runtime_home" CODEX_HOME="$codex_home" CODEX_BIN="${codex_bins[0]}" \
   --no-trust-project --check >/dev/null
 
 active_skills=(
-  apple-platforms flutter-dart godmode-debug godmode-prototype godmode-review
+  apple-platforms flutter-dart godmode-debug godmode-help godmode-prototype godmode-review godmode-update
   godmode-workflow greenfield-bootstrap release-manager web-platforms
 )
 retired_skills=(godmode-departments)

@@ -1,12 +1,15 @@
 ---
 name: godmode-debug
-description: Reproduce, isolate, fix, and re-test a regression or runtime failure with one writer and evidence from the original failing path.
+description: Reproduce a failure, isolate its cause, fix it, and verify the original path.
 ---
 
 # GodMode Debug
 
 This is a standalone primary mode; do not combine it with workflow, review, or
 prototype mode. Keep the failing behavior as the contract.
+
+For help or an empty task, explain this mode briefly and show a goal/done
+example. With a clear task, start immediately in the user's language.
 
 1. Record symptom, expectation, smallest reproduction, environment, and current
    evidence. Reproduce before editing; otherwise name the proxy and gap.

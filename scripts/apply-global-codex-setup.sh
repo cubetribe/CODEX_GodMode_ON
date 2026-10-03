@@ -102,6 +102,16 @@ if [[ ! -d "$repo_root" ]]; then
   exit 1
 fi
 repo_root="$(cd "$repo_root" && pwd -P)"
+[[ "$codex_home" == /* ]] || codex_home="${PWD}/${codex_home}"
+[[ "$user_skills_home" == /* ]] || user_skills_home="${PWD}/${user_skills_home}"
+while [[ "$codex_home" != / && ("$codex_home" == */ || "$codex_home" == */.) ]]; do
+  codex_home="${codex_home%/.}"
+  [[ "$codex_home" == / ]] || codex_home="${codex_home%/}"
+done
+while [[ "$user_skills_home" != / && ("$user_skills_home" == */ || "$user_skills_home" == */.) ]]; do
+  user_skills_home="${user_skills_home%/.}"
+  [[ "$user_skills_home" == / ]] || user_skills_home="${user_skills_home%/}"
+done
 
 template_root="${repo_root}/templates/global-codex"
 source_agents="${template_root}/AGENTS.md"
@@ -110,6 +120,8 @@ source_repo_agents="${template_root}/agents"
 source_repo_profiles="${template_root}/profiles"
 source_repo_skills="${template_root}/skills"
 source_inventory="${template_root}/managed-assets.tsv"
+source_legacy_hashes="${template_root}/legacy-hashes.tsv"
+legacy_skills_home="${codex_home}/skills"
 legacy_v2_config="${repo_root}/tests/fixtures/global-codex-2.0/config.toml"
 target_agents="${codex_home}/AGENTS.md"
 target_config="${codex_home}/config.toml"
@@ -300,6 +312,41 @@ retired_asset_path() {
   esac
 }
 
+retired_asset_paths() {
+  retired_asset_path "$1" "$2"
+  printf '\n'
+  if [[ "$1" == skill && "$legacy_skills_home" != "$user_skills_home" ]] &&
+    ! [[ -e "$legacy_skills_home" && -e "$user_skills_home" && "$legacy_skills_home" -ef "$user_skills_home" ]]; then
+    printf '%s/%s\n' "$legacy_skills_home" "$2"
+  fi
+}
+
+retired_digest_matches() {
+  local kind="$1" name="$2" expected="$3" actual="$4"
+  [[ "$actual" == "$expected" ]] && return 0
+  awk -F '\t' -v kind="$kind" -v name="$name" -v digest="$actual" '
+    $1 == kind && $2 == name && $3 == digest { found = 1 }
+    END { exit !found }
+  ' "$source_legacy_hashes"
+}
+
+preflight_discovery_roots() {
+  local root="" status="" kind="" name="" digest="" path=""
+  for root in "$codex_home" "$target_agents_dir" "$user_skills_home" "$legacy_skills_home"; do
+    [[ (! -e "$root" && ! -L "$root") || (-d "$root" && ! -L "$root") ]] ||
+      fail "Discovery root is linked or not a regular directory: $root" 5
+  done
+  if [[ "$legacy_skills_home" == "$user_skills_home" ]] ||
+    [[ -e "$legacy_skills_home" && -e "$user_skills_home" && "$legacy_skills_home" -ef "$user_skills_home" ]]; then
+    return 0
+  fi
+  while IFS=$'\t' read -r status kind name digest; do
+    [[ "$status" == active && "$kind" == skill ]] || continue
+    path="${legacy_skills_home}/${name}"
+    [[ ! -e "$path" && ! -L "$path" ]] || fail "Alternate-root managed skill conflicts; preserve and resolve before retrying: $path" 5
+  done <"$source_inventory"
+}
+
 retired_skill_is_exact() {
   local target_dir="$1"
   local expected_digest="$2"
@@ -309,7 +356,7 @@ retired_skill_is_exact() {
   entry_count="$(find "$target_dir" -mindepth 1 -print | wc -l | tr -d ' ')"
   [[ "$entry_count" == "1" && -f "${target_dir}/SKILL.md" && ! -L "${target_dir}/SKILL.md" ]] || return 1
   actual_digest="$(normalized_sha256_file "${target_dir}/SKILL.md" 2>/dev/null || true)"
-  [[ "$actual_digest" == "$expected_digest" ]]
+  retired_digest_matches skill "$(basename "$target_dir")" "$expected_digest" "$actual_digest"
 }
 
 preflight_retired_assets() {
@@ -318,7 +365,7 @@ preflight_retired_assets() {
     digest="${digest%$'\r'}"
     [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
     [[ "$status" == "retired" ]] || continue
-    target_path="$(retired_asset_path "$kind" "$name")"
+    while IFS= read -r target_path; do
     [[ ! -e "$target_path" && ! -L "$target_path" ]] && continue
     case "$kind" in
       agent)
@@ -326,12 +373,13 @@ preflight_retired_assets() {
           fail "Retired managed agent conflicts with a non-regular target: ${target_path}" 5
         fi
         actual_digest="$(normalized_sha256_file "$target_path" 2>/dev/null || true)"
-        [[ "$actual_digest" == "$digest" ]] || fail "Retired managed agent was modified; no files were changed: ${target_path}" 5
+        retired_digest_matches "$kind" "$name" "$digest" "$actual_digest" || fail "Retired managed agent is unrecognized; no files were changed: ${target_path}" 5
         ;;
       skill)
         retired_skill_is_exact "$target_path" "$digest" || fail "Retired managed skill was modified; no files were changed: ${target_path}" 5
         ;;
     esac
+    done < <(retired_asset_paths "$kind" "$name")
   done <"$source_inventory"
 }
 
@@ -426,11 +474,22 @@ preflight_sources_and_targets() {
   require_file "$source_agents"
   require_file "$source_config"
   require_file "$source_inventory"
+  require_file "$source_legacy_hashes"
+  require_file "${repo_root}/VERSION"
   require_file "$legacy_v2_config"
   require_dir "$source_repo_agents"
   require_dir "$source_repo_profiles"
   require_dir "$source_repo_skills"
   validate_source_inventory
+  awk -F '\t' 'FNR == NR { if ($1 == "retired") retired[$2 FS $3] = 1; next }
+    /^#/ || NF == 0 { next }
+    NF != 4 || !(($1 FS $2) in retired) || length($3) != 64 || $3 !~ /^[0-9a-f]+$/ { invalid = 1 }
+    END { exit invalid }' "$source_inventory" "$source_legacy_hashes" || fail 'Invalid historical hash ledger' 5
+  local receipt_name=""
+  for receipt_name in VERSION source-repo.txt user-skills-home.txt; do
+    local receipt_path="${codex_home}/godmode/${receipt_name}"
+    [[ (! -e "$receipt_path" && ! -L "$receipt_path") || (-f "$receipt_path" && ! -L "$receipt_path") ]] || fail "Installation record is not a regular file: $receipt_path" 5
+  done
   for profile_name in "${profile_names[@]}"; do
     require_file "${source_repo_profiles}/${profile_name}"
   done
@@ -444,6 +503,13 @@ preflight_sources_and_targets() {
   inventory_dir="$(dirname "$target_inventory")"
   [[ (! -e "$inventory_dir" && ! -L "$inventory_dir") || (-d "$inventory_dir" && ! -L "$inventory_dir") ]] || fail "Target managed inventory directory is not a regular directory: $inventory_dir" 5
   [[ (! -e "$target_inventory" && ! -L "$target_inventory") || (-f "$target_inventory" && ! -L "$target_inventory") ]] || fail "Target managed inventory is not a regular file: $target_inventory" 5
+  if [[ -f "$target_inventory" ]]; then
+    awk -F '\t' 'FNR == NR { if ($1 == "active" || $1 == "retired") current[$2 FS $3] = 1; next }
+      /^#/ || NF == 0 { next }
+      NF != 4 || !(($2 FS $3) in current) { invalid = 1 }
+      END { exit invalid }' "$source_inventory" "$target_inventory" ||
+      fail "Installed roster has an unknown or forgotten managed identity; preserve and resolve before retrying" 5
+  fi
 
   if [[ -f "$target_config" && "$reset_config" != true ]] && is_known_legacy_v2_config "$target_config"; then
     migrate_legacy_config=true
@@ -512,6 +578,7 @@ archive_legacy_discovery_conflicts() {
   if [[ -d "$target_agents_dir" ]]; then
     while IFS= read -r path; do
       [[ -n "$path" ]] || continue
+      managed_backup agent "$path" || continue
       found=true
       archived_path="${backup_root}/legacy-discovery-conflicts/agents/$(basename "$path")"
       mkdir -p "$(dirname "$archived_path")"
@@ -523,6 +590,7 @@ archive_legacy_discovery_conflicts() {
   if [[ -d "$user_skills_home" ]]; then
     while IFS= read -r path; do
       [[ -n "$path" ]] || continue
+      managed_backup skill "$path" || continue
       found=true
       archived_path="${backup_root}/legacy-discovery-conflicts/skills/$(basename "$path")"
       mkdir -p "$(dirname "$archived_path")"
@@ -531,9 +599,31 @@ archive_legacy_discovery_conflicts() {
     done < <(find "$user_skills_home" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort)
   fi
 
+  if [[ "$legacy_skills_home" != "$user_skills_home" && -d "$legacy_skills_home" ]]; then
+    while IFS= read -r path; do
+      managed_backup skill "$path" || continue
+      found=true
+      archived_path="${backup_root}/legacy-discovery-conflicts/legacy-skills/$(basename "$path")"
+      mkdir -p "$(dirname "$archived_path")"
+      mv "$path" "$archived_path"
+      printf 'Archived legacy skill backup %s -> %s\n' "$path" "$archived_path"
+    done < <(find "$legacy_skills_home" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort)
+  fi
+
   if [[ "$found" == true ]]; then
     printf 'Legacy discovery conflicts were moved under %s\n' "$backup_root"
   fi
+}
+
+managed_backup() {
+  local kind="$1" name=""
+  name="$(basename "$2")"
+  name="${name%%.backup-*}"
+  [[ "$kind" != agent ]] || name="${name%.toml}"
+  awk -F '\t' -v kind="$kind" -v name="$name" '
+    $2 == kind && $3 == name { found = 1 }
+    END { exit !found }
+  ' "$source_inventory"
 }
 
 archive_retired_assets() {
@@ -542,22 +632,28 @@ archive_retired_assets() {
     digest="${digest%$'\r'}"
     [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
     [[ "$status" == "retired" ]] || continue
-    target_path="$(retired_asset_path "$kind" "$name")"
+    while IFS= read -r target_path; do
     [[ -e "$target_path" || -L "$target_path" ]] || continue
     case "$kind" in
       agent) archived_path="${backup_root}/retired/agents/${name}.toml" ;;
-      skill) archived_path="${backup_root}/retired/skills/${name}" ;;
+      skill)
+        if [[ "$target_path" == "${user_skills_home}/${name}" ]]; then
+          archived_path="${backup_root}/retired/skills/${name}"
+        else
+          archived_path="${backup_root}/retired/legacy-skills/${name}"
+        fi ;;
     esac
     mkdir -p "$(dirname "$archived_path")"
     cp -R "$target_path" "$archived_path"
     if [[ "$kind" == "agent" ]]; then
       archived_digest="$(normalized_sha256_file "$archived_path" 2>/dev/null || true)"
-      [[ "$archived_digest" == "$digest" ]] || fail "Retired agent backup verification failed: ${archived_path}" 5
+      retired_digest_matches "$kind" "$name" "$digest" "$archived_digest" || fail "Retired agent backup verification failed: ${archived_path}" 5
     else
       retired_skill_is_exact "$archived_path" "$digest" || fail "Retired skill backup verification failed: ${archived_path}" 5
     fi
     rm -rf "$target_path"
     printf 'Archived retired managed %s %s -> %s\n' "$kind" "$target_path" "$archived_path"
+    done < <(retired_asset_paths "$kind" "$name")
   done <"$source_inventory"
 }
 
@@ -715,6 +811,24 @@ install_inventory() {
   atomic_install_file "$source_inventory" "$target_inventory"
 }
 
+install_record() {
+  local record_dir="${codex_home}/godmode" path="" temp_path=""
+  for path in VERSION source-repo.txt user-skills-home.txt; do
+    temp_path="$(mktemp "${record_dir}/.${path}.tmp.XXXXXX")"
+    case "$path" in
+      VERSION) cat "${repo_root}/VERSION" >"$temp_path" ;;
+      source-repo.txt) printf '%s\n' "$repo_root" >"$temp_path" ;;
+      user-skills-home.txt) printf '%s\n' "$user_skills_home" >"$temp_path" ;;
+    esac
+    if [[ -f "${record_dir}/${path}" ]] && ! cmp -s "$temp_path" "${record_dir}/${path}"; then
+      mkdir -p "${backup_root}/inventory"
+      cp "${record_dir}/${path}" "${backup_root}/inventory/${path}"
+    fi
+    atomic_install_file "$temp_path" "${record_dir}/${path}"
+    rm -f "$temp_path"
+  done
+}
+
 install_agent_files() {
   local source_path=""
   local target_path=""
@@ -801,7 +915,11 @@ check_no_legacy_discovery_conflicts() {
     printf '[ok] %s clean\n' "$label"
     return 0
   fi
-  conflicts="$(find "$root" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort || true)"
+  local kind=skill path=""
+  [[ "$root" != "$target_agents_dir" ]] || kind=agent
+  conflicts="$(while IFS= read -r path; do
+    managed_backup "$kind" "$path" && printf '%s\n' "$path" || true
+  done < <(find "$root" -maxdepth 1 -mindepth 1 -name '*.backup-*' | sort))"
   if [[ -n "$conflicts" ]]; then
     printf '[invalid] %s contains legacy backup artifacts\n%s\n' "$label" "$conflicts"
     return 1
@@ -815,11 +933,12 @@ check_retired_assets_absent() {
     digest="${digest%$'\r'}"
     [[ -n "$status" && "${status:0:1}" != "#" ]] || continue
     [[ "$status" == "retired" ]] || continue
-    target_path="$(retired_asset_path "$kind" "$name")"
+    while IFS= read -r target_path; do
     if [[ -e "$target_path" || -L "$target_path" ]]; then
       printf '[stale] Retired managed %s remains: %s\n' "$kind" "$target_path"
       result=1
     fi
+    done < <(retired_asset_paths "$kind" "$name")
   done <"$source_inventory"
   [[ "$result" -eq 0 ]] && printf '[ok] Retired managed assets absent\n'
   return "$result"
@@ -832,15 +951,44 @@ run_check() {
   local source_dir=""
   local profile_name=""
   local marker_status=0
+  local root=""
+  for root in "$codex_home" "$target_agents_dir" "$user_skills_home" "$legacy_skills_home"; do
+    if [[ -L "$root" || (-e "$root" && ! -d "$root") ]]; then
+      printf '[invalid] Discovery root: %s\n' "$root"
+      status=1
+    fi
+  done
 
   check_path "$target_agents" "Global AGENTS" || status=1
   check_path "$target_config" "Global config" || status=1
   check_path "$target_agents_dir" "Global agents dir" || status=1
   check_path "$user_skills_home" "User skills home" || status=1
   check_exact_file "$source_inventory" "$target_inventory" "Managed asset inventory" || status=1
+  check_exact_file "${repo_root}/VERSION" "${codex_home}/godmode/VERSION" "Installed package version" || status=1
+  local receipt_name="" expected_path="" receipt_path=""
+  for receipt_name in source-repo.txt user-skills-home.txt; do
+    receipt_path="${codex_home}/godmode/${receipt_name}"
+    expected_path="$repo_root"
+    [[ "$receipt_name" == source-repo.txt ]] || expected_path="$user_skills_home"
+    if [[ ! -f "$receipt_path" || "$(cat "$receipt_path")" != "$expected_path" ]]; then
+      printf '[drift] Installation locator: %s\n' "$receipt_path"
+      status=1
+    fi
+  done
+  local inv_status="" inv_kind="" inv_name="" _inv_digest=""
+  while IFS=$'\t' read -r inv_status inv_kind inv_name _inv_digest; do
+    [[ "$inv_status" == active && "$inv_kind" == skill ]] || continue
+    if [[ "$legacy_skills_home" != "$user_skills_home" ]] &&
+      ! [[ -e "$legacy_skills_home" && -e "$user_skills_home" && "$legacy_skills_home" -ef "$user_skills_home" ]] &&
+      [[ -e "${legacy_skills_home}/${inv_name}" || -L "${legacy_skills_home}/${inv_name}" ]]; then
+      printf '[duplicate] Alternate-root managed skill: %s\n' "${legacy_skills_home}/${inv_name}"
+      status=1
+    fi
+  done <"$source_inventory"
   check_retired_assets_absent || status=1
   check_no_legacy_discovery_conflicts "$target_agents_dir" "Global agents dir" || status=1
   check_no_legacy_discovery_conflicts "$user_skills_home" "User skills home" || status=1
+  check_no_legacy_discovery_conflicts "$legacy_skills_home" "Alternate skills home" || status=1
 
   if [[ -f "$target_agents" ]]; then
     if agents_marker_state "$target_agents"; then
@@ -905,6 +1053,7 @@ if [[ "$check_only" == true ]]; then
 fi
 
 preflight_retired_assets
+preflight_discovery_roots
 mkdir -p "$codex_home" "$user_skills_home" "$target_agents_dir" "$(dirname "$target_inventory")"
 archive_legacy_discovery_conflicts
 archive_retired_assets
@@ -914,6 +1063,7 @@ install_profiles
 install_agent_files
 install_skill_dirs
 install_inventory
+install_record
 
 printf '\nInstalled global Codex setup to %s\n' "$codex_home"
 printf 'Installed global agents to %s\n' "$target_agents_dir"

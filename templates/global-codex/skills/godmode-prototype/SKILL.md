@@ -1,6 +1,6 @@
 ---
 name: godmode-prototype
-description: Build a disposable local-only prototype with one writer, mandatory watermarks, and end-to-end evidence while production and release readiness are explicitly deferred.
+description: Explore an idea in a disposable local prototype; production promotion requires a new contract.
 ---
 
 # GodMode Prototype
@@ -10,6 +10,9 @@ description: Build a disposable local-only prototype with one writer, mandatory 
 This is a standalone primary mode. Do not combine it with workflow, debug, or
 review mode. Do not use real credentials, production data, live services,
 shared branches, or release paths.
+
+For help or an empty task, explain this mode briefly and show a goal/done
+example. With a clear task, start immediately in the user's language.
 
 1. State goal, local boundary, file scope, and user-visible done criterion.
 2. Keep the parent as sole writer. Put output under `prototype/` or `spike/`, or

@@ -1,0 +1,4 @@
+interface:
+  display_name: "GodMode Update"
+  short_description: "Check releases and the global installation"
+  default_prompt: "Use $godmode-update to diagnose my installation and show the available update before applying it."

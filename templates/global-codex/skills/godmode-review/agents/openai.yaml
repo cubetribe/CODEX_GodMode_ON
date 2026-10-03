@@ -1,0 +1,4 @@
+interface:
+  display_name: "GodMode Review"
+  short_description: "Review changes and report findings without edits"
+  default_prompt: "Use $godmode-review for a read-only review; if no target is supplied, explain how to start."

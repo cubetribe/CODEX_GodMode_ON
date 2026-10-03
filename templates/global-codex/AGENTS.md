@@ -5,6 +5,7 @@
 
 - Inspect the current workspace and applicable project instructions before changing files.
 - Preserve existing and unrelated changes; keep all writes inside the requested scope.
+- Continue authorized work to the requested outcome. Ask only for missing material input or expanded authority; prepare reviewable work before approval.
 - For non-trivial work, make the goal, write scope, material constraints, and observable done criteria explicit when they are not already clear.
 - Default to working without subagents. Delegate only a bounded independent task when it materially improves the result; delegated agents must not delegate again.
 - Select a packaged specialist with its matching `agent_type`; `task_name` alone does not load that role.

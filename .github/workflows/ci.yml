@@ -21,6 +21,8 @@ jobs:
         run: python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
       - name: Run Unix installer regression suite once
         run: ./scripts/test-global-codex-setup.sh
+      - name: Run offline GodMode update audit regressions
+        run: python3 tests/test_godmode_audit.py -v
 
   windows-installer:
     runs-on: windows-latest
