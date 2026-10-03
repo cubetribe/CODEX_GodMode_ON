@@ -1,12 +1,15 @@
 ---
 name: godmode-review
-description: Perform a read-only, findings-first code, architecture, contract, or release-risk review with evidence-backed severity.
+description: Review code, architecture, or contracts read-only and report verified findings by severity.
 ---
 
 # GodMode Review
 
 This is a standalone primary mode; do not combine it with workflow, debug, or
 prototype mode. The entire run is read-only.
+
+For help or an empty task, explain this mode briefly and show a goal/done
+example. With a clear task, start immediately in the user's language.
 
 1. Freeze target, instructions, comparison base, severity model, and done
    criterion. Inspect the actual change and tests before trusting summaries.

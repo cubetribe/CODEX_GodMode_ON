@@ -1,6 +1,6 @@
 # Agent Registry
 
-Status: current GodMode `3.0.0` core roster.
+Status: current GodMode `3.1.0` core roster.
 
 The core packages seven optional custom agents under
 `templates/global-codex/agents/`. The parent defaults to no custom agent and
@@ -29,7 +29,9 @@ security, mixed-contract, or release risk justifies both.
 `workspace_governance`, and `quality_operations` were retired in 3.0.
 Their useful work belongs to the strong parent, Codex built-ins
 (`explorer`/`worker`), the release skill, or one of the narrow agents above. The
-installer removes only hash-matched 2.0 copies and preserves verified backups.
+installer removes only known released copies proven by the retirement inventory
+or historical hash ledger and preserves verified backups. Modified copies are
+conflicts, not deletion candidates. See [usage and updates](usage.md).
 
 ## Model resolution
 

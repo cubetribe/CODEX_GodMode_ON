@@ -1,21 +1,54 @@
 # Codex GodMode
 
-GodMode is a lean, globally installable orchestration layer for Codex. It keeps
-authority, worktree safety, one-writer delivery, recoverable migration, and
-observable validation explicit without prescribing every reasoning step.
+GodMode helps Codex turn your task into a checked result. **Skills** provide
+reusable procedures; **agents** take bounded specialist assignments when they
+help. Your main chat owns the task and normally works alone.
 
-The current core release is **GodMode `3.0.0`**. It is a major rebuild for
-strong parent models such as GPT-5.6 Sol: less standing context, fewer generic
-roles, deliberate specialist selection, and more deterministic verification.
-Read the comprehensive
-[GodMode 3.0 release document](docs/releases/3.0.0.md) for the rationale,
-breaking changes, measured package reductions, migration contract, rollback,
-and release evidence.
+The current package is **3.1.0**. See the [3.1 release document](docs/releases/3.1.0.md).
+Installation is a separate step after downloading a release.
 
-## What changed in GodMode 3
+![GodMode: start, roles, and verified results](docs/assets/godmode-guide.svg)
+
+## Start in 30 seconds
+
+Open your project and a fresh Codex chat after installation. In the desktop
+skill picker, type `/god`, select **GodMode Workflow**, and add your task.
+This is skill search, not a built-in `/godmode` command. The portable text form:
+
+```text
+Use $godmode-workflow to add CSV export.
+Context: the existing export screen.
+Done when: the downloaded CSV opens with the expected columns.
+Constraints: preserve the current JSON export.
+```
+
+Choose Debug for a failure, Review for assessment, or Prototype for a local
+experiment. **GodMode Help** explains the choices; **GodMode Update** checks
+releases and installed files. With a clear task, work starts immediately.
+Read the [German usage guide](docs/usage.md) for the explanation and examples.
+
+Updating Git does not update your global installation. Run the installer and
+its check, then start a fresh chat. Removed roles still visible in the picker
+are a reason to diagnose the installation, not to delete every custom agent.
+
+## What 3.1 adds
+
+- concise help and understandable picker descriptions for each delivery mode;
+- two small, separately loaded Help and Update skills (11 core skills total);
+- a read-only audit of real files, duplicate skill roots, and published releases;
+- version and source records so a checkout is distinguishable from an install;
+- recoverable retirement of original 1.x variants and alternate-root old skills;
+- prompt adjustments based on current Astra / Sol 6.1 documentation, while
+  preserving user model choices and the seven-agent architecture.
+
+See the [model and usage decision record](docs/research/godmode-3.1-model-and-usage-review-2026-10-03.md)
+for sources and verification limits. We make no benchmark-proven optimality claim.
+The historical [3.0 release document](docs/releases/3.0.0.md) records the Lean rebuild.
+
+## Architecture retained from GodMode 3.0
 
 - 7 optional custom agents instead of 14
-- 9 independently triggered core skills instead of companion chains
+- independently triggered core skills instead of companion chains
 - zero subagents by default, at most two selected specialists, and a packaged
   base-config thread cap of two
 - parent or one built-in worker as the only tracked-file writer
@@ -59,9 +92,10 @@ latency, cost, or quality measurements. Real-world savings remain dependent on
 the task, selected model, reasoning effort, tools, and whether delegation is
 actually useful.
 
-Models and reasoning effort are not pinned. GPT-5.6 Sol is the intended strong
-orchestrator for demanding work, with Ultra useful when complexity justifies
-its latency and token cost, but the package remains model-neutral.
+Models and reasoning effort are not pinned. GPT-6.1 Sol and GPT-6 Astra are
+current choices when available; use the client default effort and increase it
+when the task warrants it. The package remains model-neutral. See the linked
+model review for official guidance and the absence of fresh live benchmarks.
 
 ## Optional Paperwork plugin
 
@@ -82,11 +116,13 @@ cases require no 3.0 migration. Read the
 Requirements: Codex CLI `0.147.0+` and Bash on macOS/Linux or PowerShell 5.1+/7
 on Windows. Repository validation additionally needs Git and Python 3.11+.
 
-Use the immutable release tag for installation:
+For published installations, select an immutable tag from
+[GitHub Releases](https://github.com/cubetribe/CODEX_GodMode_ON/releases).
+For the current release:
 
 ```bash
 git fetch origin --tags
-git checkout v3.0.0
+git checkout v3.1.0
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
 ```
@@ -95,7 +131,7 @@ Windows:
 
 ```powershell
 git fetch origin --tags
-git checkout v3.0.0
+git checkout v3.1.0
 .\scripts\apply-global-codex-setup.ps1
 .\scripts\apply-global-codex-setup.ps1 -Check
 ```
@@ -139,7 +175,9 @@ Primary modes are exclusive:
 
 Support skills add only relevant knowledge: `greenfield-bootstrap`,
 `release-manager`, `apple-platforms`, `web-platforms`, and `flutter-dart`.
-Use `$godmode-paperwork` explicitly for its separate document workflow.
+Use `$godmode-help` for usage questions and `$godmode-update` for installation
+maintenance. They are not delivery modes. Use `$godmode-paperwork` explicitly
+for its separate document workflow.
 
 ## Runtime model
 
@@ -165,6 +203,7 @@ again. The parent or one built-in worker writes.
 ```bash
 ./scripts/check-static.sh
 ./scripts/test-global-codex-setup.sh
+python3 tests/test_godmode_audit.py -v
 ./scripts/test-isolated-codex-runtime.sh
 python3 -m unittest discover -s plugins/godmode-paperwork/tests -v
 ./scripts/check-capabilities.sh --full
@@ -205,7 +244,9 @@ routing; live model traces are separate release evidence.
 
 ## Documentation
 
-- [GodMode 3.0 official release document](docs/releases/3.0.0.md)
+- [GodMode usage and visual guide](docs/usage.md)
+- [GodMode 3.1 release document](docs/releases/3.1.0.md)
+- [GodMode 3.0 historical release document](docs/releases/3.0.0.md)
 - [Architecture](docs/blueprint.md)
 - [Agent registry](docs/agent-registry.md)
 - [Global setup and recovery](docs/global-codex-setup.md)

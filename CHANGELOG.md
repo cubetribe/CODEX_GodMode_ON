@@ -6,6 +6,30 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-10-03
+
+Release impact: minor. See [the 3.1.0 release document](docs/releases/3.1.0.md).
+
+### Added
+
+- a German usage guide, an editable startup/agent diagram, and Help/Update skills with clear desktop picker metadata
+- read-only installation audit with optional stable GitHub release lookup, actual file comparison, duplicate global skill roots, config references, and explicit offline status
+- cumulative immutable 1.0/1.1 retirement variants, both-root retirement, and installed version/source/skills-root records
+- offline audit regressions and cross-platform migration cases for historical variants, duplicate roots, modified legacy content, and custom backup preservation
+
+### Changed
+
+- concise conditional help in all delivery flows; narrower skill descriptions; explicit continuation of authorized work and risk-based test completion for current GPT-6 Astra / GPT-6.1 Sol guidance
+- README and operating docs lead with task selection and explain skills, agent responsibilities, permissions, update ownership, and fresh-chat activation
+- keep seven model-neutral agents and the one-writer contract; core skill count is eleven including two assistance/maintenance entry points
+
+### Fixed
+
+- original 1.x retired files no longer misclassified as user modifications; known retired copies in the alternate Codex skill root are backed up and removed
+- active alternate-root skill copies block before writes instead of allowing a misleading successful check
+- unrelated custom backup names are preserved instead of being moved by the legacy backup wildcard
+- release-state validation accepts an explicit version bump with a new dated changelog section while retaining the normal `[Unreleased]` requirement
+
 ## [3.0.0] - 2026-08-10
 
 ### Added

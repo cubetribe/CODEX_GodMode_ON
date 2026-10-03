@@ -1,7 +1,8 @@
 # GodMode 3 Lean Architecture
 
-Status: released as GodMode `3.0.0` on 2026-08-10. The complete release and
-migration record is [GodMode 3.0.0](./releases/3.0.0.md).
+Status: GodMode `3.1.0`. The seven-agent Lean
+architecture was introduced in [3.0.0](./releases/3.0.0.md). Start with the
+[usage guide](usage.md); see [3.1 release document](releases/3.1.0.md) for update changes.
 
 ## Design objective
 
@@ -10,15 +11,12 @@ ceremonial phases. A strong parent model should normally finish a scoped task
 without a custom agent. Delegation is an exception for an independent,
 material uncertainty or useful read-only parallelism.
 
-## Authority layers
+## Instruction sources
 
-From broadest to narrowest:
-
-1. platform and product instructions;
-2. managed global `~/.codex/AGENTS.md`;
-3. repository and nested `AGENTS.md` files;
-4. one selected primary mode skill;
-5. task-specific user instructions.
+Codex combines platform instructions, managed global guidance, repository and
+nested guidance, the selected skill, and the user's current request. This is a
+list of sources, not a priority order. Platform instruction priority controls
+conflicts; a skill does not override the user's intent or expand authorization.
 
 In this repository, root `AGENTS.md` is normative for implementation,
 `CHANGELOG.md` and `VERSION` govern release state, and deterministic scripts
@@ -60,6 +58,7 @@ Exactly one primary mode applies to a run:
 | `godmode-review` | read-only assessment with findings first |
 | `godmode-prototype` | disposable local-only build with watermarks |
 
+Help and Update are assistance and maintenance, not delivery modes.
 Greenfield, release, and stack skills are support layers. A primary mode does
 not activate another primary mode as a companion.
 
@@ -119,12 +118,19 @@ the Lean base; all other existing configs remain byte-for-byte unchanged unless
 `templates/global-codex/managed-assets.tsv` is the managed core roster and
 retirement ledger. A normal upgrade:
 
-1. validates every present retired asset against its normalized 2.0 digest;
+1. validates every present retired asset against its known released digest from the inventory or historical hash ledger;
 2. aborts before writes on modified, symlinked, or structurally unknown data;
 3. copies exact legacy assets into a unique backup archive and verifies it;
 4. removes only those verified paths;
-5. installs the seven agents, nine skills, profiles, and inventory;
-6. runs an exact managed-asset check, excluding preserved user config.
+5. installs the seven agents, eleven skills, profiles, and inventory;
+6. records the version, source checkout, and user skill root;
+7. runs an exact managed-asset check, excluding preserved user config.
+
+Both canonical and `$CODEX_HOME/skills` skill roots are checked. Active copies
+in the alternate root block before writes; retired originals get separate
+verified backups. The read-only update audit also reports user config references
+to removed roles. Locator records do not authorize deletion. Future removals
+need explicit retirement entries and immutable released fixtures.
 
 Unrelated custom agents, skills, and optional plugins remain untouched.
 Paperwork is distributed through `.agents/plugins/marketplace.json`; its cases

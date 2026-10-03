@@ -1,0 +1,4 @@
+interface:
+  display_name: "GodMode Debug"
+  short_description: "Reproduce a failure, fix it, and verify"
+  default_prompt: "Use $godmode-debug for my failure; if no symptom is supplied, explain what to provide."

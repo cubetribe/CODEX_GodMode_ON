@@ -69,6 +69,12 @@ def inventory_rows() -> list[tuple[str, str, str, str]]:
         rows.append((status, kind, name, digest))
     identities = [(kind, name) for _, kind, name, _ in rows]
     require(len(identities) == len(set(identities)), "managed inventory identities are unique")
+    baseline = subprocess.run(["git", "show", "HEAD:templates/global-codex/managed-assets.tsv"],
+                              cwd=ROOT, capture_output=True, text=True)
+    if baseline.returncode == 0:
+        previous = {tuple(line.split("\t")[1:3]) for line in baseline.stdout.splitlines()
+                    if line and not line.startswith("#")}
+        require(previous.issubset(set(identities)), "managed roster retains cumulative identities; removals require retirement entries")
     return rows
 
 
@@ -86,10 +92,10 @@ def check_inventory_and_roster() -> None:
     }
     actual_profiles = {("profile", path.name) for path in profile_dir.glob("*.toml")}
     require(actual_agents == {item for item in active if item[0] == "agent"}, "inventory matches seven packaged agents")
-    require(actual_skills == {item for item in active if item[0] == "skill"}, "inventory matches nine packaged skills")
+    require(actual_skills == {item for item in active if item[0] == "skill"}, "inventory matches eleven packaged skills")
     require(actual_profiles == {item for item in active if item[0] == "profile"}, "inventory matches four profiles")
     require(len(actual_agents) == 7, "agent roster is lean (7)")
-    require(len(actual_skills) == 9, "skill roster is lean (9)")
+    require(len(actual_skills) == 11, "skill roster has nine delivery/support and two maintenance/help skills")
 
     fixture_root = ROOT / "tests/fixtures/global-codex-2.0"
     for kind, name, digest in retired:
@@ -106,6 +112,24 @@ def check_inventory_and_roster() -> None:
         if require(fixture.is_file(), f"retired fixture exists: {kind}/{name}"):
             require(normalized_sha256(fixture) == digest, f"retired fixture digest matches: {kind}/{name}")
     legacy_config = fixture_root / "config.toml"
+    retired_keys = {(kind, name) for kind, name, _ in retired}
+    ledger = ROOT / "templates/global-codex/legacy-hashes.tsv"
+    if require(ledger.is_file(), "historical hash ledger exists"):
+        seen_legacy = set()
+        for line in ledger.read_text(encoding="utf-8").splitlines():
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if not require(len(parts) == 4, "historical ledger has four fields"):
+                continue
+            kind, name, digest, fixture_path = parts
+            fixture = (ROOT / fixture_path).resolve()
+            require((kind, name) in retired_keys, f"legacy hash belongs to retired asset: {kind}/{name}")
+            require(fixture.is_relative_to(ROOT / "tests/fixtures"), f"legacy fixture stays inside fixtures: {fixture_path}")
+            if require(fixture.is_file(), f"historical fixture exists: {fixture_path}"):
+                require(normalized_sha256(fixture) == digest, f"historical fixture digest matches: {fixture_path}")
+            require((kind, name, digest) not in seen_legacy, f"historical variant is unique: {kind}/{name}")
+            seen_legacy.add((kind, name, digest))
     if require(legacy_config.is_file(), "GodMode 2.0 config fixture exists"):
         require(
             normalized_sha256(legacy_config) == "986ad8fcb66a829008db8ec9b003bdf60884e15c23c76ffa2347f319a49b767d",
@@ -169,16 +193,20 @@ def check_skills() -> None:
         require(set(metadata) == {"name", "description"}, f"skill metadata is minimal: {path.parent.name}")
         require(metadata.get("name") == path.parent.name, f"skill name matches directory: {path.parent.name}")
         require(bool(metadata.get("description")), f"skill description exists: {path.parent.name}")
-        if path.parent.name.startswith("godmode-"):
+        if path.parent.name in {"godmode-workflow", "godmode-debug", "godmode-review", "godmode-prototype"}:
             body = path.read_text(encoding="utf-8")
             for retired in retired_names:
                 require(f"`{retired}`" not in body, f"skill {path.parent.name} does not route to retired {retired}")
-    workflow_yaml = ROOT / "templates/global-codex/skills/godmode-workflow/agents/openai.yaml"
-    if require(workflow_yaml.is_file(), "GodMode workflow UI metadata exists"):
-        text = workflow_yaml.read_text(encoding="utf-8")
-        for key in ("display_name:", "short_description:", "default_prompt:"):
-            require(key in text, f"workflow UI metadata contains {key[:-1]}")
-        require("$godmode-workflow" in text, "workflow UI prompt explicitly invokes the skill")
+    for mode in ("workflow", "debug", "review", "prototype", "help", "update"):
+        name = "godmode-" + mode
+        metadata_path = ROOT / f"templates/global-codex/skills/{name}/agents/openai.yaml"
+        if require(metadata_path.is_file(), f"{name} UI metadata exists"):
+            text = metadata_path.read_text(encoding="utf-8")
+            for key in ("display_name:", "short_description:", "default_prompt:"):
+                require(key in text, f"{name} UI metadata contains {key[:-1]}")
+            require("$" + name in text, f"{name} UI prompt explicitly invokes the skill")
+            short = re.search(r'short_description: "([^"\n]+)"', text)
+            require(bool(short and 25 <= len(short.group(1)) <= 64), f"{name} UI description has 25..64 chars")
     global_agents = ROOT / "templates/global-codex/AGENTS.md"
     workflow = ROOT / "templates/global-codex/skills/godmode-workflow/SKILL.md"
     require(global_agents.stat().st_size <= 1500, "global AGENTS prompt is at most 1500 bytes")
@@ -289,7 +317,7 @@ def check_release_state() -> None:
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     released = re.findall(r"^## \[(\d+\.\d+\.\d+)\] - ", changelog, flags=re.MULTILINE)
     require(bool(re.fullmatch(r"\d+\.\d+\.\d+", version)), "VERSION is semantic")
-    require(bool(released) and released[0] == version, "VERSION matches latest released changelog section")
+    require(bool(released) and released[0] == version, "VERSION matches latest versioned changelog section")
 
     tracked_result = subprocess.run(
         ["git", "diff", "--name-only", "HEAD"],
@@ -327,7 +355,7 @@ def check_release_state() -> None:
         for name in changed
     )
     if user_relevant:
-        require("CHANGELOG.md" in changed, "user-relevant working-tree changes include an [Unreleased] changelog edit")
+        require("CHANGELOG.md" in changed, "user-relevant working-tree changes include a changelog edit")
         base_result = subprocess.run(
             ["git", "show", "HEAD:CHANGELOG.md"],
             cwd=ROOT,
@@ -341,7 +369,25 @@ def check_release_state() -> None:
         require(current_match is not None, "current changelog has an [Unreleased] section")
         require(base_match is not None, "baseline changelog has an [Unreleased] section")
         if current_match is not None and base_match is not None:
-            require(current_match.group(1) != base_match.group(1), "[Unreleased] content differs from the released baseline")
+            base_released = re.findall(r"^## \[(\d+\.\d+\.\d+)\] - ", base_result.stdout, flags=re.MULTILINE)
+            release_match = re.search(
+                rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}\s+(.*?)(?=^## \[|\Z)",
+                changelog,
+                flags=re.MULTILINE | re.DOTALL,
+            )
+            release_transition = (
+                "VERSION" in changed
+                and bool(re.fullmatch(r"\d+\.\d+\.\d+", version))
+                and bool(base_released)
+                and version not in base_released
+                and tuple(map(int, version.split("."))) > tuple(map(int, base_released[0].split(".")))
+                and release_match is not None
+                and re.search(r"^- \S", release_match.group(1), flags=re.MULTILINE) is not None
+            )
+            require(
+                current_match.group(1) != base_match.group(1) or release_transition,
+                "[Unreleased] content changes or an explicit version bump adds dated release notes",
+            )
     ok("release-state alignment")
 
 

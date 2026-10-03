@@ -1,12 +1,15 @@
 ---
 name: godmode-workflow
-description: Deliver non-trivial implementation or migration work with a frozen scope, one writer, risk-based validation, and outcome evidence.
+description: Implement a scoped change or migration with one writer and verified results.
 ---
 
 # GodMode Workflow
 
 Apply repository instructions first. This is a primary mode; do not combine it
 with debug, review, or prototype mode in the same run.
+
+For help or an empty task, explain the mode briefly and give a goal/done example.
+With a clear task, start; continue authorized work without repeated approval.
 
 1. Inspect governance, workspace state, release law, and the real changed
    surface. State goal, scope, done criteria, assumptions, and external-action
@@ -24,7 +27,8 @@ with debug, review, or prototype mode in the same run.
    `tester` owns executable behavior. Use both only for migrations, security or
    release-critical changes, or when repository law requires both.
 6. Map each done criterion to actual command output, test results, or observed
-   behavior. Report residual risk and anything not verified.
+   behavior. Once relevant checks pass, broaden them only for an unresolved
+   concern. Report residual risk and anything not verified.
 7. Update required docs and unreleased notes before final gates. Treat commit,
    push, merge, release, deploy, and other external mutations as separate
    authority boundaries.

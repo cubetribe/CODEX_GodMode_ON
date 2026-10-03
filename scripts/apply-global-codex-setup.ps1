@@ -217,6 +217,45 @@ function Get-RetiredAssetPath {
   }
 }
 
+function Get-RetiredAssetPaths {
+  param($Row)
+  Get-RetiredAssetPath $Row
+  if ($Row.Kind -eq 'skill' -and -not (Test-SameSkillRoot)) {
+    Join-Path $script:legacySkillsHome $Row.Name
+  }
+}
+
+function Test-SameSkillRoot {
+  [System.IO.Path]::GetFullPath($script:legacySkillsHome).TrimEnd('\', '/') -eq [System.IO.Path]::GetFullPath($script:userSkillsHome).TrimEnd('\', '/')
+}
+
+function Test-RetiredDigest {
+  param([string]$Kind, [string]$Name, [string]$Expected, [string]$Actual)
+  if ($Expected -eq $Actual) { return $true }
+  foreach ($line in [System.IO.File]::ReadAllLines($script:sourceLegacyHashes)) {
+    if ($line.StartsWith('#') -or [string]::IsNullOrWhiteSpace($line)) { continue }
+    $parts = $line.Split("`t")
+    if ($parts[0] -eq $Kind -and $parts[1] -eq $Name -and $parts[2] -eq $Actual) { return $true }
+  }
+  return $false
+}
+
+function Preflight-DiscoveryRoots {
+  foreach ($root in @($script:codexHome, $script:targetAgentsDir, $script:userSkillsHome, $script:legacySkillsHome)) {
+    $item = Get-PathItemLexically $root
+    if ($null -ne $item -and (-not $item.PSIsContainer -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+      Fail "Discovery root is linked or not a regular directory: $root" 5
+    }
+  }
+  if (Test-SameSkillRoot) { return }
+  foreach ($row in @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'active' -and $_.Kind -eq 'skill' })) {
+    $path = Join-Path $script:legacySkillsHome $row.Name
+    if ($null -ne (Get-PathItemLexically $path)) {
+      Fail "Alternate-root managed skill conflicts; preserve and resolve before retrying: $path" 5
+    }
+  }
+}
+
 function Test-RetiredSkillExact {
   param(
     [string]$Path,
@@ -239,12 +278,12 @@ function Test-RetiredSkillExact {
   if (($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0) {
     return $false
   }
-  (Get-NormalizedSha256 $skillFile) -eq $ExpectedDigest
+  Test-RetiredDigest 'skill' (Split-Path -Leaf $Path) $ExpectedDigest (Get-NormalizedSha256 $skillFile)
 }
 
 function Preflight-RetiredAssets {
   foreach ($row in @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'retired' })) {
-    $targetPath = Get-RetiredAssetPath $row
+    foreach ($targetPath in @(Get-RetiredAssetPaths $row)) {
     $item = Get-PathItemLexically $targetPath
     if ($null -eq $item) {
       continue
@@ -253,12 +292,13 @@ function Preflight-RetiredAssets {
       if ($item.PSIsContainer -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or -not (Test-Path -LiteralPath $targetPath -PathType Leaf)) {
         Fail "Retired managed agent conflicts with a non-regular target: $targetPath" 5
       }
-      if ((Get-NormalizedSha256 $targetPath) -ne $row.Digest) {
-        Fail "Retired managed agent was modified; no files were changed: $targetPath" 5
+      if (-not (Test-RetiredDigest $row.Kind $row.Name $row.Digest (Get-NormalizedSha256 $targetPath))) {
+        Fail "Retired managed agent is unrecognized; no files were changed: $targetPath" 5
       }
     }
     elseif (-not (Test-RetiredSkillExact $targetPath $row.Digest)) {
       Fail "Retired managed skill was modified; no files were changed: $targetPath" 5
+    }
     }
   }
 }
@@ -445,11 +485,28 @@ function Preflight-SourcesAndTargets {
   Require-File $script:sourceAgents
   Require-File $script:sourceConfig
   Require-File $script:sourceInventory
+  Require-File $script:sourceLegacyHashes
+  Require-File (Join-Path $script:repoRoot 'VERSION')
   Require-File $script:legacyV2Config
   Require-Directory $script:sourceRepoAgents
   Require-Directory $script:sourceRepoProfiles
   Require-Directory $script:sourceRepoSkills
   $null = @(Get-ManagedInventoryRows)
+  $retiredRows = @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'retired' })
+  foreach ($line in [System.IO.File]::ReadAllLines($script:sourceLegacyHashes)) {
+    if ($line.StartsWith('#') -or [string]::IsNullOrWhiteSpace($line)) { continue }
+    $parts = $line.Split("`t")
+    if ($parts.Count -ne 4 -or $parts[2] -cnotmatch '^[0-9a-f]{64}$' -or -not @($retiredRows | Where-Object { $_.Kind -eq $parts[0] -and $_.Name -eq $parts[1] }).Count) {
+      Fail 'Invalid historical hash ledger' 5
+    }
+  }
+  foreach ($name in @('VERSION', 'source-repo.txt', 'user-skills-home.txt')) {
+    $path = Join-Path (Join-Path $script:codexHome 'godmode') $name
+    $item = Get-PathItemLexically $path
+    if ($null -ne $item -and ($item.PSIsContainer -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+      Fail "Installation record is not a regular file: $path" 5
+    }
+  }
   foreach ($profileName in $script:profileNames) {
     Require-File (Join-Path $script:sourceRepoProfiles $profileName)
   }
@@ -472,6 +529,17 @@ function Preflight-SourcesAndTargets {
   $inventoryItem = Get-PathItemLexically $script:targetInventory
   if ($null -ne $inventoryItem -and ($inventoryItem.PSIsContainer -or ($inventoryItem.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0 -or -not (Test-Path -LiteralPath $script:targetInventory -PathType Leaf))) {
     Fail "Target managed inventory is not a regular file: $($script:targetInventory)" 5
+  }
+  if (Test-Path -LiteralPath $script:targetInventory -PathType Leaf) {
+    $identities = @{}
+    foreach ($row in @(Get-ManagedInventoryRows)) { $identities[$row.Kind + "`t" + $row.Name] = $true }
+    foreach ($line in [System.IO.File]::ReadAllLines($script:targetInventory)) {
+      if ($line.StartsWith('#') -or [string]::IsNullOrWhiteSpace($line)) { continue }
+      $parts = $line.Split("`t")
+      if ($parts.Count -ne 4 -or -not $identities.ContainsKey($parts[1] + "`t" + $parts[2])) {
+        Fail 'Installed roster has an unknown or forgotten managed identity; preserve and resolve before retrying' 5
+      }
+    }
   }
   if ($null -ne $configItem -and -not $script:resetConfig -and (Test-KnownLegacyV2Config $script:targetConfig)) {
     $script:migrateLegacyConfig = $true
@@ -542,6 +610,9 @@ function Archive-LegacyDiscoveryConflicts {
     [pscustomobject]@{ Root = $script:targetAgentsDir; Category = 'agents' },
     [pscustomobject]@{ Root = $script:userSkillsHome; Category = 'skills' }
   )
+  if (-not (Test-SameSkillRoot)) {
+    $pairs += [pscustomobject]@{ Root = $script:legacySkillsHome; Category = 'legacy-skills' }
+  }
   foreach ($pair in $pairs) {
     $root = $pair.Root
     $category = $pair.Category
@@ -550,6 +621,9 @@ function Archive-LegacyDiscoveryConflicts {
     }
     $artifacts = @(Get-ChildItem -LiteralPath $root -Force | Where-Object { $_.Name -like '*.backup-*' } | Sort-Object Name)
     foreach ($artifact in $artifacts) {
+      $kind = 'skill'
+      if ($category -eq 'agents') { $kind = 'agent' }
+      if (-not (Test-ManagedBackup $kind $artifact.Name)) { continue }
       $found = $true
       $archivedPath = Join-Path (Join-Path (Join-Path $script:backupRoot 'legacy-discovery-conflicts') $category) $artifact.Name
       New-Item -ItemType Directory -Force -Path (Split-Path -Parent $archivedPath) | Out-Null
@@ -562,9 +636,16 @@ function Archive-LegacyDiscoveryConflicts {
   }
 }
 
+function Test-ManagedBackup {
+  param([string]$Kind, [string]$Name)
+  $base = ($Name -split '\.backup-', 2)[0]
+  if ($Kind -eq 'agent') { $base = $base -replace '\.toml$', '' }
+  return @((Get-ManagedInventoryRows) | Where-Object { $_.Kind -eq $Kind -and $_.Name -eq $base }).Count -gt 0
+}
+
 function Archive-RetiredAssets {
   foreach ($row in @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'retired' })) {
-    $targetPath = Get-RetiredAssetPath $row
+    foreach ($targetPath in @(Get-RetiredAssetPaths $row)) {
     if (-not (Test-Path -LiteralPath $targetPath)) {
       continue
     }
@@ -572,12 +653,14 @@ function Archive-RetiredAssets {
       $archivedPath = Join-Path (Join-Path (Join-Path $script:backupRoot 'retired') 'agents') ($row.Name + '.toml')
     }
     else {
-      $archivedPath = Join-Path (Join-Path (Join-Path $script:backupRoot 'retired') 'skills') $row.Name
+      $rootName = 'skills'
+      if ($targetPath -ne (Join-Path $script:userSkillsHome $row.Name)) { $rootName = 'legacy-skills' }
+      $archivedPath = Join-Path (Join-Path (Join-Path $script:backupRoot 'retired') $rootName) $row.Name
     }
     New-Item -ItemType Directory -Force -Path (Split-Path -Parent $archivedPath) | Out-Null
     Copy-Item -LiteralPath $targetPath -Destination $archivedPath -Recurse -Force
     if ($row.Kind -eq 'agent') {
-      if ((Get-NormalizedSha256 $archivedPath) -ne $row.Digest) {
+      if (-not (Test-RetiredDigest $row.Kind $row.Name $row.Digest (Get-NormalizedSha256 $archivedPath))) {
         Fail "Retired agent backup verification failed: $archivedPath" 5
       }
     }
@@ -586,6 +669,7 @@ function Archive-RetiredAssets {
     }
     Remove-Item -LiteralPath $targetPath -Recurse -Force
     Write-Output "Archived retired managed $($row.Kind) $targetPath -> $archivedPath"
+    }
   }
 }
 
@@ -726,6 +810,27 @@ function Install-Inventory {
   Install-FileAtomically $script:sourceInventory $script:targetInventory
 }
 
+function Install-Record {
+  $recordDir = Join-Path $script:codexHome 'godmode'
+  $records = @{
+    'VERSION' = [System.IO.File]::ReadAllText((Join-Path $script:repoRoot 'VERSION'))
+    'source-repo.txt' = $script:repoRoot + "`n"
+    'user-skills-home.txt' = $script:userSkillsHome + "`n"
+  }
+  foreach ($name in $records.Keys) {
+    $path = Join-Path $recordDir $name
+    if ((Test-Path -LiteralPath $path -PathType Leaf) -and [System.IO.File]::ReadAllText($path) -cne $records[$name]) {
+      $archive = Join-Path (Join-Path $script:backupRoot 'inventory') $name
+      New-Item -ItemType Directory -Force -Path (Split-Path -Parent $archive) | Out-Null
+      Copy-Item -LiteralPath $path -Destination $archive -Force
+    }
+    $temp = Join-Path $recordDir ('.record-' + [guid]::NewGuid().ToString('N'))
+    Write-Utf8File -Path $temp -Content $records[$name]
+    Install-FileAtomically $temp $path
+    Remove-Item -LiteralPath $temp -Force
+  }
+}
+
 function Install-AgentFiles {
   $sourceFiles = @(Get-ChildItem -LiteralPath $script:sourceRepoAgents -Filter '*.toml' -File | Sort-Object Name)
   foreach ($sourceFile in $sourceFiles) {
@@ -804,7 +909,9 @@ function Check-NoLegacyDiscoveryConflicts {
     Write-Host "[ok] $Label clean"
     return $true
   }
-  $conflicts = @(Get-ChildItem -LiteralPath $Root -Force | Where-Object { $_.Name -like '*.backup-*' })
+  $kind = 'skill'
+  if ($Root -eq $script:targetAgentsDir) { $kind = 'agent' }
+  $conflicts = @(Get-ChildItem -LiteralPath $Root -Force | Where-Object { $_.Name -like '*.backup-*' -and (Test-ManagedBackup $kind $_.Name) })
   if ($conflicts.Count -gt 0) {
     Write-Host "[invalid] $Label contains legacy backup artifacts"
     $conflicts.FullName | ForEach-Object { Write-Host $_ }
@@ -817,10 +924,11 @@ function Check-NoLegacyDiscoveryConflicts {
 function Check-RetiredAssetsAbsent {
   $clean = $true
   foreach ($row in @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'retired' })) {
-    $targetPath = Get-RetiredAssetPath $row
+    foreach ($targetPath in @(Get-RetiredAssetPaths $row)) {
     if ($null -ne (Get-PathItemLexically $targetPath)) {
       Write-Host "[stale] Retired managed $($row.Kind) remains: $targetPath"
       $clean = $false
+    }
     }
   }
   if ($clean) {
@@ -831,14 +939,41 @@ function Check-RetiredAssetsAbsent {
 
 function Run-Check {
   $status = 0
+  foreach ($root in @($script:codexHome, $script:targetAgentsDir, $script:userSkillsHome, $script:legacySkillsHome)) {
+    $item = Get-PathItemLexically $root
+    if ($null -ne $item -and (-not $item.PSIsContainer -or ($item.Attributes -band [System.IO.FileAttributes]::ReparsePoint) -ne 0)) {
+      Write-Host "[invalid] Discovery root: $root"
+      $status = 1
+    }
+  }
   if (-not (Check-Path $script:targetAgents 'Global AGENTS')) { $status = 1 }
   if (-not (Check-Path $script:targetConfig 'Global config')) { $status = 1 }
   if (-not (Check-Path $script:targetAgentsDir 'Global agents dir')) { $status = 1 }
   if (-not (Check-Path $script:userSkillsHome 'User skills home')) { $status = 1 }
   if (-not (Check-ExactFile $script:sourceInventory $script:targetInventory 'Managed asset inventory')) { $status = 1 }
+  if (-not (Check-ExactFile (Join-Path $script:repoRoot 'VERSION') (Join-Path (Join-Path $script:codexHome 'godmode') 'VERSION') 'Installed package version')) { $status = 1 }
+  foreach ($name in @('source-repo.txt', 'user-skills-home.txt')) {
+    $path = Join-Path (Join-Path $script:codexHome 'godmode') $name
+    $expected = $script:repoRoot
+    if ($name -eq 'user-skills-home.txt') { $expected = $script:userSkillsHome }
+    if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or [System.IO.File]::ReadAllText($path).TrimEnd("`r", "`n") -ne $expected) {
+      Write-Host "[drift] Installation locator: $path"
+      $status = 1
+    }
+  }
+  if (-not (Test-SameSkillRoot)) {
+    foreach ($row in @(Get-ManagedInventoryRows | Where-Object { $_.Status -eq 'active' -and $_.Kind -eq 'skill' })) {
+      $path = Join-Path $script:legacySkillsHome $row.Name
+      if ($null -ne (Get-PathItemLexically $path)) {
+        Write-Host "[duplicate] Alternate-root managed skill: $path"
+        $status = 1
+      }
+    }
+  }
   if (-not (Check-RetiredAssetsAbsent)) { $status = 1 }
   if (-not (Check-NoLegacyDiscoveryConflicts $script:targetAgentsDir 'Global agents dir')) { $status = 1 }
   if (-not (Check-NoLegacyDiscoveryConflicts $script:userSkillsHome 'User skills home')) { $status = 1 }
+  if (-not (Check-NoLegacyDiscoveryConflicts $script:legacySkillsHome 'Alternate skills home')) { $status = 1 }
 
   if (Test-Path -LiteralPath $script:targetAgents -PathType Leaf) {
     $sourceContent = [System.IO.File]::ReadAllText($script:sourceAgents)
@@ -958,6 +1093,8 @@ $script:sourceRepoAgents = Join-Path $templateRoot 'agents'
 $script:sourceRepoProfiles = Join-Path $templateRoot 'profiles'
 $script:sourceRepoSkills = Join-Path $templateRoot 'skills'
 $script:sourceInventory = Join-Path $templateRoot 'managed-assets.tsv'
+$script:sourceLegacyHashes = Join-Path $templateRoot 'legacy-hashes.tsv'
+$script:legacySkillsHome = Join-Path $script:codexHome 'skills'
 $script:legacyV2Config = Join-Path $script:repoRoot 'tests/fixtures/global-codex-2.0/config.toml'
 $script:targetAgents = Join-Path $script:codexHome 'AGENTS.md'
 $script:targetConfig = Join-Path $script:codexHome 'config.toml'
@@ -989,6 +1126,7 @@ if ($script:checkOnly) {
 }
 
 Preflight-RetiredAssets
+Preflight-DiscoveryRoots
 New-Item -ItemType Directory -Force -Path $script:codexHome | Out-Null
 New-Item -ItemType Directory -Force -Path $script:userSkillsHome | Out-Null
 New-Item -ItemType Directory -Force -Path $script:targetAgentsDir | Out-Null
@@ -1002,6 +1140,7 @@ Install-Profiles
 Install-AgentFiles
 Install-SkillDirs
 Install-Inventory
+Install-Record
 
 Write-Output ''
 Write-Output "Installed global Codex setup to $($script:codexHome)"

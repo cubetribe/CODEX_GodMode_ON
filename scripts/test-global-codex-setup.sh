@@ -156,7 +156,7 @@ assert_file "$case_skills/godmode-workflow/agents/openai.yaml"
 agent_count="$(find "$case_home/agents" -maxdepth 1 -type f -name '*.toml' | wc -l | tr -d ' ')"
 skill_count="$(find "$case_skills" -mindepth 1 -maxdepth 1 -type d | wc -l | tr -d ' ')"
 [[ "$agent_count" == "7" ]] || fail_test "expected 7 managed agents, got ${agent_count}"
-[[ "$skill_count" == "9" ]] || fail_test "expected 9 managed skills, got ${skill_count}"
+[[ "$skill_count" == "11" ]] || fail_test "expected 11 managed skills, got ${skill_count}"
 assert_absent "$case_home/agents/researcher.toml"
 assert_absent "$case_skills/godmode-departments"
 assert_contains "$case_home/config.toml" "[projects.\"${repo_root}\"]"
@@ -164,6 +164,89 @@ assert_not_contains "$case_home/config.toml" 'model = '
 assert_not_contains "$case_home/config.toml" 'model_reasoning_effort = '
 run_installer --check >/dev/null
 pass_test "clean install and exact check"
+
+# Every documented older immutable retirement variant is recognized.
+for release in 1.0 1.1; do
+  new_case "upgrade-v${release}"
+  mkdir -p "$case_home/agents" "$case_skills"
+  cp "${repo_root}/tests/fixtures/global-codex-${release}/agents/"*.toml "$case_home/agents/"
+  if [[ -d "${repo_root}/tests/fixtures/global-codex-${release}/skills/godmode-departments" ]]; then
+    cp -R "${repo_root}/tests/fixtures/global-codex-${release}/skills/godmode-departments" "$case_skills/"
+  fi
+  run_installer >/dev/null
+  assert_absent "$case_home/agents/researcher.toml"
+  assert_absent "$case_skills/godmode-departments"
+  run_installer --check >/dev/null
+  pass_test "immutable ${release} retirement"
+done
+
+new_case alternate-retired
+mkdir -p "$case_home/skills" "$case_skills"
+cp -R "$legacy_fixture/skills/godmode-departments" "$case_home/skills/"
+cp -R "$legacy_fixture/skills/godmode-departments" "$case_skills/"
+run_installer >/dev/null
+assert_absent "$case_home/skills/godmode-departments"
+assert_absent "$case_skills/godmode-departments"
+[[ "$(find "$case_home/backups" -name SKILL.md | wc -l | tr -d ' ')" == 2 ]] || fail_test 'both retired roots need separate verified archives'
+run_installer --check >/dev/null
+pass_test "retired copies in both skill roots archived separately"
+
+for variant in active modified-retired linked-retired; do
+  new_case "alternate-${variant}"
+  mkdir -p "$case_home/skills"
+  if [[ "$variant" == active ]]; then
+    cp -R "$repo_root/templates/global-codex/skills/godmode-workflow" "$case_home/skills/"
+  elif [[ "$variant" == modified-retired ]]; then
+    cp -R "$legacy_fixture/skills/godmode-departments" "$case_home/skills/"
+    printf 'custom\n' >>"$case_home/skills/godmode-departments/SKILL.md"
+  else
+    ln -s "$case_root/missing" "$case_home/skills/godmode-departments"
+  fi
+  expect_status 5 run_installer
+  assert_absent "$case_home/AGENTS.md"
+  assert_absent "$case_home/backups"
+  assert_absent "$case_skills"
+  pass_test "alternate-root ${variant} blocks before writes"
+done
+
+new_case custom-backups
+mkdir -p "$case_home/agents" "$case_skills/custom.backup-user"
+printf 'custom\n' >"$case_home/agents/custom.toml.backup-user"
+printf 'custom\n' >"$case_skills/custom.backup-user/keep.txt"
+run_installer >/dev/null
+assert_file "$case_home/agents/custom.toml.backup-user"
+assert_file "$case_skills/custom.backup-user/keep.txt"
+assert_file "$case_home/godmode/VERSION"
+assert_contains "$case_home/godmode/source-repo.txt" "$repo_root"
+run_installer --check >/dev/null
+pass_test "unrelated custom backups preserved and installation locators recorded"
+
+new_case alternate-backups
+mkdir -p "$case_home/skills/godmode-departments.backup-old" "$case_home/skills/custom.backup-user"
+run_installer >/dev/null
+assert_absent "$case_home/skills/godmode-departments.backup-old"
+[[ -d "$case_home/skills/custom.backup-user" ]] || fail_test 'unrelated alternate backup was removed'
+run_installer --check >/dev/null
+pass_test "known alternate-root backups archived; custom names preserved"
+
+new_case forgotten-roster
+run_installer >/dev/null
+printf 'active\tagent\tforgotten_role\t-\n' >>"$case_home/godmode/managed-assets.tsv"
+managed_manifest "$case_home" "$case_skills" >"$case_root/before"
+expect_status 5 run_installer
+managed_manifest "$case_home" "$case_skills" >"$case_root/after"
+cmp -s "$case_root/before" "$case_root/after" || fail_test 'forgotten roster conflict mutated assets'
+pass_test "previous managed identities require cumulative retirement entries"
+
+for spelling in '' '/' '///' '/./'; do
+  new_case "linked-root-${#spelling}"
+  mkdir -p "$case_root/real"
+  ln -s "$case_root/real" "$case_root/link"
+  expect_status 5 run_installer --codex-home "$case_root/link${spelling}"
+  assert_absent "$case_root/real/AGENTS.md"
+  assert_absent "$case_skills"
+  pass_test "linked root with suffix '${spelling}' blocks before writes"
+done
 
 # An exact 2.0 runtime is recoverably pruned. Normalized CRLF content is still
 # recognized, unrelated custom assets survive, and each retired asset is backed up.
@@ -247,6 +330,7 @@ new_case crlf-source-inventory
 case_repo="$case_root/source-repo"
 mkdir -p "$case_repo/tests/fixtures"
 cp -R "$repo_root/templates" "$case_repo/"
+cp "$repo_root/VERSION" "$case_repo/"
 cp -R "$legacy_fixture" "$case_repo/tests/fixtures/global-codex-2.0"
 awk '{ printf "%s\r\n", $0 }' "$repo_root/templates/global-codex/managed-assets.tsv" >"$case_repo/templates/global-codex/managed-assets.tsv"
 mkdir -p "$case_home/agents"

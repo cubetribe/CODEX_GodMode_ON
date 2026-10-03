@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1450" viewBox="0 0 1440 1450" role="img" aria-labelledby="title desc">
+  <title id="title">GodMode verstehen und starten — Version 3.1</title>
+  <desc id="desc">Im Desktop /god eingeben, einen Skill wählen und den Auftrag ergänzen. Der Hauptchat plant, schreibt mit einem Writer und prüft das Ergebnis. Bis zu zwei optionale Spezialisten beraten zu unabhängigen Fragen. Berater sind read-only; der Tester darf temporäre Ausgaben erzeugen. Updates benötigen Installer, Dateiprüfung und einen frischen Chat.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#63716e"/></marker>
+    <style>
+      text { font-family: Inter, Arial, sans-serif; fill: #192e2b; }
+      .title { font-size: 52px; font-weight: 700; letter-spacing: -1px; }
+      .heading { font-size: 29px; font-weight: 700; }
+      .label { font-size: 23px; font-weight: 700; }
+      .body { font-size: 22px; }
+      .small { font-size: 19px; fill: #536360; }
+      .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 22px; }
+      .num { font-size: 22px; fill: #a44828; font-weight: 700; }
+      .line { fill: none; stroke: #63716e; stroke-width: 2.5; marker-end: url(#arrow); }
+      .optional { stroke-dasharray: 8 7; }
+    </style>
+  </defs>
+  <rect width="1440" height="1450" fill="#f6f5ee"/>
+  <text x="66" y="83" class="title">GodMode verstehen.</text>
+  <text x="66" y="124" class="body">Du beschreibst das Ziel. Codex organisiert die Arbeit und zeigt das Ergebnis.</text>
+  <text x="1318" y="76" text-anchor="end" class="small">3.1</text>
+
+  <text x="66" y="186" class="heading">01  So startest du</text>
+  <rect x="66" y="208" width="378" height="190" rx="18" fill="#e7ece5"/>
+  <text x="88" y="245" class="num">1 · Projekt und neuen Chat öffnen</text>
+  <rect x="88" y="265" width="328" height="63" rx="12" fill="#fffef8"/>
+  <text x="108" y="307" class="mono">/god</text>
+  <text x="88" y="368" class="small">Installierte Skills im Desktop-Menü.</text>
+  <path d="M455 302H484" class="line"/>
+  <rect x="498" y="208" width="378" height="190" rx="18" fill="#e7ece5"/>
+  <text x="520" y="245" class="num">2 · Passenden Skill auswählen</text>
+  <rect x="520" y="265" width="330" height="63" rx="12" fill="#d1e1d5"/>
+  <text x="539" y="306" class="label">GodMode Workflow</text>
+  <text x="520" y="368" class="small">Alternativen: Debug, Review, Prototype.</text>
+  <path d="M887 302H916" class="line"/>
+  <rect x="930" y="208" width="444" height="190" rx="18" fill="#e7ece5"/>
+  <text x="952" y="245" class="num">3 · Auftrag ergänzen und senden</text>
+  <text x="952" y="287" class="body">„Ergänze einen CSV-Export.“</text>
+  <text x="952" y="327" class="small">Ziel + Kontext + Fertig-wenn + Grenzen</text>
+  <text x="952" y="368" class="small">Ein klarer Auftrag genügt zum Start.</text>
+  <text x="66" y="436" class="mono">Textaufruf: Nutze $godmode-workflow und ergänze einen CSV-Export.</text>
+
+  <text x="66" y="504" class="heading">02  Wer übernimmt was?</text>
+  <rect x="66" y="528" width="1308" height="129" rx="18" fill="#203e37"/>
+  <text x="90" y="567" class="label" style="fill:#f6f5ee">Dein Hauptchat hält die Aufgabe zusammen.</text>
+  <text x="90" y="603" class="body" style="fill:#e3e9df">Ziel klären</text>
+  <text x="356" y="603" class="body" style="fill:#e3e9df">Plan und Entscheidungen</text>
+  <text x="754" y="603" class="body" style="fill:#e3e9df">Ein Writer</text>
+  <text x="1082" y="603" class="body" style="fill:#e3e9df">Ergebnis prüfen</text>
+  <text x="90" y="635" class="small" style="fill:#cad6ce">Standard: Codex arbeitet allein. Der Hauptchat integriert auch Ergebnisse der Spezialisten.</text>
+  <path d="M719 669V706" class="line optional"/>
+  <text x="755" y="695" class="small">Bei unabhängigen Fragen: bis zu zwei Spezialisten</text>
+
+  <rect x="66" y="724" width="1308" height="270" rx="18" fill="#e7ece5"/>
+  <text x="90" y="767" class="label">Agenten sind begrenzte Rollen — keine separat trainierten Modelle.</text>
+  <text x="90" y="812" class="mono">api_guardian</text><text x="386" y="812" class="body">API, Schema, CLI und Config</text>
+  <text x="90" y="856" class="mono">validator</text><text x="386" y="856" class="body">Struktur und Konsistenz</text>
+  <text x="90" y="900" class="mono">tester</text><text x="386" y="900" class="body">Ausführbares Verhalten</text>
+  <text x="753" y="812" class="mono">runtime_platform</text><text x="1070" y="812" class="body">System und Tools</text>
+  <text x="753" y="856" class="mono">workflow_design</text><text x="1070" y="856" class="body">Skills und Abläufe</text>
+  <text x="753" y="900" class="mono">docs_dx</text><text x="1070" y="900" class="body">Verständlichkeit</text>
+  <text x="753" y="944" class="mono">ci_security_guardian</text><text x="1070" y="944" class="body">CI und Sicherheit</text>
+  <text x="90" y="969" class="small">Skill = Anleitung für einen Ablauf</text>
+
+  <rect x="66" y="1018" width="1308" height="147" rx="18" fill="#efe3d5"/>
+  <text x="90" y="1058" class="label">Klare Grenzen</text>
+  <text x="90" y="1097" class="body">Berater ändern keine Dateien.</text>
+  <text x="90" y="1134" class="small">Tester: nur temporäre Testausgaben.</text>
+  <text x="541" y="1097" class="body">Ein Writer ändert Quellcode.</text>
+  <text x="541" y="1134" class="small">Hauptchat oder ein Built-in Worker.</text>
+  <text x="1020" y="1097" class="body">Passende Nachweise.</text>
+  <text x="1020" y="1134" class="small">Keine Garantie auf Fehlerfreiheit.</text>
+
+  <text x="66" y="1230" class="heading">03  Hilfe und Updates</text>
+  <text x="66" y="1273" class="body">GodMode Help erklärt. GodMode Update prüft die globale Installation und Releases.</text>
+  <text x="66" y="1314" class="body">Checkout aktualisieren  →  Installer + Dateiprüfung  →  frischen Chat starten</text>
+  <text x="66" y="1356" class="small">Altdateien: bekanntes Original → geprüftes Backup; verändert oder unbekannt → Konflikt melden.</text>
+  <text x="66" y="1394" class="small">Modelle bleiben deine Wahl. Commit, Push und Veröffentlichung brauchen passende Autorisierung.</text>
+</svg>

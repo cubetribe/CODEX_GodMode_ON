@@ -1,5 +1,8 @@
 # Prototype Start
 
+Desktop: type `/god`, select the corresponding skill, then add the task below.
+For usage questions, choose `$godmode-help`; a clear task starts immediately.
+
 ```text
 Use $godmode-prototype.
 Goal: <disposable local outcome>.
