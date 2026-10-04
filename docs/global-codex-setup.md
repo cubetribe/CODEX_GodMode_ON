@@ -1,7 +1,10 @@
-# Global Codex Setup
+# GodMode Core for Codex: Global Setup
 
-Core version: `3.1.0`. See [3.1 release document](releases/3.1.0.md) and the
-[usage guide](usage.md). The following tag example installs 3.1. See the historical
+This is the self-installed Community package. See the
+[product family](product-family.md) for the Claude variant and the separate Pro application.
+
+Core version: `3.1.1`. See [3.1.1 release document](releases/3.1.1.md) and the
+[usage guide](usage.md). The following tag example installs 3.1.1. See the historical
 [official release document](./releases/3.0.0.md) for the full rationale,
 breaking changes, migration contract, rollback, and evidence boundaries.
 GodMode Paperwork remains separately versioned at `2.10.0`.
@@ -29,7 +32,7 @@ For a released installation, check out the immutable tag first:
 
 ```bash
 git fetch origin --tags
-git checkout v3.1.0
+git checkout v3.1.1
 ```
 
 macOS/Linux:

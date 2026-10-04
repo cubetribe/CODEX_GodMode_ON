@@ -1,6 +1,6 @@
 # Local Development
 
-The current package is `3.1.0`. Protected `main` delivery uses a pull request.
+The current package is `3.1.1`. Protected `main` delivery uses a pull request.
 Commit, push, merge, tag, and publication remain separate authority
 boundaries. GodMode Paperwork is an independently versioned optional plugin,
 currently `2.10.0`.

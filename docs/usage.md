@@ -1,17 +1,22 @@
-# GodMode benutzen
+# GodMode Core für Codex benutzen
 
-GodMode gibt Codex wiederverwendbare Abläufe und bei Bedarf spezialisierte
+GodMode Core gibt Codex wiederverwendbare Abläufe und bei Bedarf spezialisierte
 Agenten. Du beschreibst das gewünschte Ergebnis; Codex organisiert die Arbeit.
 Ein Skill ist die Anleitung für einen Ablauf. Ein Agent übernimmt einen
 begrenzten Unterauftrag mit eigenen Rollenregeln und Berechtigungen.
 
-![GodMode: Einstieg, Rollen und überprüftes Ergebnis](assets/godmode-guide.svg)
+Dieses Community-Paket installierst und betreibst du selbst. Die separate
+Pro-Anwendung und die Claude-Variante findest du in der
+[Produktfamilien-Übersicht](product-family.md).
+
+![GodMode Core: Einstieg, Rollen und überprüftes Ergebnis](assets/godmode-guide.svg)
 
 ## In 30 Sekunden starten
 
 1. Öffne dein Projekt und einen frischen Codex-Chat nach der Installation.
-2. Tippe in der Desktop-Eingabe `/god` und wähle **GodMode Workflow** aus den
-   angebotenen Skills. Der Screenshot vom 03.10.2026 zeigt diesen Suchweg.
+2. Tippe in der Desktop-Eingabe `/god` und wähle **GodMode Core Workflow** aus
+   den angebotenen Skills. Ältere Installationen zeigen **GodMode Workflow**;
+   die Core-Anzeigenamen werden seit 3.1.1 verwendet.
 3. Ergänze deinen Auftrag und sende ihn ab. Die Auswahl legt den Ablauf fest;
    erst dein Auftrag sagt Codex, was es erreichen soll.
 
@@ -33,12 +38,12 @@ internen Phasen in deinen Auftrag schreiben.
 
 | Auswahl | Wann sie hilft | Was du mitgibst |
 | --- | --- | --- |
-| GodMode Workflow | Etwas bauen, ändern oder migrieren | Ziel und erkennbares Ergebnis |
-| GodMode Debug | Ein Fehler soll behoben werden | Verhalten, Erwartung und Reproduktion |
-| GodMode Review | Eine Änderung beurteilen | Dateien, Diff oder Vergleichsbasis |
-| GodMode Prototype | Eine Idee lokal ausprobieren | Idee und wichtigste Funktion |
-| GodMode Help | Bedienung oder Rollen verstehen | Deine Frage; ein Projektauftrag ist nicht nötig |
-| GodMode Update | Installation prüfen oder aktualisieren | Diagnose oder Update, gegebenenfalls Quellpfad |
+| GodMode Core Workflow | Etwas bauen, ändern oder migrieren | Ziel und erkennbares Ergebnis |
+| GodMode Core Debug | Ein Fehler soll behoben werden | Verhalten, Erwartung und Reproduktion |
+| GodMode Core Review | Eine Änderung beurteilen | Dateien, Diff oder Vergleichsbasis |
+| GodMode Core Prototype | Eine Idee lokal ausprobieren | Idee und wichtigste Funktion |
+| GodMode Core Help | Bedienung verstehen oder eigene Regeln prüfen | Deine Frage oder der gewünschte Konfigurationscheck |
+| GodMode Core Update | Installation prüfen oder aktualisieren | Diagnose oder Update, gegebenenfalls Quellpfad |
 
 Workflow, Debug, Review und Prototype sind alternative Arbeitsmodi. Help und
 Update sind Hilfe und Wartung. Paperwork ist ein separat installiertes Plugin.
@@ -73,6 +78,34 @@ Modelle. Sie delegieren nicht weiter. Modell und Denkintensität bleiben deine
 Einstellungen. Eine Prüfung liefert Nachweise für ihren Umfang und garantiert
 keine allgemeine Fehlerfreiheit. Commit, Push und Veröffentlichung benötigen
 die jeweilige Autorisierung.
+
+## Eigene Regeln und Einstellungen prüfen
+
+Seit 3.1.1 kann Help globale und projektlokale Anweisungen sowie relevante Codex-Einstellungen
+lesend vergleichen. Das hilft etwa, wenn Regeln aus `AGENTS.md`, einem Override
+oder einem Profil unerwartet greifen, sich widersprechen oder veraltet wirken.
+
+```text
+Nutze $godmode-help und prüfe meine lokalen Anweisungen und Codex-Einstellungen.
+Zeige Überschneidungen, widersprüchliche oder veraltete Regeln mit Fundstellen
+und konkreten Verbesserungsvorschlägen. Ändere keine Dateien.
+```
+
+Der Bericht unterscheidet Widersprüche, nachweislich übersteuerte Einstellungen,
+bestätigte Alt-Konfigurationen und optionale Vereinfachungen. Eine bewusste
+Modellwahl, strengere Berechtigungen oder zusätzliche Projektprüfungen sind
+keine Fehler. Help zeigt, welche Vorgabe für den geprüften Bereich gilt und
+welche Wirkung eine vorgeschlagene Änderung hätte. Aussagen über aktuelle
+Best Practices brauchen passende offizielle Quellen; fehlende Nachweise
+bleiben als ungeklärt sichtbar.
+
+Geprüft werden die passenden Dateien im aktuellen Projekt und Codex-Home.
+Dateien auf der Festplatte können vom bereits geladenen Chat-Kontext abweichen;
+unbekannte Profile, Startoptionen oder verwaltete Vorgaben begrenzen die Aussage.
+Help schreibt keine Konfiguration um und setzt keine Nutzervorgaben zurück.
+Bei normalen Bedienfragen genügt eine kurze Erklärung; der Dateicheck startet
+bei einer passenden Diagnosefrage oder einem ausdrücklichen Prüfauftrag.
+Die Kontrolle installierter Paketdateien und deren Aktualisierung übernimmt Update.
 
 ## Updates und alte Menüeinträge
 

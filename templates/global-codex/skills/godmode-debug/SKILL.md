@@ -3,7 +3,7 @@ name: godmode-debug
 description: Reproduce a failure, isolate its cause, fix it, and verify the original path.
 ---
 
-# GodMode Debug
+# GodMode Core Debug
 
 This is a standalone primary mode; do not combine it with workflow, review, or
 prototype mode. Keep the failing behavior as the contract.

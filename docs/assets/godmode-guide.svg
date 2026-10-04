@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1440" height="1450" viewBox="0 0 1440 1450" role="img" aria-labelledby="title desc">
-  <title id="title">GodMode verstehen und starten — Version 3.1</title>
+  <title id="title">GodMode Core verstehen und starten — Version 3.1</title>
   <desc id="desc">Im Desktop /god eingeben, einen Skill wählen und den Auftrag ergänzen. Der Hauptchat plant, schreibt mit einem Writer und prüft das Ergebnis. Bis zu zwei optionale Spezialisten beraten zu unabhängigen Fragen. Berater sind read-only; der Tester darf temporäre Ausgaben erzeugen. Updates benötigen Installer, Dateiprüfung und einen frischen Chat.</desc>
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#63716e"/></marker>
@@ -17,7 +17,7 @@
     </style>
   </defs>
   <rect width="1440" height="1450" fill="#f6f5ee"/>
-  <text x="66" y="83" class="title">GodMode verstehen.</text>
+  <text x="66" y="83" class="title">GodMode Core verstehen.</text>
   <text x="66" y="124" class="body">Du beschreibst das Ziel. Codex organisiert die Arbeit und zeigt das Ergebnis.</text>
   <text x="1318" y="76" text-anchor="end" class="small">3.1</text>
 
@@ -31,7 +31,7 @@
   <rect x="498" y="208" width="378" height="190" rx="18" fill="#e7ece5"/>
   <text x="520" y="245" class="num">2 · Passenden Skill auswählen</text>
   <rect x="520" y="265" width="330" height="63" rx="12" fill="#d1e1d5"/>
-  <text x="539" y="306" class="label">GodMode Workflow</text>
+  <text x="539" y="306" class="label">GodMode Core Workflow</text>
   <text x="520" y="368" class="small">Alternativen: Debug, Review, Prototype.</text>
   <path d="M887 302H916" class="line"/>
   <rect x="930" y="208" width="444" height="190" rx="18" fill="#e7ece5"/>
@@ -73,7 +73,7 @@
   <text x="1020" y="1134" class="small">Keine Garantie auf Fehlerfreiheit.</text>
 
   <text x="66" y="1230" class="heading">03  Hilfe und Updates</text>
-  <text x="66" y="1273" class="body">GodMode Help erklärt. GodMode Update prüft die globale Installation und Releases.</text>
+  <text x="66" y="1273" class="body">GodMode Core Help erklärt. GodMode Core Update prüft Installation und Releases.</text>
   <text x="66" y="1314" class="body">Checkout aktualisieren  →  Installer + Dateiprüfung  →  frischen Chat starten</text>
   <text x="66" y="1356" class="small">Altdateien: bekanntes Original → geprüftes Backup; verändert oder unbekannt → Konflikt melden.</text>
   <text x="66" y="1394" class="small">Modelle bleiben deine Wahl. Commit, Push und Veröffentlichung brauchen passende Autorisierung.</text>

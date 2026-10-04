@@ -3,7 +3,7 @@ name: godmode-prototype
 description: Explore an idea in a disposable local prototype; production promotion requires a new contract.
 ---
 
-# GodMode Prototype
+# GodMode Core Prototype
 
 > **PROTOTYPE ONLY — LOCAL TESTING — DO NOT DEPLOY**
 

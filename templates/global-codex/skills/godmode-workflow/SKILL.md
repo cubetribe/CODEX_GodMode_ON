@@ -3,7 +3,7 @@ name: godmode-workflow
 description: Implement a scoped change or migration with one writer and verified results.
 ---
 
-# GodMode Workflow
+# GodMode Core Workflow
 
 Apply repository instructions first. This is a primary mode; do not combine it
 with debug, review, or prototype mode in the same run.
