@@ -1,6 +1,6 @@
 # Roadmap
 
-Core release: `3.1.0`.
+Core release: `3.1.1`.
 
 Optional GodMode Paperwork release: `2.10.0`
 
@@ -40,6 +40,15 @@ clear picker metadata, and a deterministic global update diagnosis. It retains
 seven agents. Current Astra/Sol 6.1 design guidance is recorded separately from
 historical 5.6 evidence. Exact-head CI and publication evidence belong in the
 GitHub Release; no fresh model performance benchmark is claimed.
+
+## GodMode Core 3.1.1 delivery record
+
+The [3.1.1 patch](releases/3.1.1.md) clarifies Help's read-only local-rules and
+configuration diagnosis, documents concrete invocations in the README, and
+aligns current displays and documentation with the Core product name.
+Technical identifiers, seven roles, eleven skills and installation contracts
+remain compatible. Help behavior evidence is scoped to the tested fixtures;
+exact PR/main CI and publication evidence belongs in the GitHub Release.
 
 ## Future experiments
 

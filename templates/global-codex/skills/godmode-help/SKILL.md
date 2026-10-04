@@ -1,13 +1,18 @@
 ---
 name: godmode-help
-description: Explain GodMode usage, mode choice, agents, and installation when the user asks for help.
+description: Explain GodMode usage or review local instruction and configuration overlaps when the user asks for help.
 ---
 
-# GodMode Help
+# GodMode Core Help
 
 Explain in the user's language; keep the answer short and tailored to their
 question. This is help, not a delivery mode. Do not start implementation or
 modify the installation merely because this skill was selected.
+
+For an empty/general help request, mention the available read-only configuration
+check. For local rule/configuration questions or symptoms such as ignored
+project instructions, follow [configuration check](references/configuration-check.md).
+Start that requested check directly; ordinary usage questions need no file audit.
 
 GodMode gives Codex reusable procedures (skills) and optional, bounded roles
 (agents). The main chat owns the task, decisions, and integration. Normally it

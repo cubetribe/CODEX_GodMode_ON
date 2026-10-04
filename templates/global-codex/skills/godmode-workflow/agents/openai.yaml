@@ -1,4 +1,4 @@
 interface:
-  display_name: "GodMode Workflow"
+  display_name: "GodMode Core Workflow"
   short_description: "Implement a change and verify the result"
   default_prompt: "Use $godmode-workflow for my task; if no task is supplied, explain how to start."

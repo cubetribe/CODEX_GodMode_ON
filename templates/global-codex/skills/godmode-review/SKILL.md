@@ -3,7 +3,7 @@ name: godmode-review
 description: Review code, architecture, or contracts read-only and report verified findings by severity.
 ---
 
-# GodMode Review
+# GodMode Core Review
 
 This is a standalone primary mode; do not combine it with workflow, debug, or
 prototype mode. The entire run is read-only.

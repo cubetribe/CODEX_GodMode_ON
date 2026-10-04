@@ -3,7 +3,7 @@ name: godmode-update
 description: Check GodMode releases and reconcile its global installation when the user requests an update or installation diagnosis.
 ---
 
-# GodMode Update
+# GodMode Core Update
 
 This is installation maintenance, not a delivery mode. Explain briefly that
 the checkout, installed files, and already loaded chat context can differ.

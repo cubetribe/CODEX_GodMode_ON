@@ -1,6 +1,6 @@
 # Agent Registry
 
-Status: current GodMode `3.1.0` core roster.
+Status: current GodMode Core `3.1.1` core roster.
 
 The core packages seven optional custom agents under
 `templates/global-codex/agents/`. The parent defaults to no custom agent and

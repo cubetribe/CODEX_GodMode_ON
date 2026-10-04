@@ -1,18 +1,36 @@
-# Codex GodMode
+# GodMode Core for Codex
 
-GodMode helps Codex turn your task into a checked result. **Skills** provide
+GodMode Core is the free Community workflow package you install into your own
+Codex setup. It helps Codex turn your task into a checked result. **Skills** provide
 reusable procedures; **agents** take bounded specialist assignments when they
 help. Your main chat owns the task and normally works alone.
 
-The current package is **3.1.0**. See the [3.1 release document](docs/releases/3.1.0.md).
+## Choose your GodMode
+
+| Product | Best fit | What it provides |
+| --- | --- | --- |
+| **GodMode Core for Codex** — this repository | You operate your own Codex setup | Self-installed skills, optional agents, verification procedures, and recoverable updates |
+| [**GodMode Core for Claude Code**](https://github.com/cubetribe/ClaudeCode_GodMode-On) — currently CC_GodMode | You operate your own Claude Code setup | The separately maintained Claude workflow package, under its own license terms |
+| [**GodMode Pro by Nerdsmiths**](https://godmode.nerdsmiths.de/) | You want an integrated application and assisted setup | A separate proprietary desktop application for project control, result review, maintained integrations, and scoped onboarding and support |
+
+Core has no package subscription; your Codex or Claude access and usage remain
+separate. Free availability does not change licensing or commercial permissions.
+Pro has its own availability, pricing, and service terms; see the
+[Nerdsmiths landing page](https://godmode.nerdsmiths.de/).
+Read the [product-family guide](docs/product-family.md) for the agreed boundaries.
+
+## Current package
+
+The current package is **3.1.1**, with extended Help for local rules and settings.
+See the [3.1.1 release document](docs/releases/3.1.1.md).
 Installation is a separate step after downloading a release.
 
-![GodMode: start, roles, and verified results](docs/assets/godmode-guide.svg)
+![GodMode Core: start, roles, and verified results](docs/assets/godmode-guide.svg)
 
 ## Start in 30 seconds
 
 Open your project and a fresh Codex chat after installation. In the desktop
-skill picker, type `/god`, select **GodMode Workflow**, and add your task.
+skill picker, type `/god`, select **GodMode Core Workflow**, and add your task.
 This is skill search, not a built-in `/godmode` command. The portable text form:
 
 ```text
@@ -23,15 +41,58 @@ Constraints: preserve the current JSON export.
 ```
 
 Choose Debug for a failure, Review for assessment, or Prototype for a local
-experiment. **GodMode Help** explains the choices; **GodMode Update** checks
+experiment. **GodMode Core Help** explains the choices and reviews local rules
+when requested; **GodMode Core Update** checks
 releases and installed files. With a clear task, work starts immediately.
 Read the [German usage guide](docs/usage.md) for the explanation and examples.
+
+Earlier installations may show **GodMode Workflow**, **GodMode Help**, and the
+other previous display names. The Core display names ship in 3.1.1;
+existing `$godmode-*` invocations remain compatible.
 
 Updating Git does not update your global installation. Run the installer and
 its check, then start a fresh chat. Removed roles still visible in the picker
 are a reason to diagnose the installation, not to delete every custom agent.
 
-## What 3.1 adds
+## GodMode Core Help: usage and local rules
+
+Select **GodMode Core Help** from the `/god` picker or invoke `$godmode-help`.
+Use it to understand the modes, agent responsibilities, startup, or updates:
+
+```text
+Use $godmode-help to explain when I should choose Workflow, Debug, or Review.
+```
+
+Since 3.1.1, Help also reviews applicable local instructions and Codex settings:
+
+```text
+Use $godmode-help to review my local instructions and Codex settings.
+Show concrete conflicts, outdated rules, and improvement suggestions with
+file/line references. Do not edit files.
+```
+
+For this requested check, Help inspects relevant global/project `AGENTS.md`,
+overrides and configured fallback files, plus applicable Codex settings and
+selected profiles when observable. It distinguishes:
+
+- conflicting rules and which instruction governs the inspected scope;
+- settings or files demonstrably overridden, skipped, or unavailable;
+- confirmed unsupported settings or missing required roles;
+- optional simplifications with an explanation of their expected effect.
+
+Each useful finding includes its source, effect, and smallest proposed remedy.
+Current-best-practice or deprecation claims need relevant official sources;
+missing evidence remains unresolved. Deliberate model choices, extra project
+checks, stricter permissions, and user-owned roles are valid preferences.
+
+Help performs a **read-only diagnosis** and preserves your settings. Ordinary
+usage questions need no file scan. Unknown profiles, managed policy or launch
+overrides limit the diagnosis; files on disk can differ from instructions
+already loaded in a chat. A PATH CLI version is not automatically the running
+desktop client's version. For installed-package drift or an actual update,
+use `$godmode-update`. See the [German guide](docs/usage.md#eigene-regeln-und-einstellungen-prüfen).
+
+## What 3.1.0 introduced
 
 - concise help and understandable picker descriptions for each delivery mode;
 - two small, separately loaded Help and Update skills (11 core skills total);
@@ -122,7 +183,7 @@ For the current release:
 
 ```bash
 git fetch origin --tags
-git checkout v3.1.0
+git checkout v3.1.1
 ./scripts/apply-global-codex-setup.sh
 ./scripts/apply-global-codex-setup.sh --check
 ```
@@ -131,7 +192,7 @@ Windows:
 
 ```powershell
 git fetch origin --tags
-git checkout v3.1.0
+git checkout v3.1.1
 .\scripts\apply-global-codex-setup.ps1
 .\scripts\apply-global-codex-setup.ps1 -Check
 ```
@@ -175,7 +236,7 @@ Primary modes are exclusive:
 
 Support skills add only relevant knowledge: `greenfield-bootstrap`,
 `release-manager`, `apple-platforms`, `web-platforms`, and `flutter-dart`.
-Use `$godmode-help` for usage questions and `$godmode-update` for installation
+Use `$godmode-help` for usage or local-rule diagnosis and `$godmode-update` for installation
 maintenance. They are not delivery modes. Use `$godmode-paperwork` explicitly
 for its separate document workflow.
 
@@ -244,8 +305,10 @@ routing; live model traces are separate release evidence.
 
 ## Documentation
 
+- [GodMode Core and Pro product family](docs/product-family.md)
 - [GodMode usage and visual guide](docs/usage.md)
-- [GodMode 3.1 release document](docs/releases/3.1.0.md)
+- [GodMode 3.1.1 release document](docs/releases/3.1.1.md)
+- [GodMode 3.1.0 historical release document](docs/releases/3.1.0.md)
 - [GodMode 3.0 historical release document](docs/releases/3.0.0.md)
 - [Architecture](docs/blueprint.md)
 - [Agent registry](docs/agent-registry.md)

@@ -1,8 +1,11 @@
-# GodMode 3 Lean Architecture
+# GodMode Core for Codex: Lean Architecture
 
-Status: GodMode `3.1.0`. The seven-agent Lean
+Status: GodMode Core `3.1.1`. The seven-agent Lean
 architecture was introduced in [3.0.0](./releases/3.0.0.md). Start with the
-[usage guide](usage.md); see [3.1 release document](releases/3.1.0.md) for update changes.
+[usage guide](usage.md); see [3.1.1 release document](releases/3.1.1.md) for Help changes.
+
+This is the Community workflow package; the separate Pro application owns its
+integrated application and service scope. See the [product family](product-family.md).
 
 ## Design objective
 
@@ -59,6 +62,8 @@ Exactly one primary mode applies to a run:
 | `godmode-prototype` | disposable local-only build with watermarks |
 
 Help and Update are assistance and maintenance, not delivery modes.
+Help's requested local-rules check compares applicable instruction and config
+sources read-only; Update owns installed-file reconciliation.
 Greenfield, release, and stack skills are support layers. A primary mode does
 not activate another primary mode as a companion.
 

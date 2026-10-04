@@ -1,6 +1,8 @@
 # Contributing
 
-Danke, dass du `CODEX_GodMode_ON` besser machen willst.
+Danke, dass du **GodMode Core für Codex** besser machen willst
+(`CODEX_GodMode_ON`). Die [Produktfamilie](docs/product-family.md) beschreibt
+die Abgrenzung zur Claude-Variante und zu GodMode Pro.
 
 Dieses Repo soll moeglichst leicht zu verstehen und leicht zu erweitern sein. Bevor du Zeit in einen groesseren Beitrag steckst, nutze bitte den passenden Einstiegspunkt.
 

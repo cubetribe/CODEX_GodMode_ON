@@ -1,4 +1,4 @@
 interface:
-  display_name: "GodMode Prototype"
+  display_name: "GodMode Core Prototype"
   short_description: "Explore an idea in a disposable local prototype"
   default_prompt: "Use $godmode-prototype for my idea; if no idea is supplied, explain the local-only mode."

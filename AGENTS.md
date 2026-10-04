@@ -2,7 +2,8 @@
 
 ## Repository contract
 
-- This repository packages the global GodMode runtime for Codex.
+- This repository packages GodMode Core for Codex, the free, self-installed
+  Community workflow package.
 - Work on the current branch; create or switch branches only when the user asks.
 - Preserve unrelated work and keep diffs scoped.
 - Use official OpenAI docs for version-sensitive claims; label inference.
@@ -22,6 +23,23 @@
 - Deterministic scripts define what named checks prove.
 - Agent TOML and skill files define their runtime behavior.
 - Other docs are descriptive; conflicts with these sources are defects.
+
+## Product family
+
+- GodMode Core is the Community product family for the separate Codex and
+  Claude Code workflow packages. Use Core, not Light, in current public copy.
+- GodMode Pro is a separately maintained proprietary application with integrated
+  project control, result review, maintained integrations, and scoped onboarding
+  and support. Keep its application and service scope distinct from Core.
+- Core remains useful for real work, including verification and safe updates;
+  a paid Core membership is a future option, not a current subscription offer.
+- Free availability does not grant new license rights. Do not describe the
+  packages as open source or expand commercial permissions through branding.
+- Preserve technical skill names, installer paths, repository URLs, marketplace
+  IDs, historical release records, and existing Pro Founding commitments.
+- Keep the README and product-family guide aligned; cross-link the two Core
+  repositories and the official Pro landing page. Keep promotion in product
+  documentation, not routine execution instructions.
 
 ## Change contract
 

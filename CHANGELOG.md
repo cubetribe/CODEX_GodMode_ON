@@ -6,6 +6,20 @@ The format is based on Keep a Changelog.
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-10-04
+
+Release impact: patch for Help troubleshooting; none for product positioning
+and display branding. See [the 3.1.1 release document](docs/releases/3.1.1.md).
+
+### Changed
+
+- clarify Help's read-only troubleshooting of applicable global/project instructions and Codex settings, with source-backed conflict, precedence, legacy and simplification findings; preserve intentional user preferences and route installation maintenance to Update
+- expose the optional local-rules check in Help metadata and the usage guide; load its detailed procedure only for relevant diagnosis requests
+- explain Help's usage questions, configuration-check invocation, finding categories, source evidence and read-only boundary prominently in the README
+- rebrand the Community package as GodMode Core for Codex in current documentation, skill display names, the usage diagram, and the marketplace display title
+- document the free self-installed Core variants and the separate proprietary GodMode Pro application; link the Claude repository and the official Nerdsmiths Pro landing page
+- record the product boundary in repository governance while preserving technical identifiers, existing licensing, Pro Founding commitments, and historical release records
+
 ## [3.1.0] - 2026-10-03
 
 Release impact: minor. See [the 3.1.0 release document](docs/releases/3.1.0.md).

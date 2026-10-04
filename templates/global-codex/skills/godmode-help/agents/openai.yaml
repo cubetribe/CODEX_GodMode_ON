@@ -1,4 +1,4 @@
 interface:
-  display_name: "GodMode Help"
-  short_description: "Understand skills, agents, and how to start"
-  default_prompt: "Use $godmode-help to explain GodMode and help me choose a mode."
+  display_name: "GodMode Core Help"
+  short_description: "Understand GodMode and check local rule conflicts"
+  default_prompt: "Use $godmode-help to explain GodMode or, when requested, check my local instructions and configuration for conflicts."

@@ -1,7 +1,7 @@
 {
   "name": "codex-godmode-on",
   "interface": {
-    "displayName": "CODEX GodMode ON"
+    "displayName": "GodMode Core for Codex"
   },
   "plugins": [
     {
